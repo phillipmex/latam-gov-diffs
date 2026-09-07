@@ -1,0 +1,164 @@
+{
+  "feed": "cclasstrib",
+  "fetched_at": "2026-09-07T05:24:51+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "last_modified": "2026-01-28",
+  "listing_title": "Tabela de Código de Classificação Tributária do IBS/CBS - Publicada em 28/01/2026",
+  "published": "28/01/2026",
+  "row_count": 154,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "nome_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_redacao"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_214_25"
+    },
+    {
+      "dtype": "string",
+      "name": "tipo_de_aliquota"
+    },
+    {
+      "dtype": "string",
+      "name": "predibs"
+    },
+    {
+      "dtype": "string",
+      "name": "predcbs"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gtribregular"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gcredpresoper"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gmonopadrao"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gmonoreten"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gmonoret"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gmonodif"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gestornocred"
+    },
+    {
+      "dtype": "string",
+      "name": "dinivig"
+    },
+    {
+      "dtype": "string",
+      "name": "dfimvig"
+    },
+    {
+      "dtype": "string",
+      "name": "dataatualizacao"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfeabi"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfe"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfce"
+    },
+    {
+      "dtype": "string",
+      "name": "indcte"
+    },
+    {
+      "dtype": "string",
+      "name": "indcteos"
+    },
+    {
+      "dtype": "string",
+      "name": "indbpe"
+    },
+    {
+      "dtype": "string",
+      "name": "indbpeta"
+    },
+    {
+      "dtype": "string",
+      "name": "indbpetm"
+    },
+    {
+      "dtype": "string",
+      "name": "indnf3e"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfse"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfse_via"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfcom"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfag"
+    },
+    {
+      "dtype": "string",
+      "name": "indnfgas"
+    },
+    {
+      "dtype": "string",
+      "name": "inddere"
+    },
+    {
+      "dtype": "string",
+      "name": "anexo"
+    },
+    {
+      "dtype": "string",
+      "name": "link"
+    }
+  ],
+  "sha256": "0825eadf1d6fafb947978cc751df42497f92d8ee53527438c0e55bbfd034e6d2",
+  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=VvNIEEiI1V0=",
+  "version_id": "2026-01-28-0825eadf"
+}

@@ -1,0 +1,100 @@
+{
+  "feed": "cclasstrib",
+  "fetched_at": "2026-09-07T05:24:36+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "last_modified": "2025-06-18",
+  "listing_title": "Tabela de Código de Classificação Tributária do IBS e CBS - Publicada em 18/06/2025",
+  "published": "18/06/2025",
+  "row_count": 132,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "nome_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_redacao"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_214_25"
+    },
+    {
+      "dtype": "string",
+      "name": "tipo_de_aliquota"
+    },
+    {
+      "dtype": "string",
+      "name": "predibs"
+    },
+    {
+      "dtype": "string",
+      "name": "predcbs"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_redutorbc"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_gtribregular"
+    },
+    {
+      "dtype": "string",
+      "name": "ind_credpres"
+    },
+    {
+      "dtype": "string",
+      "name": "indmono"
+    },
+    {
+      "dtype": "string",
+      "name": "indmonoreten"
+    },
+    {
+      "dtype": "string",
+      "name": "indmonoret"
+    },
+    {
+      "dtype": "string",
+      "name": "indmonodif"
+    },
+    {
+      "dtype": "string",
+      "name": "credito_para"
+    },
+    {
+      "dtype": "string",
+      "name": "dinivig"
+    },
+    {
+      "dtype": "string",
+      "name": "dfimvig"
+    },
+    {
+      "dtype": "string",
+      "name": "dataatualizacao"
+    }
+  ],
+  "sha256": "f18c6aecbaae05339227003f645fea1e3b326b13724cbd4108f5438f3711cd9f",
+  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=XWUq47hwvH4=",
+  "version_id": "2025-06-18-f18c6aec"
+}

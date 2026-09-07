@@ -1,0 +1,44 @@
+{
+  "added": 43,
+  "changed": 82,
+  "diff_file": "2024-12-07-67a71e9a__2025-05-06-eb953b54.jsonl",
+  "duplicate_keys_from": 1,
+  "duplicate_keys_to": 0,
+  "feed": "cclasstrib",
+  "fields_added": [
+    "aliquota",
+    "ec",
+    "lc_214_25",
+    "lc_214_25_2",
+    "credito_anterior_apenas_ligados_ao_cclass",
+    "credito_para_frente_apenas_ligados_ao_cclass",
+    "tomador_especifico",
+    "tributacao_nfs_e",
+    "outro_campo_nfs_e",
+    "obs",
+    "predaliq",
+    "dinivig_2",
+    "dfimvig_2",
+    "credito_anterior_apenas_ligados_ao_cclass_2",
+    "credito_para_frente_apenas_ligados_ao_cclass_2",
+    "exige_nbs_ou_ncm",
+    "sem_nbs_mas_com_codigos_de_servico_especificos",
+    "tomador_especifico_2",
+    "icms_cbs_ou_outro",
+    "titulo_capitulo_secao_subsecao"
+  ],
+  "fields_removed": [
+    "lc",
+    "lc_redacao"
+  ],
+  "from_version": "2024-12-07-67a71e9a",
+  "generated_at": "2026-09-07T05:24:58+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "removed": 12,
+  "rows_from": 94,
+  "rows_to": 125,
+  "to_version": "2025-05-06-eb953b54",
+  "unchanged": 0
+}

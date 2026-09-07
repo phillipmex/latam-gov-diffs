@@ -1,0 +1,48 @@
+{
+  "feed": "cclasstrib",
+  "fetched_at": "2026-09-07T05:24:25+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "last_modified": "2024-12-07",
+  "listing_title": "Tabela de Código de Classificação Tributária do IBS e da CBS - Publicada em 07/12/2024",
+  "published": "07/12/2024",
+  "row_count": 94,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "lc"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_redacao"
+    },
+    {
+      "dtype": "string",
+      "name": "dinivig"
+    },
+    {
+      "dtype": "string",
+      "name": "dfimvig"
+    }
+  ],
+  "sha256": "67a71e9a4d2c808b957ee2894e2d027f2edd1304c6bda16e9369ecc82e696385",
+  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=8azpqvtmME8=",
+  "version_id": "2024-12-07-67a71e9a"
+}

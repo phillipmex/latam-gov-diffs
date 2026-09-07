@@ -1,0 +1,52 @@
+{
+  "feed": "cclasstrib",
+  "fetched_at": "2026-09-07T05:24:33+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "last_modified": "2025-05-19",
+  "listing_title": "Tabela de Código de Classificação Tributária do IBS e CBS - Publicada em 19/05/2025",
+  "published": "19/05/2025",
+  "row_count": 125,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "ec"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_redacao"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_214_25"
+    },
+    {
+      "dtype": "string",
+      "name": "dinivig"
+    },
+    {
+      "dtype": "string",
+      "name": "dfimvig"
+    }
+  ],
+  "sha256": "12c38b669d0d090b29f3a9c7dfc6b757db6e0b23b2f428ef108074a105dab8e7",
+  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=9M2jv4b8gKA=",
+  "version_id": "2025-05-19-12c38b66"
+}

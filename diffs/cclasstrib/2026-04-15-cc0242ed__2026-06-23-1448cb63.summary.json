@@ -1,0 +1,27 @@
+{
+  "added": 8,
+  "changed": 156,
+  "diff_file": "2026-04-15-cc0242ed__2026-06-23-1448cb63.jsonl",
+  "duplicate_keys_from": 0,
+  "duplicate_keys_to": 0,
+  "feed": "cclasstrib",
+  "fields_added": [
+    "regulamento_cbs",
+    "regulamento_ibs",
+    "ind_gpbiodiferenca",
+    "tprbsn",
+    "inddir",
+    "indduimp"
+  ],
+  "fields_removed": [],
+  "from_version": "2026-04-15-cc0242ed",
+  "generated_at": "2026-09-07T05:24:58+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "removed": 0,
+  "rows_from": 156,
+  "rows_to": 164,
+  "to_version": "2026-06-23-1448cb63",
+  "unchanged": 0
+}

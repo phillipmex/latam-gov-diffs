@@ -1,0 +1,56 @@
+name: nightly
+
+# Fetches every enabled feed, snapshots it if it changed, diffs it, and commits
+# the result. A challenged source fails the job on purpose: GitHub emails the
+# repository owner on a failed scheduled run, and that email is the alert.
+
+on:
+  schedule:
+    - cron: "15 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Harvest every enabled feed
+        run: govdiff run
+
+      - name: Show status
+        if: always()
+        run: govdiff status
+
+      - name: Commit the archive
+        run: |
+          git config user.name "govdiff-bot"
+          git config user.email "govdiff-bot@users.noreply.github.com"
+          git add -A data diffs .state raw
+          if git diff --cached --quiet; then
+            echo "nothing changed today"
+            exit 0
+          fi
+          git commit -m "chore(archive): nightly harvest $(date -u +%Y-%m-%d)"
+          git push

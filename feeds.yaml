@@ -1,0 +1,56 @@
+# Source registry. One entry per feed.
+#
+# document_url may be null when the document is discovered from listing_url.
+# listing_url may be null when the publisher offers no index page.
+# Only feeds with `enabled: true` are touched by `govdiff run` and the nightly job.
+
+feeds:
+  - id: cclasstrib
+    name: Tabela de Codigo de Classificacao Tributaria do IBS/CBS (cClassTrib)
+    country: BR
+    publisher: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT)
+    enabled: true
+    listing_url: "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D"
+    document_url: "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=LeNQXfyYngg="
+    format: xlsx
+    parser: govdiff.feeds.cclasstrib
+    key_fields: [cclasstrib]
+    notes: >-
+      The listing page keeps every dated release, so the back catalogue is
+      bootstrappable (see `govdiff bootstrap cclasstrib`). The server sends no
+      ETag and no Last-Modified for the document, so change detection is by
+      sha256 only. document_url is the release the portal linked as current on
+      2026-09-07; each release has its own permanent URL.
+
+  - id: catcfdi
+    name: Catalogos del CFDI version 4.0 (Anexo 20)
+    country: MX
+    publisher: Servicio de Administracion Tributaria (SAT)
+    enabled: false
+    listing_url: "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20.htm"
+    document_url: "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260903.xls"
+    format: xls
+    parser: null
+    key_fields: []
+    notes: >-
+      Stub - no parser yet (day 2). The workbook is ~46.5 MB of legacy .xls with
+      many sheets; it is parsed in memory and never committed raw. The landing
+      page is a SharePoint stub behind an F5 fingerprinting script: fetch the
+      document URL directly and never the HTML. "Versiones anteriores" on the
+      Anexo 20 page links dated back-versions.
+
+  - id: sat69b
+    name: Listado completo 69-B (contribuyentes con operaciones presuntamente inexistentes)
+    country: MX
+    publisher: Servicio de Administracion Tributaria (SAT)
+    enabled: false
+    listing_url: null
+    document_url: "http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv"
+    format: csv
+    parser: null
+    key_fields: []
+    notes: >-
+      Stub - no parser yet. ~4.4 MB CSV. This is the one feed with no public
+      back-series: the publisher keeps the current snapshot only and organises
+      by legal category, not by date, so Last-Modified is the sole version
+      signal and every day not archived is lost permanently.

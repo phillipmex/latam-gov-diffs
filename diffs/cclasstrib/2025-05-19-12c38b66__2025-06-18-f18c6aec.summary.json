@@ -1,0 +1,36 @@
+{
+  "added": 7,
+  "changed": 125,
+  "diff_file": "2025-05-19-12c38b66__2025-06-18-f18c6aec.jsonl",
+  "duplicate_keys_from": 0,
+  "duplicate_keys_to": 0,
+  "feed": "cclasstrib",
+  "fields_added": [
+    "nome_cclasstrib",
+    "tipo_de_aliquota",
+    "predibs",
+    "predcbs",
+    "ind_redutorbc",
+    "ind_gtribregular",
+    "ind_credpres",
+    "indmono",
+    "indmonoreten",
+    "indmonoret",
+    "indmonodif",
+    "credito_para",
+    "dataatualizacao"
+  ],
+  "fields_removed": [
+    "ec"
+  ],
+  "from_version": "2025-05-19-12c38b66",
+  "generated_at": "2026-09-07T05:24:58+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "removed": 0,
+  "rows_from": 125,
+  "rows_to": 132,
+  "to_version": "2025-06-18-f18c6aec",
+  "unchanged": 0
+}

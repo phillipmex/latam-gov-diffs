@@ -1,0 +1,120 @@
+{
+  "feed": "cclasstrib",
+  "fetched_at": "2026-09-07T05:24:29+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "last_modified": "2025-05-06",
+  "listing_title": "Tabela de Código de Classificação Tributária do IBS e CBS - Publicada em 06/05/2025",
+  "published": "06/05/2025",
+  "row_count": 125,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cst_ibs_cbs"
+    },
+    {
+      "dtype": "string",
+      "name": "cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "aliquota"
+    },
+    {
+      "dtype": "string",
+      "name": "descricao_cclasstrib"
+    },
+    {
+      "dtype": "string",
+      "name": "ec"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_214_25"
+    },
+    {
+      "dtype": "string",
+      "name": "lc_214_25_2"
+    },
+    {
+      "dtype": "string",
+      "name": "credito_anterior_apenas_ligados_ao_cclass"
+    },
+    {
+      "dtype": "string",
+      "name": "credito_para_frente_apenas_ligados_ao_cclass"
+    },
+    {
+      "dtype": "string",
+      "name": "tomador_especifico"
+    },
+    {
+      "dtype": "string",
+      "name": "dinivig"
+    },
+    {
+      "dtype": "string",
+      "name": "dfimvig"
+    },
+    {
+      "dtype": "string",
+      "name": "tributacao_nfs_e"
+    },
+    {
+      "dtype": "string",
+      "name": "outro_campo_nfs_e"
+    },
+    {
+      "dtype": "string",
+      "name": "obs"
+    },
+    {
+      "dtype": "string",
+      "name": "predaliq"
+    },
+    {
+      "dtype": "string",
+      "name": "dinivig_2"
+    },
+    {
+      "dtype": "string",
+      "name": "dfimvig_2"
+    },
+    {
+      "dtype": "string",
+      "name": "credito_anterior_apenas_ligados_ao_cclass_2"
+    },
+    {
+      "dtype": "string",
+      "name": "credito_para_frente_apenas_ligados_ao_cclass_2"
+    },
+    {
+      "dtype": "string",
+      "name": "exige_nbs_ou_ncm"
+    },
+    {
+      "dtype": "string",
+      "name": "sem_nbs_mas_com_codigos_de_servico_especificos"
+    },
+    {
+      "dtype": "string",
+      "name": "tomador_especifico_2"
+    },
+    {
+      "dtype": "string",
+      "name": "icms_cbs_ou_outro"
+    },
+    {
+      "dtype": "string",
+      "name": "titulo_capitulo_secao_subsecao"
+    }
+  ],
+  "sha256": "eb953b540e4e0706869358996355805dd2513c288c2fc37c5f09053ad4b87f1e",
+  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=snYp90ubSC8=",
+  "version_id": "2025-05-06-eb953b54"
+}

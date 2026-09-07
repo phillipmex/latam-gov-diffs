@@ -1,0 +1,22 @@
+{
+  "added": 7,
+  "changed": 25,
+  "diff_file": "2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl",
+  "duplicate_keys_from": 0,
+  "duplicate_keys_to": 0,
+  "feed": "cclasstrib",
+  "fields_added": [],
+  "fields_removed": [
+    "credito_para"
+  ],
+  "from_version": "2025-10-03-b5ed31f4",
+  "generated_at": "2026-09-07T05:24:58+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "removed": 4,
+  "rows_from": 142,
+  "rows_to": 145,
+  "to_version": "2025-11-24-431d4217",
+  "unchanged": 113
+}

@@ -1,0 +1,20 @@
+{
+  "added": 2,
+  "changed": 25,
+  "diff_file": "2026-01-28-0825eadf__2026-04-15-cc0242ed.jsonl",
+  "duplicate_keys_from": 0,
+  "duplicate_keys_to": 0,
+  "feed": "cclasstrib",
+  "fields_added": [],
+  "fields_removed": [],
+  "from_version": "2026-01-28-0825eadf",
+  "generated_at": "2026-09-07T05:24:58+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "removed": 0,
+  "rows_from": 154,
+  "rows_to": 156,
+  "to_version": "2026-04-15-cc0242ed",
+  "unchanged": 129
+}
