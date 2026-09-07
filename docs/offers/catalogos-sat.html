@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>catalogos-sat feed - latam-gov-diffs</title>
+    <meta
+      name="description"
+      content="A nightly diff of the 25 CFDI 4.0 catalogues of SAT's Anexo 20, normalised into one keyed table and delivered as a private GitHub repository twelve hours before the public archive. $39 a month."
+    />
+    <!--
+      Same rules as the viewer: no external scripts, no external stylesheets,
+      no fonts to fetch, no analytics, no trackers. The page is two files and
+      works offline, from a file:// copy, and under any Content-Security-Policy
+      a reader cares to apply.
+    -->
+    <link rel="stylesheet" href="../viewer.css" />
+    <link rel="stylesheet" href="./offer.css" />
+    <link rel="alternate" type="application/atom+xml" title="catcfdi: every change" href="../catcfdi/feed.xml" />
+    <!-- Inline, so the browser's automatic /favicon.ico request never 404s and
+         the page still makes no request off its own origin. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2314509a'/%3E%3Cpath d='M4 5h8M4 8h8M4 11h5' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="bar">
+        <h1><a href="../index.html">latam-gov-diffs</a></h1>
+        <nav aria-label="Sections">
+          <a href="../index.html">Viewer</a>
+          <a href="../feed.xml">Change feed</a>
+          <a href="./index.html">Paid feeds</a>
+          <a href="https://github.com/phillipmex/latam-gov-diffs">Repository</a>
+        </nav>
+      </div>
+      <p class="tagline">
+        Nightly archive and diff of Latin American government reference data. The archive is free;
+        this page describes the paid feed for one of the three outputs.
+      </p>
+    </header>
+
+    <main class="offer">
+      <h2>The <code>catalogos-sat</code> feed</h2>
+
+      <p class="promise">
+        Know which catalogue rows SAT moved before a catalogue change starts rejecting your
+        timbrado.
+      </p>
+
+      <aside class="translated" lang="es-MX">
+        <span class="lang">En espanol</span>
+        <p>
+          El SAT publica los catalogos del CFDI 4.0 en un solo archivo del Anexo 20 y lo reemplaza
+          en su lugar: la pagina enlaza unicamente el archivo vigente. Este servicio lo descarga
+          cada noche, separa las 25 tablas en una sola tabla con llave
+          (<code>catalogo</code> + clave, mas dos claves auxiliares), guarda cada version y la
+          compara con la anterior, renglon por renglon. Por 39 dolares al mes recibe una invitacion
+          a un repositorio privado de GitHub con ese mismo comparativo, doce horas antes de la copia
+          publica, y el aviso llega por el propio GitHub. Todo el archivo historico sigue siendo
+          publico y gratuito en <a href="../index.html">latam-gov-diffs</a>: lo que se paga es la
+          anticipacion, el aviso y alguien a quien preguntar.
+        </p>
+      </aside>
+
+      <!-- ==================================================== what you get -->
+      <section id="what-you-get">
+        <h2>What you get</h2>
+
+        <p>
+          An invite to a private GitHub repository that carries the same nightly diff stream for
+          the Anexo 20 catalogues. A repository, not an endpoint.
+        </p>
+
+        <ul class="gets">
+          <li>
+            <b>The diff twelve hours early.</b> The harvest runs at 06:15 UTC and commits to your
+            private repository in the same run; the public archive is pushed at 18:15 UTC. That is
+            a head start on <em>this repository's</em> publication, not on SAT's - SAT publishes to
+            everyone at once.
+          </li>
+          <li>
+            <b>All 25 catalogues in one keyed table.</b> SAT ships them as 28 sheets in a 46 MB
+            legacy <code>.xls</code>, splitting <code>c_CodigoPostal</code> across two sheets and
+            <code>c_Colonia</code> across three purely because of the old 65,536-row limit. They
+            are re-joined, normalised into one frame and keyed on
+            <code>catalogo</code> + <code>clave</code> + <code>clave_2</code> +
+            <code>clave_3</code>, so a row is comparable between releases instead of being a
+            spreadsheet cell you have to find again.
+          </li>
+          <li>
+            <b>Every stored version and every diff</b>, seeded into the repository on day one:
+            the parsed table for each archived workbook and the row-by-row comparison between
+            neighbours.
+          </li>
+          <li>
+            <b>An alert that comes to you.</b> Watch the repository and GitHub emails you, or
+            pushes to your phone, on any night that produced a change. A night with no change
+            produces no commit and no noise.
+          </li>
+          <li>
+            <b>A <code>changes.json</code> written for machines.</b> One file to poll: the latest
+            version pair, the added / changed / removed counts, which columns appeared and
+            disappeared, and the path to the full diff. Compare one field with the id you last
+            processed and stop if they match.
+          </li>
+          <li>
+            <b>Somebody to ask.</b> Open an issue in your own repository; first response within
+            two business days.
+          </li>
+        </ul>
+
+        <h3>What is not included</h3>
+        <ul class="gets nots">
+          <li><b>No hosted API.</b> No endpoint, no key, no query language. You clone a git repository.</li>
+          <li><b>No webhooks.</b> Nothing calls your server; GitHub notifications and <code>changes.json</code> are the two ways you find out.</li>
+          <li><b>No SLA.</b> Best effort, nightly, on free hosted runners. If SAT is down that night produces nothing.</li>
+          <li><b>No exclusivity.</b> The free archive keeps everything, twelve hours behind.</li>
+          <li><b>No custom columns and no per-customer parsing</b> at this price, and no CFDI 3.3 - its catalogue was last republished in March 2023 and is out of scope.</li>
+        </ul>
+      </section>
+
+      <!-- =================================================== what it costs -->
+      <section id="what-it-costs">
+        <h2>What it costs</h2>
+
+        <div class="price-box">
+          <p class="price">
+            <span class="amount">$39</span> <span class="per">per month, USD</span>
+          </p>
+          <p>
+            One workbook, 25 catalogues, one private repository, cancel any time. On cancellation
+            the invite is revoked at the end of the period you have paid for; anything you have
+            already cloned stays yours.
+          </p>
+
+          <!-- LAUNCH: paste the Stripe payment link for catalogos-sat-monthly
+               into the href="" attribute immediately below, and replace the
+               visible text of this link with the price. Nothing else on this
+               page changes. Until then the href stays a fragment on this page,
+               so it can never be a dead link. -->
+          <a class="buy" href="#stripe-pending" data-product="catalogos-sat-monthly">
+            Checkout opens on launch (2026-09-22)
+          </a>
+
+          <p class="buy-note">
+            Full refund on request within 14 days of a first payment. The delivery mechanics,
+            in full, are in <a href="../paid.md">paid.md</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- ======================================================== proof -->
+      <section id="proof">
+        <h2>Proof from the archive</h2>
+
+        <p>
+          These are counted from this repository's own index, not claimed. The viewer shows every
+          one of them, free, with no account:
+          <a href="../index.html#feed=catcfdi">browse the catcfdi history</a>.
+        </p>
+
+        <div class="proof">
+          <div class="stat">
+            <span class="n" id="stat-rows">362,345</span>
+            <span class="l">rows in the current workbook</span>
+          </div>
+          <div class="stat">
+            <span class="n" id="stat-added">7,917</span>
+            <span class="l">rows added in the recorded revision</span>
+          </div>
+          <div class="stat">
+            <span class="n" id="stat-changed">108</span>
+            <span class="l">rows whose values moved</span>
+          </div>
+          <div class="stat">
+            <span class="n" id="stat-versions">2</span>
+            <span class="l">dated workbooks archived</span>
+          </div>
+        </div>
+
+        <p class="proof-source" id="proof-source">
+          Counted from the archive index. 25 catalogues in one keyed table, 86 columns wide. The
+          table went from 354,429 rows on 2024-12-04 to 362,345 on 2026-09-03, and no catalogue
+          gained or lost a column in those 21 months.
+        </p>
+
+        <p>
+          <b>One recorded revision, and this page will not dress it up.</b> Two dated workbooks are
+          archived and one comparison exists between them. What is already built is the shape - 25
+          catalogues normalised into one comparable table with a four-part key, which SAT does not
+          publish and which is most of the work - and the change history starts here and grows every
+          night the file moves.
+        </p>
+
+        <h3>What that one comparison actually caught</h3>
+
+        <p>
+          Twenty-one months, 46 MB of spreadsheet, 8,026 lines of diff. Read in a few minutes, and
+          every line of it checkable against the stored workbooks:
+        </p>
+
+        <ul class="changes">
+          <li>
+            <span class="when">c_Municipio and c_CodigoPostal</span>
+            Baja California created two municipalities - <code>006</code> San Quintin and
+            <code>007</code> San Felipe, both with
+            <code>fecha_de_inicio_de_vigencia</code> 2026-01-23 - and 15 new municipality rows
+            appeared in total. Underneath them, 93 postal codes were re-pointed at a different
+            <code>c_municipio</code> value. That is 93 rows a validator keyed on the old
+            state-plus-municipality pair would now put in the wrong place, with nothing in the row
+            count to announce it.
+          </li>
+          <li>
+            <span class="when">c_ObjetoImp</span>
+            Three new codes - <code>06</code> "S&iacute; objeto del IVA, No traslado IVA.",
+            <code>07</code> "No traslado del IVA, S&iacute; desglose IEPS." and <code>08</code>
+            "No traslado del IVA, No desglose IEPS." - with
+            <code>fecha_inicio_de_vigencia</code> 2024-12-13. A five-value enumeration became an
+            eight-value one. Anything validating <code>ObjetoImp</code> against a hard-coded list
+            rejects a valid invoice until the list is updated.
+          </li>
+          <li>
+            <span class="when">c_ClaveProdServ</span>
+            Fifteen product-code descriptions were rewritten with no code change at all - the
+            accent restored on "Combustible di&eacute;sel", "Biodi&eacute;sel", "Locomotoras
+            di&eacute;sel de carga" and twelve more. Nothing in the row count says so, and anything
+            that matches a product description by text stops matching.
+          </li>
+          <li>
+            <span class="when">c_NumPedimentoAduana and c_PatenteAduanal</span>
+            7,819 new pedimento numbers and 79 new customs-broker patents - 7,898 of the 7,917
+            additions. Customs is where the volume is, and a rejected pedimento number is a rejected
+            import invoice.
+          </li>
+          <li>
+            <span class="when">c_TasaOCuota</span>
+            The IEPS quota moved from <code>66.5062</code> to <code>72.1605</code>, effective
+            2026-01-01. It is the one removal and one of the additions - see the FAQ below, where
+            that is explained rather than hidden.
+          </li>
+        </ul>
+      </section>
+
+      <!-- ===================================================== delivery -->
+      <section id="delivery">
+        <h2>How delivery works</h2>
+
+        <ol class="steps">
+          <li>
+            You pay, and give a GitHub username. A private repository is created for you and
+            seeded with the whole catcfdi history: every stored workbook, every diff, and
+            <code>changes.json</code>.
+          </li>
+          <li>
+            GitHub sends you the collaborator invite. There is no message from us, no onboarding
+            call, and no address to hand over.
+          </li>
+          <li>
+            Each night at 06:15 UTC the harvest runs. SAT sends an
+            <code>ETag</code> and a <code>Last-Modified</code> for this document, so an unchanged
+            night is a conditional request and a 304 rather than a 46 MB download. If the workbook
+            moved, it is parsed and the diff is committed to your repository there and then.
+          </li>
+          <li>
+            You are notified by GitHub, or your code polls <code>changes.json</code> and sees a new
+            version id.
+          </li>
+          <li>
+            If you cancel, the invite is revoked at the end of the period already paid for. The
+            free archive is still there, twelve hours behind, with everything in it.
+          </li>
+        </ol>
+
+        <p>
+          The full version - the schedule, the <code>changes.json</code> shape, the support window,
+          the refund policy and what is explicitly not included - is in
+          <a href="../paid.md">paid.md</a>.
+        </p>
+      </section>
+
+      <!-- ========================================================== FAQ -->
+      <section id="faq">
+        <h2>Questions</h2>
+
+        <div class="faq">
+          <details open>
+            <summary>Can I get this history somewhere else?</summary>
+            <p>
+              Partly, and it would be dishonest not to say so. SAT's Anexo 20 page links exactly one
+              CFDI 4.0 workbook: the current one. Older dated files such as
+              <code>catCFDI_V_4_20241204.xls</code> are still live at their own URLs and still
+              return the bytes SAT served then - they are simply linked from nowhere, so a URL
+              nobody wrote down is effectively gone. Nothing here is hidden from you and nothing is
+              exclusive. What is not published anywhere, by SAT or by anyone else, is the
+              comparison: which rows moved, in which catalogue, and when. That is what you are
+              paying for.
+            </p>
+          </details>
+
+          <details>
+            <summary>Who is this for?</summary>
+            <p>
+              Developers who maintain CFDI 4.0 validation or catalogue tables - a PAC integration, an
+              ERP's fiscal module, an invoicing SaaS, or the lookup tables behind any of them. If a
+              copy of <code>c_ClaveProdServ</code>, <code>c_CodigoPostal</code>,
+              <code>c_ObjetoImp</code> or <code>c_RegimenFiscal</code> lives in your database or in
+              your test fixtures, this feed tells you what to reconcile before a timbrado starts
+              coming back rejected rather than after.
+            </p>
+          </details>
+
+          <details>
+            <summary>What actually breaks when a catalogue moves?</summary>
+            <p>
+              Four things, in rising order of how long they take to find. A new code appears and your
+              validator rejects an invoice that SAT would have accepted - the
+              <code>c_ObjetoImp</code> case above. A code is removed or a rate is superseded and you
+              keep stamping the old one. A row's non-key values are rewritten, like the 93 postal
+              codes that changed municipality, so your data is still shaped correctly and is now
+              wrong. And the quietest one: a description is rewritten with no code change, so
+              anything matching on text rather than on the key stops matching, with nothing in the
+              row count to tell you.
+            </p>
+          </details>
+
+          <details>
+            <summary>Is the diff perfect? What are its known limits?</summary>
+            <p>
+              One catalogue is keyed imperfectly and it is written down rather than papered over.
+              <code>c_TasaOCuota</code> is not a code table - its rows are tax rates, and the
+              <code>c_TasaOCuota</code> column holds only the lower bound of a range and is empty on
+              the 16 fixed-rate rows. There is no stable identifier in the sheet, so it is keyed on
+              <code>(rango_o_fijo, impuesto, valor_maximo)</code>, and the honest cost is that a rate
+              change reads as one removal plus one addition instead of one change: the IEPS quota
+              going from 66.5062 to 72.1605 is the single <code>-1</code> and one of the
+              <code>+1</code>s in the recorded revision. Both records carry the full row, so nothing
+              is lost - it just needs reading as a pair. Separately, one row of
+              <code>c_TipoDeComprobante</code> carries no code at all (it holds only the
+              <code>Valor maximo</code> limits) and is dropped; it is the only such row in the
+              workbook.
+            </p>
+          </details>
+
+          <details>
+            <summary>What happens if SAT changes the file format?</summary>
+            <p>
+              That night's harvest produces nothing rather than producing something wrong, and the
+              issue tracker says so. The parser already survives a fair amount - it finds each
+              sheet's header by content rather than by row number, because SAT puts it on row 4 or
+              row 5 depending on how many blank spacers sit under the title, and four sheets write a
+              second header line under the first. If a change goes past that, the parser is fixed as
+              fast as it can be fixed and the workbook is re-parsed from the stored copy, so no
+              revision is lost. There is no SLA and no credit: the honest description is best
+              effort, nightly.
+            </p>
+          </details>
+
+          <details>
+            <summary>What happens when I cancel?</summary>
+            <p>
+              Access runs to the end of the period you have paid for, then the collaborator invite is
+              revoked and the private repository is archived. Nothing is clawed back: anything you
+              cloned stays cloned, and every diff you were sent is still yours. The public archive
+              keeps publishing, free, twelve hours behind.
+            </p>
+          </details>
+
+          <details>
+            <summary>Why should I pay when the archive is free?</summary>
+            <p>
+              Often you should not, and the free tier is genuinely the right answer for most readers.
+              Three things are behind the price and nothing else: the diff twelve hours earlier, an
+              alert that reaches you instead of you remembering to check a page that shows only the
+              current file, and somebody to ask when a row makes no sense. If none of those three is
+              worth $39 a month, use the <a href="../index.html">free viewer</a> - it is not a trial
+              and it is not reduced.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="offer-footer">
+      <p class="links">
+        <a href="../index.html">Viewer</a>
+        <a href="../feed.xml">Change feed (Atom)</a>
+        <a href="../catcfdi/feed.xml">catcfdi feed (Atom)</a>
+        <a href="https://github.com/phillipmex/latam-gov-diffs">GitHub</a>
+        <a href="../index.html#feed=catcfdi">The free tier for this feed</a>
+        <button class="copy" type="button" hidden>Copy link</button>
+      </p>
+      <p>
+        Published by the latam-gov-diffs maintainers. Source data belongs to the Servicio de
+        Administracion Tributaria (SAT); this site archives and compares it and claims nothing else.
+        Support is by GitHub issue.
+      </p>
+    </footer>
+
+    <!--
+      The only script on the page, and the page is complete without it. It does
+      two things and neither adds content:
+
+        1. reads ../index.json and replaces the four proof numbers with the
+           live ones. The numbers already in the HTML are correct as committed,
+           so a blocked fetch, a file:// open or JavaScript switched off leaves
+           a page that still reads truthfully.
+        2. reveals the copy-link button, which ships hidden because a control
+           that cannot work should not be offered.
+    -->
+    <script>
+      (function () {
+        "use strict";
+
+        var FEED = "catcfdi";
+
+        function set(id, value) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = value;
+        }
+
+        fetch("../index.json", { cache: "no-cache" })
+          .then(function (r) {
+            if (!r.ok) throw new Error("index.json: HTTP " + r.status);
+            return r.json();
+          })
+          .then(function (index) {
+            var feed = (index.feeds || []).filter(function (f) {
+              return f.id === FEED;
+            })[0];
+            if (!feed) return;
+
+            var versions = feed.versions || [];
+            var diffs = feed.diffs || [];
+            var added = diffs.reduce(function (n, d) {
+              return n + (d.added || 0);
+            }, 0);
+            var changed = diffs.reduce(function (n, d) {
+              return n + (d.changed || 0);
+            }, 0);
+            var first = versions[0];
+            var last = versions[versions.length - 1];
+
+            set("stat-rows", last ? last.row_count.toLocaleString("en-US") : "");
+            set("stat-added", added.toLocaleString("en-US"));
+            set("stat-changed", changed.toLocaleString("en-US"));
+            set("stat-versions", versions.length);
+
+            if (first && last) {
+              set(
+                "proof-source",
+                "Counted from the archive index, generated " +
+                  String(index.generated_at || "").slice(0, 10) +
+                  ". 25 catalogues in one keyed table, " +
+                  last.column_count +
+                  " columns wide. The table went from " +
+                  first.row_count.toLocaleString("en-US") +
+                  " rows on " +
+                  first.date +
+                  " to " +
+                  last.row_count.toLocaleString("en-US") +
+                  " on " +
+                  last.date +
+                  "."
+              );
+            }
+          })
+          .catch(function () {
+            /* Baked-in numbers stand. Nothing to report to the reader. */
+          });
+
+        var copy = document.querySelector(".copy");
+        if (copy && navigator.clipboard) {
+          copy.hidden = false;
+          copy.addEventListener("click", function () {
+            navigator.clipboard.writeText(location.href).then(
+              function () {
+                copy.textContent = "Copied";
+                setTimeout(function () {
+                  copy.textContent = "Copy link";
+                }, 1500);
+              },
+              function () {
+                copy.textContent = "Press Ctrl+C";
+              }
+            );
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

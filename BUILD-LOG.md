@@ -1397,3 +1397,255 @@ pages only restate it.
 6. **Do not touch** the head-start schedule or `changes.json` (caveats 1 and 2) unless day 7 finishes
    early - they are a workflow job, not a page job, and doing them badly in a hurry is worse than
    doing them on day 8.
+
+## 2026-09-07 - day 7 - the last two offer pages, and what the $250 actually looks like
+
+Day 6 built one offer page and a template. Today the other two products get theirs, the offers index
+stops saying "coming day 7", and the README carries the counts it has been missing since day 5.
+Nothing new was invented: `docs/paid.md` is still normative, and every number on both new pages was
+checked against `docs/index.json`, the `.summary.json` files and the stored Parquet *before* the copy
+was written, not after.
+
+No publisher was contacted today. Every byte was already on disk. The only HTTP traffic was to
+127.0.0.1:8765 (a local static server) and 127.0.0.1:9223 (a throwaway headless Chrome). External
+requests: zero.
+
+### Part A: docs/offers/catalogos-sat.html, $39/mo
+
+The `catcfdi` feed, for developers maintaining CFDI 4.0 validation or catalogue tables - a PAC
+integration, an ERP fiscal module, an invoicing SaaS. The claim is 25 catalogues in one keyed table:
+362,345 rows, 86 columns, keyed on `catalogo` + `clave` + `clave_2` + `clave_3`, with the 28 sheets
+SAT ships re-joined into 25 catalogues first. That normalisation is most of the work, SAT does not
+publish it, and it is what the page leads with - because the change history is one comparison deep
+and dressing that up would have been the easy lie.
+
+The four `.stat` boxes are all index-derived, so the script and the baked-in fallback cannot
+disagree: 362,345 rows / 7,917 added / 108 changed / 2 versions. The day-6 hand-off suggested "25
+catalogues" as a headline number; it is not in `index.json`, so it lives in the promise, the prose
+and the `proof-source` sentence instead of in a box the script would silently leave alone. A stat
+the refresh cannot touch would break the template's one real contract.
+
+The five changes quoted are the point of the page, and they came out of the 8,026-record JSONL
+rather than out of a summary table:
+
+- Baja California created two municipalities. `c_Municipio` `006` San Quintin and `007` San Felipe,
+  both with `fecha_de_inicio_de_vigencia` 2026-01-23, among 15 new municipality rows - and
+  underneath them 93 postal codes were re-pointed at a different `c_municipio`. Those 93 rows are
+  the entire `changed` count on the `c_CodigoPostal` side, and nothing in the row totals announces
+  them: 95,749 postal codes before, 95,749 after.
+- `c_ObjetoImp` went from five values to eight - `06`, `07` and `08`, effective 2024-12-13. A
+  validator holding a hard-coded enumeration rejects a valid invoice until it is updated. That is
+  the most concrete "your code breaks" example in the archive, so it leads the list.
+- 15 `c_ClaveProdServ` descriptions were rewritten with no code change, all the same edit: the accent
+  restored on "Combustible diesel", "Biodiesel", "Locomotoras diesel de carga" and twelve more.
+  Quoted with the accents as HTML entities so the file itself stays ASCII, like every other file
+  here.
+- 7,819 pedimento numbers and 79 broker patents - 7,898 of the 7,917 additions. Customs is where the
+  volume is.
+- The `c_TasaOCuota` IEPS quota moved 66.5062 to 72.1605 and reads as one removal plus one addition.
+  That defect is not buried: it is its own FAQ entry, "Is the diff perfect? What are its known
+  limits?", which states the key, why there is no stable identifier to key on instead, and that both
+  records carry the full row so nothing is lost.
+
+The honest hook is stated the way day 6 asked for it and no stronger: SAT's Anexo 20 page links
+exactly one CFDI 4.0 workbook, the current one; older dated files such as
+`catCFDI_V_4_20241204.xls` are still live at their own URLs and still return the original bytes -
+they are simply linked from nowhere. The page says the files are obtainable and the comparison is
+not. Claiming exclusivity over the files would have been disproved by one curl.
+
+A one-paragraph es-MX summary sits under the promise, `lang="es-MX"`, written without accents to
+match the pt-BR block on the cclasstrib page.
+
+### Part B: docs/offers/listas-mx.html, $99/mo, with the $250 attestation on the same page
+
+Day 6's hand-off planned a separate `attestation.html`. It is one page instead, with the attestation
+as a second product block at `#attestation` carrying its own price box and its own placeholder button
+(`data-product="listas-mx-attestation"`). The two products are the same file, the same coverage floor
+and the same honest limit; splitting them would have meant writing the "coverage begins 2026-09-07
+and cannot reach earlier" paragraph twice and maintaining two copies of it. The offers index links
+the attestation at `./listas-mx.html#attestation`, so all four products still have their own link.
+
+Zero diffs is the lead, not the small print. The fourth `.stat` box reads 0 changes recorded so far,
+and the paragraph under the grid says why: `Last-Modified` has read `Thu, 22 Jan 2026 22:59:33 GMT`
+since the first probe, so no comparison exists, the archive starts 2026-09-07, and every change from
+that day forward is captured. What is sold is the alert on the next change and the dated record of
+every day between - not a history nobody has. The FAQ answers "There are no diffs yet. What am I
+actually paying for on day one?" directly, and ends by pointing at the free viewer.
+
+The situacion breakdown is a table rather than four more stat boxes, reusing the viewer's existing
+`.table-wrap` (which already scrolls on a phone) so no new CSS was needed: Definitivo 11,270,
+Sentencia Favorable 1,638, Presunto 986, Desvirtuado 340, total 14,234 - re-counted from the stored
+Parquet today, not copied from day 3. The 986 `Presunto` rows are called out as the ones to watch,
+because that is the transition the key exists to surface. The 91 court-suppressed `XXXXXXXXXXXX`
+rows get their own `.changes` block: positional occurrence numbers are not stable between versions,
+a change among those rows may read as more movement than occurred, and it affects those 91 rows and
+nothing else.
+
+The sample attestation. The brief's own question - use a real RFC from the snapshot? - is answered
+no. 69-B RFCs are public, but a sales page is not the place to single out a named taxpayer, so
+`govdiff attest sat69b --rfc AAA010101AAA --on 2026-09-07` was run against the committed archive with
+a synthetic RFC that is not on the list, and the output is on the page verbatim inside
+`<pre class="sample">`. What it shows is a clean "No" document: the coverage window, the snapshot id,
+the sha256 of the bytes SAT served, the SAT document URL, the `Last-Modified`, the observation
+timestamp, the 762,583-byte stored Parquet, the next-observation edge, the 91-suppressed-rows note,
+the reproduction command and the disclaimer. `AAA010101AAA` is the same placeholder `paid.md`
+already uses, and it was confirmed absent from all 14,234 rows before it was used. The caption says
+it is a sample, that no real taxpayer is named, and that line breaks were added so it fits a phone -
+the only alteration made to the tool's output.
+
+`offer.css` gained exactly two rules for this: `.sample` (a `white-space: pre` block that scrolls
+inside its own box, so a 64-character sha256 cannot widen the page) and `.sample-note`. The
+`.offer-list .pending` rule was removed in the same pass, because the placeholders it styled are gone
+and a dead rule whose comment says "coming day 7" is worse than no rule.
+
+The "not legal advice / not a substitute for SAT's own constancia" wording is carried verbatim from
+`attest.py` in three places: inside the rendered sample, as its own paragraph above the price box,
+and in the `buy-note` under the button. The three-business-day turnaround, the delivery route
+(private repository, or a gist if there is no subscription) and the 14-day refund are stated exactly
+as `paid.md` has them, and the "you can produce this yourself, free" paragraph is there because it is
+true and would be caught in a minute if it were not.
+
+### Part C: the index, and the README
+
+The three `.pending` paragraphs on `docs/offers/index.html` are now "Read the offer" links, each
+`.what` line rewritten to carry a real number: 8,026 rows moved for `catalogos-sat`, 11,270
+Definitivo and the 2026-09-07 coverage start for `listas-mx`. Four products, four prices, one link
+each. The viewer's nav is untouched.
+
+README: the Feeds table gained `versions` and `diffs` columns (10/9, 2/1, 1/0) with a line under it
+saying the counts are the ones in `docs/index.json` as committed, that they grow on any night a
+publisher moves, and that `sat69b` reads 1/0 because SAT has not republished since the first fetch.
+That closes day 5's hand-off item 6 and day 6's caveat 5. In "Paid feeds", each price is now a link
+to that product's page.
+
+### Verification in the browser
+
+Same method as days 5 and 6, same reason: a second Chrome with a throwaway profile,
+`--headless=new --disable-extensions`, on port 9223, against `python -m http.server 8765` at the
+repository root. The daily CDP browser on 9222 has extensions that inject console errors and a Dark
+Reader that repaints the page, so theme cannot be verified there at all. Every page was driven over
+the DevTools protocol from a Node 24 script using the built-in WebSocket client; tabs and the
+throwaway browser were closed afterwards and the static server stopped. 9222 was left running and
+untouched.
+
+| check | offers index | cclasstrib | catalogos-sat | listas-mx |
+|---|---|---|---|---|
+| console + browser log entries | 0 | 0 | 0 | 0 |
+| requests off 127.0.0.1:8765 | 0 | 0 | 0 | 0 |
+| light: body / ink | 255,255,255 / 22,25,29 | same | same | same |
+| dark: body / ink | 20,23,26 / 230,233,236 | same | same | same |
+| dark: panel | 28,33,38 | same | same | same |
+| scrollWidth at 390 px | 390 | 390 | 390 | 390 |
+| copy-link button | revealed | revealed | revealed | revealed |
+| buy buttons | n/a | 1, placeholder | 1, placeholder | 2, both placeholder |
+| proof numbers after the fetch | n/a | 10 / 9 / 164 / 837 | 362,345 / 7,917 / 108 / 2 | 14,234 / 27 / 1 / 0 |
+
+`scrollWidth` equal to `clientWidth` on all four is the horizontal-overflow check: the rendered
+sample document scrolls inside its own box and does not widen the page. Every proof number came back
+identical to the baked-in fallback, which is the point rather than a coincidence - the pages are
+committed with the values the index currently holds, so the JS and the no-JS readings are both
+correct.
+
+### Tests
+
+`python -m pytest -q`: 185 passed, up from 168. Seventeen new - six because the three parametrised
+link tests now run over two more pages, and eleven written today in `tests/test_docs_links.py`:
+
+- every product advertised on the offers index has a page that exists on disk;
+- the index links all four (`cclasstrib.html`, `catalogos-sat.html`, `listas-mx.html` and
+  `listas-mx.html#attestation`) and no longer contains the string "coming day 7" or a
+  `class="pending"`;
+- every `a.buy` on every offer page still has `href="#stripe-pending"`, the exact text "Checkout
+  opens on launch (2026-09-22)", and a `data-product` from the known four - parsed with a small
+  `HTMLParser` subclass rather than a regex, so the visible text is really the element's text;
+- each of the four products has exactly one buy button across the whole directory, so a product
+  cannot be silently offered twice or dropped;
+- no offer page contains an `@`, and every one names "the latam-gov-diffs maintainers" - the faceless
+  rule, asserted rather than remembered.
+
+The buy-button test is the one that earns its keep: it is what fails on launch day if somebody pastes
+a Stripe link into three buttons and forgets the fourth, and it is what fails now if a page ships a
+live checkout before 09-22.
+
+`npm test` in `js/`: 20 passed, unchanged. Nothing today touched the Node client.
+
+### Defects and caveats
+
+1. `catcfdi` still has one recorded revision and `sat69b` still has none. Both pages say so in their
+   own words, and both are thin until the nightly job has run for a while. Day 6's caveat 3
+   generalised: the product improves every night and is honest about being early.
+2. Day 6's caveats 1 and 2 stand, untouched by design - the 12-hour head start and `changes.json` are
+   commitments in `paid.md` with no implementation. They are now stated on three offer pages rather
+   than one, which raises the cost of not shipping them. See the hand-off.
+3. The `@` assertion in the faceless test is a blunt instrument. It will fire on a future page that
+   legitimately contains an at-sign (an `@media` in an inline `<style>`, an npm scope). That is the
+   right default for a repository whose hard rule is no contact surface; the fix when it fires is to
+   narrow the assertion deliberately, not to delete it.
+4. The rendered sample will age. It carries a fixed issue timestamp and a coverage window that both
+   end at 2026-09-07. Once the nightly job has run for a week the sample states something narrower
+   than the truth, and it should be re-rendered whenever the coverage line would embarrass it. The
+   caption's "sample" framing keeps it honest in the meantime, but it is a manual step.
+5. Day 5's caveats 1-7 and day 6's caveats 3-4 stand unchanged: Atom entry ordering, `CHANGES.md`
+   growing without bound, the 25-bar histogram cap, both packages installing a `govdiff` binary,
+   `0.0.0+source` from a clone, the untested raw.githubusercontent.com base URL, the attestation's
+   one-snapshot-deep evidence, and the 69-B `Last-Modified` still reading 22 January 2026.
+
+### Day 8
+
+The sales side is finished. What is left before launch is the machinery the pages now promise, and
+one write-up.
+
+1. README polish to launch quality. It is accurate but it reads like a build record. The first screen
+   should say what this is, show one real diff, and link the viewer, `paid.md` and the offer pages;
+   everything else moves below the fold. Check that the two-`govdiff`-binaries note and the
+   `0.0.0+source` line survive the edit - they are the honest bits people delete when tidying.
+
+2. The two-window nightly, and it is the largest piece of unbuilt work behind every price on the
+   site. Cron at 06:15 UTC harvests and pushes to the private paid repo(s) over a deploy-key secret;
+   cron at 18:15 UTC re-fetches with conditional GETs and pushes to public `main`; the paid push is
+   skipped with a clear notice when the secret is absent; both branch on `github.event.schedule`.
+   Today `nightly.yml` has one window and no private targets, the private repositories do not exist,
+   and the deploy key is owner-hand. Five things in `paid.md` will make this harder than it sounds,
+   and they should be settled before any YAML is written:
+
+   - The 18:15 run must publish what the 06:15 run produced, not what it finds. `paid.md` promises a
+     12-hour head start on the diff. If the 18:15 re-fetch discovers a change the 06:15 run did not
+     see, the public archive gets a diff the paid repository has never had - the head start inverts.
+     Decide the rule now: either the evening run pushes the paid targets first and the public second
+     in that case, or it holds the new change to the next 06:15. Then say which in `paid.md`.
+   - `.state/<feed>.json` is committed to the public repository, and it is the conditional request's
+     memory. If 06:15 pushes state to public `main`, there is a public commit at 06:15 and the head
+     start is over before it starts. If it does not, the 18:15 run sends a stale `If-Modified-Since`
+     and re-downloads 46 MB every evening. The state has to survive twelve hours somewhere that is
+     neither public nor lost - an Actions cache or artifact keyed on the run date is the cheap
+     answer, and it needs a fallback for the run where the cache misses.
+   - A 06:15 failure breaks the promise silently. If the paid push fails and the evening public push
+     succeeds, the free tier got it first and nobody is told. The evening job should refuse to push
+     public for a feed whose paid push failed that morning, and say so in the run log.
+   - Fulfilment step 2 does not scale as written. `paid.md` says "add the feed to the nightly job's
+     private targets", which is one manual secret edit per sale per feed. Build it as one secret
+     holding a JSON list of {feed, repo, deploy key} so an order is one edit to one secret and no
+     workflow change - and cost it honestly for the owner: a few minutes per order, by hand, forever.
+   - `head_start_hours: 12` is asserted in `changes.json`. It should be read from the same constant
+     the schedule is built from, not typed twice.
+
+3. Per-feed `changes.json`, exactly as `paid.md` specifies it - `format`, `feed`, `generated_at`,
+   `head_start_hours`, a `latest` block and a `changes` array of the same shape, newest first, with
+   repo-root-relative paths so one reader works against it and `docs/index.json` alike. It belongs in
+   `govdiff index`, beside the Atom writer, under the same deterministic-output discipline: `paid.md`
+   promises that a byte-identical file means there is nothing to do, so `generated_at` must not move
+   on a quiet night. Write one for the public archive too - the shape is worth exercising where it
+   can be seen.
+
+4. A faceless Show HN write-up and a launch-day checklist. One flag before starting: `docs/` is the
+   published site, `.nojekyll` is set, and there is no exclusion mechanism - anything placed under
+   `docs/launch/` is served at `phillipmex.github.io/latam-gov-diffs/launch/`. "Excluded from the
+   site" and "under `docs/`" are not both achievable. Either put the draft at `launch/` in the
+   repository root (recommended - it is not site content), or accept that it is reachable-but-unlinked
+   and say so. If any of it is written as `.html` under `docs/`, `tests/test_docs_links.py` will
+   link-check it, which is correct but is a constraint on a draft. The checklist should absorb day 4's
+   owner table (the two trusted publishers, the environments, the tag) and day 6's Stripe `href`
+   values, which are now five buttons across three pages - `cclasstrib-monthly`,
+   `catalogos-sat-monthly`, `listas-mx-monthly` and `listas-mx-attestation`, the last two on one
+   page. The test added today enumerates them, so the checklist can be generated from it rather than
+   kept in sync by hand.

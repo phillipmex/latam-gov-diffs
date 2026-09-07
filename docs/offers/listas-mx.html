@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>listas-mx feed - latam-gov-diffs</title>
+    <meta
+      name="description"
+      content="A nightly archive and diff of SAT's Article 69-B list, the one Mexican list nobody keeps a history of, delivered as a private GitHub repository. $99 a month, plus a $250 point-in-time attestation for one RFC on one date."
+    />
+    <!--
+      Same rules as the viewer: no external scripts, no external stylesheets,
+      no fonts to fetch, no analytics, no trackers. The page is two files and
+      works offline, from a file:// copy, and under any Content-Security-Policy
+      a reader cares to apply.
+    -->
+    <link rel="stylesheet" href="../viewer.css" />
+    <link rel="stylesheet" href="./offer.css" />
+    <link rel="alternate" type="application/atom+xml" title="sat69b: every change" href="../sat69b/feed.xml" />
+    <!-- Inline, so the browser's automatic /favicon.ico request never 404s and
+         the page still makes no request off its own origin. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2314509a'/%3E%3Cpath d='M4 5h8M4 8h8M4 11h5' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="bar">
+        <h1><a href="../index.html">latam-gov-diffs</a></h1>
+        <nav aria-label="Sections">
+          <a href="../index.html">Viewer</a>
+          <a href="../feed.xml">Change feed</a>
+          <a href="./index.html">Paid feeds</a>
+          <a href="https://github.com/phillipmex/latam-gov-diffs">Repository</a>
+        </nav>
+      </div>
+      <p class="tagline">
+        Nightly archive and diff of Latin American government reference data. The archive is free;
+        this page describes the paid feed for one of the three outputs, and the attestation built on
+        it.
+      </p>
+    </header>
+
+    <main class="offer">
+      <h2>The <code>listas-mx</code> feed</h2>
+
+      <p class="promise">
+        Know the night an RFC lands on SAT's 69-B list - and be able to prove, later, what the list
+        said on the day you checked it.
+      </p>
+
+      <aside class="translated" lang="es-MX">
+        <span class="lang">En espanol</span>
+        <p>
+          El SAT publica el listado completo del articulo 69-B del CFF en un solo archivo que
+          reemplaza en su lugar: no hay nombres con fecha, no hay URL versionada y no hay historial
+          publico. Este servicio lo descarga cada noche, guarda una copia fechada y compara con la
+          anterior renglon por renglon, con llave en el RFC mas el oficio global de presuncion, de
+          modo que un contribuyente que pasa de Presunto a Definitivo se lee como un cambio y no
+          como una baja mas un alta. Por 99 dolares al mes recibe una invitacion a un repositorio
+          privado de GitHub con ese comparativo, doce horas antes de la copia publica, y el aviso
+          llega por el propio GitHub. Por 250 dolares se emite ademas una constancia propia -
+          <b>que no es la constancia del SAT ni es asesoria legal</b> - sobre un RFC en una fecha.
+          El archivo completo sigue siendo publico y gratuito en
+          <a href="../index.html">latam-gov-diffs</a>: la cobertura empieza el 7 de septiembre de
+          2026 y no puede alcanzar ninguna fecha anterior.
+        </p>
+      </aside>
+
+      <!-- ==================================================== what you get -->
+      <section id="what-you-get">
+        <h2>What you get</h2>
+
+        <p>
+          An invite to a private GitHub repository that carries the same nightly snapshot and diff
+          stream for the 69-B list. A repository, not an endpoint.
+        </p>
+
+        <ul class="gets">
+          <li>
+            <b>The diff twelve hours early.</b> The harvest runs at 06:15 UTC and commits to your
+            private repository in the same run; the public archive is pushed at 18:15 UTC. That is
+            a head start on <em>this repository's</em> publication, not on SAT's - SAT publishes to
+            everyone at once.
+          </li>
+          <li>
+            <b>A dated copy of the list, every night, kept for good.</b> SAT overwrites this file in
+            place. Every night that is not archived is gone, from SAT's site and from everywhere
+            else, and no amount of money spent later brings it back.
+          </li>
+          <li>
+            <b>Movement between stages read as a change, not as a deletion.</b> Rows are keyed on
+            <code>rfc</code> plus
+            <code>numero_y_fecha_de_oficio_global_de_presuncion_sat</code> - the proceeding, not the
+            stage. A taxpayer going from <code>Presunto</code> to <code>Definitivo</code> is the
+            most valuable event in this feed, and it arrives as one changed record with the before
+            and the after on it.
+          </li>
+          <li>
+            <b>An alert that comes to you.</b> Watch the repository and GitHub emails you, or
+            pushes to your phone, on any night that produced a change. A night with no change
+            produces no commit and no noise.
+          </li>
+          <li>
+            <b>A <code>changes.json</code> written for machines.</b> One file to poll: the latest
+            version pair, the added / changed / removed counts, and the path to the full diff.
+            Compare one field with the id you last processed and stop if they match.
+          </li>
+          <li>
+            <b>Somebody to ask.</b> Open an issue in your own repository; first response within
+            two business days.
+          </li>
+        </ul>
+
+        <h3>What is not included</h3>
+        <ul class="gets nots">
+          <li><b>No history before 2026-09-07.</b> There is none, anywhere, including at SAT. See below - it is the first thing on this page for a reason.</li>
+          <li><b>No hosted API.</b> No endpoint, no key, no query language. You clone a git repository.</li>
+          <li><b>No webhooks.</b> Nothing calls your server; GitHub notifications and <code>changes.json</code> are the two ways you find out.</li>
+          <li><b>No SLA.</b> Best effort, nightly, on free hosted runners. If SAT is down that night produces nothing.</li>
+          <li><b>No legal opinion, and no substitute for SAT's own constancia.</b> This is a record of what was published, and nothing more.</li>
+        </ul>
+      </section>
+
+      <!-- =================================================== what it costs -->
+      <section id="what-it-costs">
+        <h2>What it costs</h2>
+
+        <div class="price-box">
+          <p class="price">
+            <span class="amount">$99</span> <span class="per">per month, USD</span>
+          </p>
+          <p>
+            One list, one private repository, cancel any time. On cancellation the invite is
+            revoked at the end of the period you have paid for; anything you have already cloned
+            stays yours - including every dated snapshot you were sent, which is the part that
+            cannot be re-obtained from anywhere.
+          </p>
+
+          <!-- LAUNCH: paste the Stripe payment link for listas-mx-monthly into
+               the href="" attribute immediately below, and replace the visible
+               text of this link with the price. Nothing else on this page
+               changes. Until then the href stays a fragment on this page, so
+               it can never be a dead link. -->
+          <a class="buy" href="#stripe-pending" data-product="listas-mx-monthly">
+            Checkout opens on launch (2026-09-22)
+          </a>
+
+          <p class="buy-note">
+            Full refund on request within 14 days of a first payment. The delivery mechanics,
+            in full, are in <a href="../paid.md">paid.md</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- ======================================================== proof -->
+      <section id="proof">
+        <h2>Proof from the archive</h2>
+
+        <p>
+          These are counted from this repository's own index, not claimed. The viewer shows the
+          feed, free, with no account:
+          <a href="../index.html#feed=sat69b">browse the sat69b archive</a>.
+        </p>
+
+        <div class="proof">
+          <div class="stat">
+            <span class="n" id="stat-rows">14,234</span>
+            <span class="l">records in the archived list</span>
+          </div>
+          <div class="stat">
+            <span class="n" id="stat-columns">27</span>
+            <span class="l">columns per record</span>
+          </div>
+          <div class="stat">
+            <span class="n" id="stat-versions">1</span>
+            <span class="l">dated snapshots archived</span>
+          </div>
+          <div class="stat">
+            <span class="n" id="stat-diffs">0</span>
+            <span class="l">changes recorded so far</span>
+          </div>
+        </div>
+
+        <p class="proof-source" id="proof-source">
+          Counted from the archive index. The one stored snapshot is
+          <code>2026-01-22-54b95d41</code>, taken on 2026-09-07 of the file SAT reported as
+          <code>Last-Modified: Thu, 22 Jan 2026 22:59:33 GMT</code>.
+        </p>
+
+        <p>
+          <b>Zero recorded changes, and that number is the argument.</b> The 69-B list has read the
+          same <code>Last-Modified</code> since the first probe, so no diff exists yet and this page
+          will not invent one. The archive starts on <strong>2026-09-07</strong> and every change
+          from that day forward is captured; what came before it does not exist anywhere, including
+          on SAT's own site. What is sold here is the alert on the next change and the dated record
+          of every day between - not a history that nobody has.
+        </p>
+
+        <h3>What is in the one snapshot</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><code>situacion del contribuyente</code></th>
+                <th>records</th>
+                <th>what it means</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Definitivo</code></td>
+                <td>11,270</td>
+                <td>the presumption stands; invoices issued by that RFC have no tax effect</td>
+              </tr>
+              <tr>
+                <td><code>Sentencia Favorable</code></td>
+                <td>1,638</td>
+                <td>a court overturned it</td>
+              </tr>
+              <tr>
+                <td><code>Presunto</code></td>
+                <td>986</td>
+                <td>SAT has published a presumption; the rebuttal window is open</td>
+              </tr>
+              <tr>
+                <td><code>Desvirtuado</code></td>
+                <td>340</td>
+                <td>the taxpayer rebutted it successfully</td>
+              </tr>
+              <tr>
+                <td><b>total</b></td>
+                <td><b>14,234</b></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          The 986 <code>Presunto</code> rows are the ones to watch: each is a proceeding with an
+          open rebuttal window, and the day one of them becomes <code>Definitivo</code> is the day
+          your accounts payable has a problem it did not have yesterday. That transition is exactly
+          what the key is designed to surface as a single changed record.
+        </p>
+
+        <ul class="changes">
+          <li>
+            <span class="when">A known limit, stated here rather than in the small print</span>
+            91 of the 14,234 rows have their RFC suppressed to <code>XXXXXXXXXXXX</code> by court
+            order, and no combination of columns tells them apart. The differ falls back to
+            positional occurrence numbers for those rows, which is honest but is not stable between
+            versions: a change among the suppressed rows may read as more movement than actually
+            occurred. It affects those 91 rows and nothing else, and a search for a real RFC never
+            matches them.
+          </li>
+        </ul>
+      </section>
+
+      <!-- ================================================== the attestation -->
+      <section id="attestation">
+        <h2>The point-in-time attestation - $250</h2>
+
+        <p class="promise">
+          One written statement about one RFC on one date, with the evidence attached.
+        </p>
+
+        <p>
+          It answers the question SAT's own site cannot: <em>what did the 69-B list say on a
+          particular day?</em> SAT publishes the current list and nothing else, so the only way
+          anyone can answer that is to have taken a copy on that day. This archive did, and does,
+          every night.
+        </p>
+
+        <h3>What the document contains</h3>
+
+        <ul class="gets">
+          <li>
+            <b>The answer, in one line.</b> Whether the RFC appeared on the list on a given date, or
+            across two dates if you ask for a span - answered as <em>Yes, throughout</em>,
+            <em>Yes, in part</em> or <em>No</em>, never collapsed to a single row.
+          </li>
+          <li>
+            <b>The <code>situacion del contribuyente</code> it carried</b> - <code>Presunto</code>,
+            <code>Desvirtuado</code>, <code>Definitivo</code> or <code>Sentencia Favorable</code> -
+            and, if it moved inside the span, where it moved.
+          </li>
+          <li>
+            <b>Every oficio number and publication date</b> the list recorded for that proceeding,
+            SAT-side and DOF-side, exactly as SAT wrote them. An RFC that appears in two unrelated
+            proceedings gets both records; the document never silently picks one.
+          </li>
+          <li>
+            <b>The evidence behind the answer.</b> The snapshot version ids, their sha256 - the hash
+            of the bytes SAT actually served - the SAT document URL, the <code>Last-Modified</code>
+            SAT reported at the time, the observation timestamps on both sides, and the next
+            observation, so the edge of the evidence is named rather than implied.
+          </li>
+          <li>
+            <b>Delivered as Markdown</b>, laid out so it prints straight to PDF from any browser or
+            editor - into your private repository if you already have a <code>listas-mx</code>
+            subscription, or as a GitHub gist link if you do not.
+            <b>Turnaround: 3 business days</b> from payment and from your telling us the RFC and the
+            date.
+          </li>
+        </ul>
+
+        <h3>A sample, rendered against this archive</h3>
+
+        <p>
+          This is the real output of <code>govdiff attest</code> run against the committed archive,
+          not a mock-up. The RFC in it is <code>AAA010101AAA</code> - a synthetic value that is not
+          on the list and belongs to no taxpayer - so what you are looking at is the shape of a
+          clean <em>not listed on that date</em> document:
+        </p>
+
+        <pre class="sample"># Point-in-time attestation - SAT listado 69-B
+
+| | |
+|---|---|
+| Subject RFC | `AAA010101AAA` |
+| Question | Did this RFC appear on the list published on 2026-09-07? |
+| Source | SAT, *Listado completo de contribuyentes (Articulo 69-B del CFF)* |
+| Archive coverage | 2026-09-07 to 2026-09-07 |
+| Issued | 2026-09-07T08:20:57+00:00 |
+| Issued by | the latam-gov-diffs maintainers |
+
+## Statement
+
+**No.** The RFC `AAA010101AAA` did not appear anywhere in the SAT 69-B list as
+published on 2026-09-07.
+
+## Evidence
+
+| field | value |
+|---|---|
+| Snapshot version id | `2026-01-22-54b95d41` |
+| sha256 of the file SAT served | `54b95d41c9ca0ea1296f2885d1234e58a562620e76ac2437d2521fc2bbf36685` |
+| SAT document URL | http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv |
+| `Last-Modified` reported by SAT | Thu, 22 Jan 2026 22:59:33 GMT |
+| Observed (fetched) at | 2026-09-07T06:37:24+00:00 |
+| Rows in that list | 14,234 |
+| Stored snapshot | `data/sat69b/2026-01-22-54b95d41/data.parquet` (762,583 bytes) |
+| Statement covers | 2026-09-07 to 2026-09-07 |
+| Next observation | none yet; this is the newest snapshot |
+
+The RFC does not appear in this snapshot. All 14,234 rows were searched on the
+`rfc` column, compared upper-case with punctuation removed.
+
+## What this archive can and cannot reach
+
+SAT publishes the 69-B list as a single file that is overwritten in place. There
+is no dated back-series, no versioned URL and no public history, so a statement
+about any day can only be made by somebody who took a copy on that day.
+
+- **Coverage begins 2026-09-07**, the day this archive took its first snapshot.
+  No date before that can be attested here, and it cannot be recovered from SAT
+  either.
+- **Coverage ends 2026-09-07**, the last day the archive observed the source.
+- Between two observations the list is taken to be unchanged. Each evidence
+  block names the next observation, so the exact edge of the evidence is
+  visible.
+- 91 rows in the published list have their RFC suppressed to `XXXXXXXXXXXX` by
+  court order. A search for a real RFC never matches those rows.
+
+## Reproducing this document
+
+```
+govdiff attest sat69b --rfc AAA010101AAA --on 2026-09-07
+```
+
+Run against a clone of the archive, the command reads the stored snapshots and
+rebuilds this document. It makes no network request.
+
+## Disclaimer
+
+This document reports what an archived copy of a public SAT file said on a given
+date. It is **not legal advice**, it is **not a substitute for SAT's own
+constancia** or for a query against SAT's live service, and it does not state
+anything about the validity of any invoice or contract. It is evidence of what
+was published, and nothing more.</pre>
+
+        <p class="sample-note">
+          A sample. No real taxpayer is named on this page. A document about an RFC that <em>is</em>
+          on the list carries the same evidence blocks plus the stage table and every oficio number
+          for each matching proceeding. Line breaks have been added here so the document fits a
+          phone screen; nothing else was altered.
+        </p>
+
+        <h3>The honest limit, which is also the whole point</h3>
+
+        <p>
+          <b>Coverage begins 2026-09-07 and cannot reach any earlier date.</b> That is not a gap
+          that gets filled later. SAT publishes the 69-B list as a single file overwritten in
+          place - no dated filenames, no versioned URL, no public history - so nobody can tell you
+          what the list said on 2025-04-12, including us and including SAT's own website. If the
+          date you need is before 2026-09-07, say so and do not buy this: you will be told the same
+          thing in writing and refunded.
+        </p>
+
+        <p>
+          <b>Not legal advice.</b> The attestation reports what an archived copy of a public SAT
+          file said on a given date. It is not legal advice, it is not a substitute for SAT's own
+          constancia or for a query against SAT's live service, and it states nothing about the
+          validity of any invoice, deduction or contract. It is evidence of what was published, and
+          nothing more.
+        </p>
+
+        <p>
+          <b>You can also produce it yourself, free.</b> The archive is public and the tool is open
+          source: <code>govdiff attest sat69b --rfc &lt;RFC&gt; --on &lt;DATE&gt;</code> inside a
+          clone reads the stored snapshots, makes no network request, and prints the same document.
+          What the $250 buys is that somebody else runs it, stands behind the result, and keeps the
+          archive it reads from running - not access to a secret.
+        </p>
+
+        <div class="price-box">
+          <p class="price">
+            <span class="amount">$250</span> <span class="per">one-off, USD, one RFC</span>
+          </p>
+          <p>
+            One RFC, one date or one span, delivered within 3 business days into your private
+            repository or as a gist. Full refund on request within 14 days of the order.
+          </p>
+
+          <!-- LAUNCH: paste the Stripe payment link for listas-mx-attestation
+               into the href="" attribute immediately below, and replace the
+               visible text of this link with the price. Nothing else on this
+               page changes. Until then the href stays a fragment on this page,
+               so it can never be a dead link. -->
+          <a class="buy" href="#stripe-pending" data-product="listas-mx-attestation">
+            Checkout opens on launch (2026-09-22)
+          </a>
+
+          <p class="buy-note">
+            Not legal advice and not a substitute for SAT's own constancia. Coverage begins
+            2026-09-07. The full description is in <a href="../paid.md">paid.md</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- ===================================================== delivery -->
+      <section id="delivery">
+        <h2>How delivery works</h2>
+
+        <ol class="steps">
+          <li>
+            You pay, and give a GitHub username. A private repository is created for you and
+            seeded with the whole sat69b archive: every stored snapshot, every diff, and
+            <code>changes.json</code>.
+          </li>
+          <li>
+            GitHub sends you the collaborator invite. There is no message from us, no onboarding
+            call, and no address to hand over.
+          </li>
+          <li>
+            Each night at 06:15 UTC the harvest runs. The request is conditional on
+            <code>If-Modified-Since</code>, so an unchanged night is a 304 and no new snapshot; if
+            SAT republished, the file is stored and the diff is committed to your repository there
+            and then.
+          </li>
+          <li>
+            You are notified by GitHub, or your code polls <code>changes.json</code> and sees a new
+            version id.
+          </li>
+          <li>
+            For an attestation, you send the RFC and the date by issue after paying, and the
+            document is delivered within 3 business days into the same repository, or as a gist if
+            you have no subscription.
+          </li>
+          <li>
+            If you cancel, the invite is revoked at the end of the period already paid for. The
+            free archive is still there, twelve hours behind, with everything in it.
+          </li>
+        </ol>
+
+        <p>
+          The full version - the schedule, the <code>changes.json</code> shape, the support window,
+          the refund policy and what is explicitly not included - is in
+          <a href="../paid.md">paid.md</a>.
+        </p>
+      </section>
+
+      <!-- ========================================================== FAQ -->
+      <section id="faq">
+        <h2>Questions</h2>
+
+        <div class="faq">
+          <details open>
+            <summary>Can I get this history somewhere else?</summary>
+            <p>
+              No, and that is the whole point of this feed. Of the three publishers in this archive,
+              SAT is the only one that keeps no back versions of this file: the NF-e portal lists
+              every dated cClassTrib release, and SAT's own Anexo 20 workbooks stay reachable at
+              their old URLs even when nothing links to them - but the 69-B list is one filename,
+              overwritten in place, with no dated copy anywhere. Whatever it said last March is
+              gone. What is being sold is not a history nobody has; it is the alert on the next
+              change, and a dated record from 2026-09-07 onward that will be a history in a year.
+            </p>
+          </details>
+
+          <details>
+            <summary>Who is this for?</summary>
+            <p>
+              Compliance and accounts-payable teams who screen suppliers against 69-B, and the
+              developers who automate that screening. If a supplier you paid is later published as
+              <code>Definitivo</code>, the invoices you booked from that RFC lose their tax effect,
+              and the question that follows is always the same: what did the list say on the day we
+              checked? Without a dated copy there is no answer to that question.
+            </p>
+          </details>
+
+          <details>
+            <summary>There are no diffs yet. What am I actually paying for on day one?</summary>
+            <p>
+              A dated snapshot every night, an alert on the first change, and the ability to have a
+              point-in-time statement issued about any date from 2026-09-07 onward. That is the
+              honest list. The <code>Last-Modified</code> on the file has read 22 January 2026 since
+              the first probe, so no comparison exists yet - and when it moves, this will be the
+              first record-level diff this list has ever produced anywhere. If a feed whose value
+              accrues rather than arriving on day one is not what you want, the
+              <a href="../index.html">free viewer</a> shows the same snapshot and costs nothing.
+            </p>
+          </details>
+
+          <details>
+            <summary>Is the attestation the same as SAT's constancia?</summary>
+            <p>
+              No, and it is not offered as one. SAT's constancia is SAT's own statement about its own
+              live records. This is a third party's evidence of what a public SAT file said on a
+              given date, with the sha256 of the bytes and the <code>Last-Modified</code> SAT
+              reported at the time, so somebody else can check it. It is not legal advice and it
+              says nothing about the validity of any invoice or contract. Where a proceeding is
+              disputed, it is one exhibit among others and your lawyer's problem, not a substitute
+              for one.
+            </p>
+          </details>
+
+          <details>
+            <summary>What happens if SAT changes the file format?</summary>
+            <p>
+              That night's harvest produces nothing rather than producing something wrong, and the
+              issue tracker says so. The parser is fixed as fast as it can be fixed and the stored
+              file is re-parsed, so nothing already archived is lost. There is no SLA and no credit:
+              the honest description is best effort, nightly. The failure that matters more is a
+              night SAT is unreachable, because that night's version of the list can never be
+              recovered - and the archive will say plainly which nights those were.
+            </p>
+          </details>
+
+          <details>
+            <summary>What happens when I cancel?</summary>
+            <p>
+              Access runs to the end of the period you have paid for, then the collaborator invite
+              is revoked and the private repository is archived. Nothing is clawed back: anything you
+              cloned stays cloned, and every snapshot you were sent is still yours. The public
+              archive keeps publishing, free, twelve hours behind.
+            </p>
+          </details>
+
+          <details>
+            <summary>Why should I pay when the archive is free?</summary>
+            <p>
+              Often you should not, and the free tier is genuinely the right answer for most readers.
+              Three things are behind the price and nothing else: the diff twelve hours earlier, an
+              alert that reaches you instead of you remembering to look, and somebody to ask. The
+              attestation adds a fourth: somebody who signs the answer. If none of those is worth
+              $99 a month, use the <a href="../index.html">free viewer</a> - it is not a trial and it
+              is not reduced.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="offer-footer">
+      <p class="links">
+        <a href="../index.html">Viewer</a>
+        <a href="../feed.xml">Change feed (Atom)</a>
+        <a href="../sat69b/feed.xml">sat69b feed (Atom)</a>
+        <a href="https://github.com/phillipmex/latam-gov-diffs">GitHub</a>
+        <a href="../index.html#feed=sat69b">The free tier for this feed</a>
+        <button class="copy" type="button" hidden>Copy link</button>
+      </p>
+      <p>
+        Published by the latam-gov-diffs maintainers. Source data belongs to the Servicio de
+        Administracion Tributaria (SAT); this site archives and compares it and claims nothing else.
+        Support is by GitHub issue.
+      </p>
+    </footer>
+
+    <!--
+      The only script on the page, and the page is complete without it. It does
+      two things and neither adds content:
+
+        1. reads ../index.json and replaces the four proof numbers with the
+           live ones. The numbers already in the HTML are correct as committed,
+           so a blocked fetch, a file:// open or JavaScript switched off leaves
+           a page that still reads truthfully.
+        2. reveals the copy-link button, which ships hidden because a control
+           that cannot work should not be offered.
+    -->
+    <script>
+      (function () {
+        "use strict";
+
+        var FEED = "sat69b";
+
+        function set(id, value) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = value;
+        }
+
+        fetch("../index.json", { cache: "no-cache" })
+          .then(function (r) {
+            if (!r.ok) throw new Error("index.json: HTTP " + r.status);
+            return r.json();
+          })
+          .then(function (index) {
+            var feed = (index.feeds || []).filter(function (f) {
+              return f.id === FEED;
+            })[0];
+            if (!feed) return;
+
+            var versions = feed.versions || [];
+            var diffs = feed.diffs || [];
+            var last = versions[versions.length - 1];
+            var state = feed.state || {};
+
+            set("stat-rows", last ? last.row_count.toLocaleString("en-US") : "");
+            set("stat-columns", last ? last.column_count : "");
+            set("stat-versions", versions.length);
+            set("stat-diffs", diffs.length);
+
+            if (last) {
+              set(
+                "proof-source",
+                "Counted from the archive index, generated " +
+                  String(index.generated_at || "").slice(0, 10) +
+                  ". " +
+                  versions.length +
+                  (versions.length === 1 ? " stored snapshot and " : " stored snapshots and ") +
+                  diffs.length +
+                  (diffs.length === 1 ? " recorded change. " : " recorded changes. ") +
+                  "The newest is " +
+                  last.version_id +
+                  ", of the file SAT reported as Last-Modified: " +
+                  (state.last_modified || "unknown") +
+                  "."
+              );
+            }
+          })
+          .catch(function () {
+            /* Baked-in numbers stand. Nothing to report to the reader. */
+          });
+
+        var copy = document.querySelector(".copy");
+        if (copy && navigator.clipboard) {
+          copy.hidden = false;
+          copy.addEventListener("click", function () {
+            navigator.clipboard.writeText(location.href).then(
+              function () {
+                copy.textContent = "Copied";
+                setTimeout(function () {
+                  copy.textContent = "Copy link";
+                }, 1500);
+              },
+              function () {
+                copy.textContent = "Press Ctrl+C";
+              }
+            );
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

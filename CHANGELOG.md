@@ -92,14 +92,23 @@ Nothing here has been uploaded to PyPI or npm.
   `#stripe-pending` checkout placeholder convention. Linked from the README.
 - **Offer pages** - `docs/offers/`: `offer.css` extending the viewer's tokens
   (light and dark, one column below 720 px, zero external requests),
-  `TEMPLATE.md` documenting the structure every page copies, an index of the
-  three outputs with their prices, and the `cclasstrib` page. Proof numbers are
-  baked into the HTML and refreshed from `docs/index.json` at render time, so
-  the page reads correctly with JavaScript off. The viewer's *Paid feeds* link
-  now points at them.
+  `TEMPLATE.md` documenting the structure every page copies, and an index
+  listing all four products with their prices and linking each to its page.
+  One page per product: `cclasstrib.html` ($28/mo), `catalogos-sat.html`
+  ($39/mo) and `listas-mx.html` ($99/mo), the last carrying the $250
+  point-in-time attestation as a second product block with its own price, its
+  own placeholder button and a real `govdiff attest` document rendered against
+  the committed archive for a synthetic RFC that is not on the list. Proof
+  numbers are baked into the HTML and refreshed from `docs/index.json` at render
+  time, so every page reads correctly with JavaScript off. The viewer's *Paid
+  feeds* link now points at them, and the README links each price to its page.
 - **`tests/test_docs_links.py`** - walks `docs/**/*.html`, asserts every
   relative link resolves to a file inside the repository, and fails if any page
-  fetches a script, stylesheet, font, image or frame off its own origin.
+  fetches a script, stylesheet, font, image or frame off its own origin. It also
+  covers the offer pages specifically: every product advertised on the index has
+  a page, every product has exactly one buy button, every buy button is still the
+  `#stripe-pending` placeholder with its fixed text and a known `data-product`,
+  and no offer page carries an address or a personal name.
 
 ### Fixed
 

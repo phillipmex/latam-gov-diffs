@@ -8,11 +8,16 @@ version. The diff, not the file, is the product.
 
 ## Feeds
 
-| id | source | status |
-|---|---|---|
-| `cclasstrib` | Brazil, Portal Nacional da NF-e - IBS/CBS tax classification table | **live** |
-| `catcfdi` | Mexico, SAT - CFDI 4.0 catalogues (Anexo 20) | **live** |
-| `sat69b` | Mexico, SAT - Listado completo 69-B | **live** |
+| id | source | status | versions | diffs |
+|---|---|---|---:|---:|
+| `cclasstrib` | Brazil, Portal Nacional da NF-e - IBS/CBS tax classification table | **live** | 10 | 9 |
+| `catcfdi` | Mexico, SAT - CFDI 4.0 catalogues (Anexo 20) | **live** | 2 | 1 |
+| `sat69b` | Mexico, SAT - Listado completo 69-B | **live** | 1 | 0 |
+
+The version and diff counts are the ones in [`docs/index.json`](docs/index.json) as committed; they
+grow on any night a publisher moves, and that file - not this table - is the machine-readable
+answer. `sat69b` has one snapshot and no diff because SAT has not republished the list since the
+archive's first fetch on 2026-09-07.
 
 ### What `catcfdi` covers
 
@@ -81,10 +86,13 @@ sold on top of them, and nothing is on sale before **2026-09-22**:
 
 | product | feed | price (USD) |
 |---|---|---|
-| `cclasstrib` feed | `cclasstrib` | $28 / month |
-| `catalogos-sat` feed | `catcfdi` | $39 / month |
-| `listas-mx` feed | `sat69b` | $99 / month |
-| `listas-mx` point-in-time attestation | `sat69b` | $250 one-off |
+| `cclasstrib` feed | `cclasstrib` | [$28 / month](docs/offers/cclasstrib.html) |
+| `catalogos-sat` feed | `catcfdi` | [$39 / month](docs/offers/catalogos-sat.html) |
+| `listas-mx` feed | `sat69b` | [$99 / month](docs/offers/listas-mx.html) |
+| `listas-mx` point-in-time attestation | `sat69b` | [$250 one-off](docs/offers/listas-mx.html#attestation) |
+
+Each price links to that product's offer page. Nothing is on sale before 2026-09-22: every buy
+button points at a `#stripe-pending` placeholder and says so.
 
 A paid feed is an invite to a **private GitHub repository** carrying the same nightly diff stream
 for one output, committed there twelve hours before the public archive, with GitHub's own

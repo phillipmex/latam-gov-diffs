@@ -352,15 +352,34 @@
   color: var(--price);
 }
 
-/* "Page coming day 7" - plain text, deliberately not a link, because a link
-   that goes nowhere is worse than a sentence saying it is not ready. */
-.offer-list .pending {
+/* ------------------------------------------------- a rendered sample document */
+
+/* One real `govdiff attest` output, shown verbatim so a reader can see what the
+   $250 buys before buying it. It is pre-formatted Markdown with a 64-character
+   sha256 and a full URL in it, so it scrolls inside its own box rather than
+   widening the page on a phone. */
+.sample {
+  overflow-x: auto;
+  max-width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 0.8rem 0.9rem;
+  margin: 0.8rem 0 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The caption that says, in as many words, that this is a sample against a
+   synthetic RFC and not a document about any real taxpayer. */
+.sample-note {
+  margin: 0.2rem 0 0.8rem;
   color: var(--muted);
-  font-size: 0.85rem;
-  border: 1px dashed var(--rule);
-  border-radius: 5px;
-  padding: 0.3rem 0.5rem;
-  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  max-width: 64ch;
 }
 
 /* ------------------------------------------------------------ copy the link */
