@@ -1,14 +1,19 @@
 {
   "added": 7917,
   "changed": 108,
+  "changed_fields": {
+    "c_municipio": 93,
+    "descripcion": 15
+  },
   "diff_file": "2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl",
   "duplicate_keys_from": 0,
   "duplicate_keys_to": 0,
   "feed": "catcfdi",
   "fields_added": [],
   "fields_removed": [],
+  "format": 2,
   "from_version": "2024-12-04-a4b88178",
-  "generated_at": "2026-09-07T06:15:14+00:00",
+  "generated_at": "2026-09-07T06:32:07+00:00",
   "key_fields": [
     "catalogo",
     "clave",

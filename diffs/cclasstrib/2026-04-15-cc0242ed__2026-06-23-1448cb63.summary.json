@@ -1,6 +1,25 @@
 {
   "added": 8,
   "changed": 156,
+  "changed_fields": {
+    "dataatualizacao": 156,
+    "descricao_cclasstrib": 3,
+    "dfimvig": 3,
+    "ind_gmonopadrao": 2,
+    "ind_gpbiodiferenca": 156,
+    "indbpetm": 4,
+    "indcte": 1,
+    "inddir": 156,
+    "indduimp": 156,
+    "indnfe": 1,
+    "indnfse_via": 2,
+    "lc_214_25": 2,
+    "lc_redacao": 5,
+    "nome_cclasstrib": 2,
+    "regulamento_cbs": 149,
+    "regulamento_ibs": 147,
+    "tprbsn": 156
+  },
   "diff_file": "2026-04-15-cc0242ed__2026-06-23-1448cb63.jsonl",
   "duplicate_keys_from": 0,
   "duplicate_keys_to": 0,
@@ -14,8 +33,9 @@
     "indduimp"
   ],
   "fields_removed": [],
+  "format": 2,
   "from_version": "2026-04-15-cc0242ed",
-  "generated_at": "2026-09-07T05:24:58+00:00",
+  "generated_at": "2026-09-07T06:31:26+00:00",
   "key_fields": [
     "cclasstrib"
   ],

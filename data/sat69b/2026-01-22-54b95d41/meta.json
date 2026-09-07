@@ -1,0 +1,123 @@
+{
+  "feed": "sat69b",
+  "fetched_at": "2026-09-07T06:37:24+00:00",
+  "key_fields": [
+    "rfc",
+    "numero_y_fecha_de_oficio_global_de_presuncion_sat"
+  ],
+  "last_modified": "Thu, 22 Jan 2026 22:59:33 GMT",
+  "row_count": 14234,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "rfc"
+    },
+    {
+      "dtype": "string",
+      "name": "nombre_del_contribuyente"
+    },
+    {
+      "dtype": "string",
+      "name": "situacion_del_contribuyente"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_presuncion_sat"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_presuntos"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_presuntos_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_presuncion_dof"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_presuntos"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_presuntos_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_contribuyentes_que_desvirtuaron_sat"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_desvirtuados"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_desvirtuados_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_contribuyentes_que_desvirtuaron_dof"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_desvirtuados"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_desvirtuados_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_definitivos_sat"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_definitivos"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_definitivos_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_definitivos_dof"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_definitivos"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_definitivos_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_sentencia_favorable_sat"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_sentencia_favorable"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_pagina_sat_sentencia_favorable_iso"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_y_fecha_de_oficio_global_de_sentencia_favorable_dof"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_sentencia_favorable"
+    },
+    {
+      "dtype": "string",
+      "name": "publicacion_dof_sentencia_favorable_iso"
+    }
+  ],
+  "sha256": "54b95d41c9ca0ea1296f2885d1234e58a562620e76ac2437d2521fc2bbf36685",
+  "source_url": "http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv",
+  "version_id": "2026-01-22-54b95d41"
+}

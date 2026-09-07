@@ -1,6 +1,16 @@
 {
   "added": 7,
   "changed": 25,
+  "changed_fields": {
+    "credito_para": 9,
+    "dataatualizacao": 7,
+    "indcteos": 1,
+    "indnfag": 1,
+    "indnfgas": 4,
+    "indnfse": 1,
+    "lc_redacao": 1,
+    "link": 11
+  },
   "diff_file": "2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl",
   "duplicate_keys_from": 0,
   "duplicate_keys_to": 0,
@@ -9,8 +19,9 @@
   "fields_removed": [
     "credito_para"
   ],
+  "format": 2,
   "from_version": "2025-10-03-b5ed31f4",
-  "generated_at": "2026-09-07T05:24:58+00:00",
+  "generated_at": "2026-09-07T06:31:26+00:00",
   "key_fields": [
     "cclasstrib"
   ],

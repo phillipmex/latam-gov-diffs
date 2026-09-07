@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import pytest
 
-from govdiff.diff import diff_frames, diff_versions
+from govdiff.diff import DIFF_FORMAT, diff_frames, diff_versions
 from govdiff.errors import FeedError
 from govdiff.snapshot import write_snapshot
 
@@ -47,19 +47,60 @@ def test_added_removed_and_changed():
     assert stats["rows_from"] == 3
     assert stats["rows_to"] == 3
 
-    assert grouped["added"][0]["key"] == {"code": "000004"}
-    assert grouped["added"][0]["before"] is None
-    assert grouped["added"][0]["after"]["name"] == "Novo"
+    # Format 2: an added record carries only `after`, and no `before` key at all.
+    added = grouped["added"][0]
+    assert added["key"] == {"code": "000004"}
+    assert "before" not in added
+    assert added["after"] == {"code": "000004", "name": "Novo", "rate": "60"}
 
-    assert grouped["removed"][0]["key"] == {"code": "000003"}
-    assert grouped["removed"][0]["after"] is None
-    assert grouped["removed"][0]["before"]["rate"] == "5"
+    removed = grouped["removed"][0]
+    assert removed["key"] == {"code": "000003"}
+    assert "after" not in removed
+    assert removed["before"] == {"code": "000003", "name": "Gone", "rate": "5"}
 
+    # A change is one entry per column that moved, each holding both values.
     changed = grouped["changed"][0]
     assert changed["key"] == {"code": "000002"}
-    # Only the fields that actually moved are reported.
-    assert changed["before"] == {"name": "Via"}
-    assert changed["after"] == {"name": "Exploracao de via"}
+    assert "before" not in changed and "after" not in changed
+    assert changed["fields"] == {"name": {"before": "Via", "after": "Exploracao de via"}}
+
+
+def test_added_and_removed_records_drop_the_empty_columns():
+    # The reason format 2 exists: a wide, sparse frame wrote ~80 nulls per row.
+    before = frame([{"code": "000001", "name": "Integral", "note": None}])
+    after = frame(
+        [
+            {"code": "000001", "name": "Integral", "note": None},
+            {"code": "000002", "name": "Novo", "note": None},
+        ]
+    )
+
+    records, _ = diff_frames(before, after, KEY)
+
+    assert records[0]["op"] == "added"
+    assert records[0]["after"] == {"code": "000002", "name": "Novo"}
+
+
+def test_summary_declares_its_format_and_counts_the_columns_that_moved():
+    before = frame(
+        [
+            {"code": "000001", "name": "Integral", "rate": "0"},
+            {"code": "000002", "name": "Via", "rate": "0"},
+        ]
+    )
+    after = frame(
+        [
+            {"code": "000001", "name": "Integral total", "rate": "5"},
+            {"code": "000002", "name": "Via", "rate": "5"},
+        ]
+    )
+
+    _, stats = diff_frames(before, after, KEY)
+
+    assert stats["format"] == DIFF_FORMAT == 2
+    # `rate` moved on both rows, `name` on one. Commonest first.
+    assert stats["changed_fields"] == {"rate": 2, "name": 1}
+    assert list(stats["changed_fields"]) == ["rate", "name"]
 
 
 def test_new_column_shows_as_a_change_and_is_reported():
@@ -71,8 +112,8 @@ def test_new_column_shows_as_a_change_and_is_reported():
     assert stats["fields_added"] == ["anexo"]
     assert stats["fields_removed"] == []
     assert stats["changed"] == 1
-    assert records[0]["before"] == {"anexo": None}
-    assert records[0]["after"] == {"anexo": "III"}
+    assert records[0]["fields"] == {"anexo": {"before": None, "after": "III"}}
+    assert stats["changed_fields"] == {"anexo": 1}
 
 
 def test_empty_and_missing_cells_compare_equal():
@@ -105,6 +146,7 @@ def test_duplicate_keys_are_kept_apart_not_merged():
     removed = by_op(records)["removed"][0]
     assert removed["key"] == {"code": "200003", "_occurrence": 2}
     assert removed["before"]["name"] == "Acessibilidade"
+    assert stats["changed_fields"] == {}
 
 
 def test_missing_key_field_is_an_error():
@@ -143,7 +185,9 @@ def test_diff_versions_writes_jsonl_and_summary(tmp_path):
     assert {line["op"] for line in lines} == {"added", "changed"}
 
     on_disk = json.loads(summary_file.read_text(encoding="utf-8"))
+    assert on_disk["format"] == 2
     assert on_disk["added"] == summary["added"] == 1
     assert on_disk["changed"] == summary["changed"] == 1
+    assert on_disk["changed_fields"] == {"name": 1}
     assert on_disk["from_version"] == first.version_id
     assert on_disk["to_version"] == second.version_id

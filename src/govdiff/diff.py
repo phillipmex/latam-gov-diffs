@@ -5,12 +5,19 @@ Output, per feed pair:
     diffs/<feed>/<from>__<to>.jsonl          one object per changed record
     diffs/<feed>/<from>__<to>.summary.json   counts and schema drift
 
-A JSONL object is:
+**Format 2.** A record carries only what changed, and nothing else:
 
-    {"op": "added",   "key": {...}, "before": null,     "after": {full row}}
-    {"op": "removed", "key": {...}, "before": {full row}, "after": null}
-    {"op": "changed", "key": {...}, "before": {only the changed fields},
-                                    "after":  {only the changed fields}}
+    {"op": "added",   "key": {...}, "after":  {non-null fields of the new row}}
+    {"op": "removed", "key": {...}, "before": {non-null fields of the old row}}
+    {"op": "changed", "key": {...}, "fields": {"<col>": {"before": ..., "after": ...}}}
+
+Format 1 wrote the whole row on `added`/`removed`, null columns included, and
+split a change into parallel `before`/`after` objects. On a wide, sparse feed
+that is almost all padding: the catCFDI diff was 20.6 MB for 8,026 records
+because a row there is 86 columns of which about 80 are null for any one
+catalogue. The counts in `.summary.json` are unaffected - only the payload
+shrank - and every summary carries `"format": 2` so a reader can tell which
+shape it is looking at.
 
 Columns present on one side only are compared as null on the missing side, so
 a publisher adding a column shows up as a change on every row that fills it.
@@ -33,6 +40,10 @@ from govdiff.snapshot import read_version
 # it cannot collide with anything a spreadsheet cell can contain.
 _KEY_SEP = "\x1f"
 
+# Bumped when the JSONL record shape changes. 1: whole rows on added/removed,
+# parallel before/after objects on changed. 2: only what changed.
+DIFF_FORMAT = 2
+
 
 def _cell(value) -> str | None:
     """Normalise one cell to a string or None, so versions compare cleanly."""
@@ -47,6 +58,17 @@ def _cell(value) -> str | None:
         pass
     text = str(value).strip()
     return text or None
+
+
+def _filled(row: dict) -> dict:
+    """Drop the empty columns of a row.
+
+    An `added` or `removed` record is the row itself, and on a feed that puts
+    several catalogues in one frame most columns of any given row are null. A
+    null here means "this column does not apply to this row", which the reader
+    can already see from the columns that are present.
+    """
+    return {name: value for name, value in row.items() if value is not None}
 
 
 def _records(frame: pd.DataFrame, key_fields: list[str]) -> tuple[dict, int]:
@@ -101,6 +123,7 @@ def diff_frames(before: pd.DataFrame, after: pd.DataFrame, key_fields: list[str]
 
     records: list[dict] = []
     added = removed = changed = unchanged = 0
+    changed_fields: Counter = Counter()
 
     for key_id in after_rows:
         if key_id not in before_rows:
@@ -109,8 +132,7 @@ def diff_frames(before: pd.DataFrame, after: pd.DataFrame, key_fields: list[str]
                 {
                     "op": "added",
                     "key": _key_object(key_id, key_fields),
-                    "before": None,
-                    "after": after_rows[key_id],
+                    "after": _filled(after_rows[key_id]),
                 }
             )
 
@@ -122,27 +144,24 @@ def diff_frames(before: pd.DataFrame, after: pd.DataFrame, key_fields: list[str]
                 {
                     "op": "removed",
                     "key": _key_object(key_id, key_fields),
-                    "before": old,
-                    "after": None,
+                    "before": _filled(old),
                 }
             )
             continue
-        delta_before = {}
-        delta_after = {}
+        delta: dict[str, dict] = {}
         for column in all_cols:
             old_value = old.get(column)
             new_value = new.get(column)
             if old_value != new_value:
-                delta_before[column] = old_value
-                delta_after[column] = new_value
-        if delta_before:
+                delta[column] = {"before": old_value, "after": new_value}
+        if delta:
             changed += 1
+            changed_fields.update(delta.keys())
             records.append(
                 {
                     "op": "changed",
                     "key": _key_object(key_id, key_fields),
-                    "before": delta_before,
-                    "after": delta_after,
+                    "fields": delta,
                 }
             )
         else:
@@ -153,6 +172,7 @@ def diff_frames(before: pd.DataFrame, after: pd.DataFrame, key_fields: list[str]
     records.sort(key=lambda r: (order[r["op"]], json.dumps(r["key"], sort_keys=True, ensure_ascii=False)))
 
     stats = {
+        "format": DIFF_FORMAT,
         "added": added,
         "removed": removed,
         "changed": changed,
@@ -163,6 +183,10 @@ def diff_frames(before: pd.DataFrame, after: pd.DataFrame, key_fields: list[str]
         "fields_removed": [c for c in before_cols if c not in after_cols],
         "duplicate_keys_from": dup_before,
         "duplicate_keys_to": dup_after,
+        # How many `changed` records touched each column, commonest first.
+        # This is the one question the old whole-row payload answered that
+        # the slim one cannot: "which column moved this time?".
+        "changed_fields": dict(changed_fields.most_common()),
     }
     return records, stats
 

@@ -355,3 +355,215 @@ actually ships, `openpyxl` for the `.xlsx` fixture, because xlrd 2.x refuses `.x
    add. Expect duplicate RFCs and check before choosing.
 4. **Expect the fetch to fail sometimes.** Timing was inconsistent at day 0 - one check from this
    network timed out where the probe took 0.14 s. Let it fail loudly rather than retrying around it.
+
+## 2026-09-07 - day 3
+
+Slimmed the diff format and migrated the whole archive to it, then built `sat69b` - the SAT 69-B
+list, the one feed in this repository that nobody can backfill.
+
+### Part A: the diff format is now format 2
+
+The day-2 catCFDI diff was **20.6 MB for 8,026 changed records**. The cause was the format, not the
+data: a catCFDI row is 86 columns wide and roughly 80 of them are null for any given catalogue, and
+format 1 wrote a whole row on `added`/`removed` (nulls included) and two parallel `before`/`after`
+objects on `changed`. A nightly 20 MB commit would have made the public repository unusable inside
+a month.
+
+Format 2 writes only what moved:
+
+- `added` -> `{"op", "key", "after"}`, and `after` drops every null column.
+- `removed` -> `{"op", "key", "before"}`, same rule. There is no `"after": null` key any more.
+- `changed` -> `{"op", "key", "fields"}`, where `fields` holds one entry per column that differs,
+  each `{"before": ..., "after": ...}`. Columns that did not move are absent.
+
+`.summary.json` keeps its shape and gains two things: `"format": 2`, and `changed_fields`, a count
+of how many records each column moved on. That second field turns out to be the most useful line in
+the file - it is what distinguishes a revision that re-dated 132 rows from one that changed real
+content.
+
+`govdiff rediff <feed>` rebuilds every consecutive diff of a feed from the stored Parquet snapshots,
+with no network access at all. The snapshots are the record; a diff is derived. Each pair is written
+back over the same `<from>__<to>` filename, so the format-1 files were replaced rather than left
+beside their successors - `git status` showed 10 modified `.jsonl` files and 10 modified summaries,
+and no additions or deletions under `diffs/`.
+
+**Counts are unchanged, and this was checked rather than assumed.** All 10 summaries were saved
+before the migration and compared afterwards on `added`, `removed`, `changed`, `unchanged`,
+`rows_from`, `rows_to`, `fields_added`, `fields_removed`, `duplicate_keys_from` and
+`duplicate_keys_to`: **10 summaries compared, 0 mismatches.** Every number in the day-1 and day-2
+tables above still describes the files on disk.
+
+Sizes:
+
+| | format 1 | format 2 | change |
+|---|--:|--:|---|
+| `diffs/` total | 21,541,866 | 3,586,386 | **-83.4%** |
+| `diffs/catcfdi/*.jsonl` | 20,627,995 | 2,671,236 | -87.1% |
+| `diffs/cclasstrib/*.jsonl` | 907,091 | 904,022 | -0.3% |
+
+The cClassTrib line is the honest part. Format 2 is not smaller everywhere: cClassTrib rows are
+narrow and densely filled, so dropping nulls saves little, and the nested
+`{"col": {"before": x, "after": y}}` is more verbose per moved column than format 1's two parallel
+objects. Four of the nine cClassTrib diffs grew - the worst by 23,081 B (2025-06-18 -> 2025-10-03,
+where 130 of 132 records changed) and 3,634 B (2026-04-15 -> 2026-06-23, all 156 records changed).
+Five shrank, the best by 26,717 B. The format is chosen for the wide sparse case because that is
+where the money is; on narrow dense tables it is a wash.
+
+### Part B: sat69b
+
+**One document, fetched twice, plus three HEADs.** `HEAD` then `GET` on
+`http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv`: 200, 4,566,277 B,
+`Last-Modified: Thu, 22 Jan 2026 22:59:33 GMT`, `Content-Type: application/octet-stream`, saved to
+a temp directory outside the repository. No HTML landing page was touched, and
+`/cifras_sat/Documents/` was never requested.
+
+**Encoding: cp1252, established, not guessed.** The file does not decode as UTF-8. It contains bytes
+in the 0x80-0x9F range - typographic quotes SAT's own tooling emitted inside company names - which
+are undefined control characters in latin-1 and printable in cp1252. So `detect_encoding` tries
+utf-8-sig first, and only falls back to cp1252 when that range is actually used; a file that avoids
+it is read as latin-1, where the two agree anyway.
+
+**The header is line 2 (0-indexed), under two title rows.** The first 20 lines were inspected before
+anything was parsed:
+
+| line | content |
+|--:|---|
+| 0 | `"Informacion actualizada al 31 de diciembre de 2025; los listados a que se hace mencion, son de caracter publico..."` |
+| 1 | `Listado completo de contribuyentes (Articulo 69-B del CFF),,,,,,,,,,,,,,,,,,,` |
+| 2 | `No,RFC,Nombre del Contribuyente,Situacion del contribuyente,Numero y fecha de oficio global de presuncion SAT,...` (20 columns) |
+| 3+ | data, starting `1,AAA080808HL8,"ASESORES EN AVALUOS Y ACTIVOS, S.A. DE C.V.",Sentencia Favorable,...` |
+
+Both title rows are padded with the same 19 trailing commas as the data, so they cannot be told
+from a header by field count. The detector uses content instead: the first line that parses to at
+least three non-empty labels, one of which is `rfc`. Note that the "actualizada al" date in line 0
+says **31 December 2025** while `Last-Modified` says 22 January 2026 - the content date and the
+publication date are different things, and only the second one is a fact about the file.
+
+**14,234 rows, 27 columns.** The source's 20 columns become 19 (the `No` ordinal is dropped) plus 8
+ISO sibling columns. Dropping `No` is deliberate: it is a positional row number, so an insertion
+anywhere near the top of an alphabetically-sorted file would renumber every row below it and turn a
+one-record change into 14,000 changed records. It carries no information that the row does not.
+
+Rows per "situacion del contribuyente":
+
+| situacion | rows | what it means |
+|---|--:|---|
+| `Definitivo` | 11,270 | the presumption stands; invoices from that RFC have no tax effect |
+| `Sentencia Favorable` | 1,638 | a court overturned it |
+| `Presunto` | 986 | SAT has published a presumption, rebuttal window open |
+| `Desvirtuado` | 340 | the taxpayer rebutted it successfully |
+| **total** | **14,234** | |
+
+**The key: RFC plus the presumption office number.** Decided by counting, not by guessing.
+
+| candidate key | rows sharing a key |
+|---|--:|
+| `rfc` | 261 (170 of them real RFCs) |
+| `rfc` + `situacion_del_contribuyente` | 66 among real RFCs |
+| `rfc` + `numero_y_fecha_de_oficio_global_de_presuncion_sat` | **0** among real RFCs |
+
+An RFC repeats because the same taxpayer can be presumed twice in two unrelated proceedings, years
+apart - and 66 of those pairs are even in the same stage, so adding the stage does not rescue it.
+The presumption office number identifies the proceeding, and every proceeding is unique per
+taxpayer. The stage is deliberately kept **out** of the key: a taxpayer moving from `Presunto` to
+`Definitivo` is the single most valuable event in this feed, and it must read as one changed record,
+not as a removal plus an addition.
+
+The remaining 74 duplicate-key rows are all `XXXXXXXXXXXX` - 91 rows whose RFC is suppressed by
+court order. No combination of columns separates them, so they fall through to the differ's existing
+occurrence-suffix mechanism (`_occurrence: 2`). That is positional and not stable between versions,
+and it is recorded here as a known limitation rather than papered over.
+
+**Dates keep the source string; ISO is an addition, never a replacement.** Each publication column
+gets a `_iso` sibling immediately after it, filled only when the cell is one unambiguous
+`dd/mm/yyyy` value. 185 cells across the file get no ISO value, out of 57,730 filled date cells:
+179 hold two dates in one cell (`25/05/2022 - 26/04/2021`, a re-publication), 2 hold a raw Excel
+serial (`44014`) SAT never formatted back to a date, and 4 are hand-typed variants of the two-date
+form (`17/10/2019 27/08/2018`, `24/04/2023 -15/10/2020`, `01/12/2023- 24/02/2021`,
+`01-12-2023- 23/05/2023`). All 185 keep their source text and get an empty ISO sibling. Nothing is
+inferred.
+
+**Change signal: `Last-Modified` plus the sha256 of the body.** The brief expected only
+`Last-Modified`; the endpoint in fact also sends an ETag,
+`"{E8180FE0-2E1C-4445-9381-A355CB4CFD85},24"`. That is a SharePoint document GUID with a version
+counter, which tracks list-item revisions and not the bytes, so it is recorded in
+`.state/sat69b.json` and in the sidecar but deliberately not used as a validator. `fetch()` gained
+`use_etag`, and the parser sets `USE_ETAG = False`; the conditional request asks on
+`If-Modified-Since` alone and the content hash settles the rest.
+
+**One version, and no diff was invented.** `govdiff run sat69b` stored `2026-01-22-54b95d41`,
+14,234 rows, `data/sat69b/` 765,584 B. There is no `diffs/sat69b/` directory and there will not be
+one until SAT republishes. The second `govdiff run sat69b` returned `unchanged (304 Not Modified)` -
+one conditional request, no body, no new version.
+
+At 4.4 MB the file is over the 2 MB raw ceiling, so **no raw copy is committed**.
+`RAW_KEEP_MAX_BYTES` was deliberately left at 2 MB rather than raised for this feed: the Parquet is
+a faithful text-for-text copy of every cell, and the sidecar carries the sha256, byte size and
+`Last-Modified` needed to prove it. Committing 4.4 MB of CSV nightly would repeat the exact mistake
+Part A just fixed.
+
+**The three sibling lists, HEAD only, once each.** These are the other Article 69 lists SAT
+publishes, and the day-0 notes suggested they might sit beside the 69-B file:
+
+| URL | status |
+|---|--:|
+| `/cifras_sat/Documents/Listado_Completo_69.csv` | 404 |
+| `/cifras_sat/Documents/Listado_Completo_69_Cancelados.csv` | 404 |
+| `/cifras_sat/Documents/Listado_Completo_69_No_localizados.csv` | 404 |
+
+All three are gone from this directory, so **nothing was registered as a stub feed** and no body was
+fetched. Whatever SAT does with the Article 69 lists today, it is not at these paths. The directory
+listing itself was not probed - it returns 401 and the brief rules it out.
+
+### Requests made
+
+**Seven**, all to `omawww.sat.gob.mx`, none retried, no 403/429/503, no challenge marker:
+
+| run | requests |
+|---|---|
+| probe | `HEAD` then `GET` on the 69-B CSV, 3 s apart |
+| `govdiff run sat69b` | one `GET` |
+| `govdiff run sat69b` (second) | one conditional `GET` -> 304 |
+| sibling check | three `HEAD`s, 3 s apart |
+
+Part A made none: `govdiff rediff` reads only the stored Parquet.
+
+### Tests
+
+`pytest -q`: **92 passed in 0.90s** (65 from day 2, 27 new or rewritten). The new work covers
+encoding detection including the case that matters - a file using the 0x80-0x9F range must not be
+read as latin-1 - header detection under padded title rows and its failure case, the dropped `No`
+ordinal, ISO siblings for both ambiguous forms, all three key candidates, the registry wiring, and
+an offline runner test that snapshots once and then answers 304 on the second run while proving the
+conditional request carries `If-Modified-Since` and not `If-None-Match`.
+
+`tests/fixtures/sat69b_sample.csv` is 11 rows cut byte-for-byte from the real file, with both title
+rows and the header: all four situacion categories, `CAL140908936` twice in the same stage under two
+different presumption oficios, a two-date cell, an Excel serial, two suppressed rows sharing an
+oficio, and a row carrying cp1252-only bytes so the encoding test proves something.
+
+Day-1 and day-2 assertions that changed: the format-1 record shapes in `test_diff.py` and
+`test_catcfdi.py`, and the line in `test_cclasstrib.py` asserting `sat69b` was disabled.
+
+### Nightly workflow
+
+Each of the three enabled feeds is now its own step. The brief's first suggestion - one step per
+feed with `continue-on-error: false` - cannot work, because that is the default and it stops the job
+at the first failure: a SAT outage would throw away a good cClassTrib harvest. So each feed step
+carries `continue-on-error: true`, the commit step runs on `always()` and commits whatever landed,
+and a final gate step re-fails the job if any feed failed. The failed-run email still arrives, and
+the day's good data is still saved.
+
+### Day 4
+
+1. **Package skeleton.** Publish `govdiff` to PyPI and a thin npm client, reusing the linejudge
+   publishing path rather than inventing a second one. The Python side is nearly there -
+   `pip install -e .` already works; what is missing is a versioned release, a changelog and the
+   token wiring.
+2. **A diff viewer on GitHub Pages.** The JSONL is now small enough to read in a browser, which was
+   not true before today. Static page, no backend: pick a feed, pick two versions, render the
+   records. This is the thing that makes the archive legible to somebody who is not going to clone
+   it.
+3. **Watch the 69-B `Last-Modified`.** It has said 22 January 2026 since the day-0 probe. The first
+   time it moves is the first real diff this feed has ever produced anywhere, and it is worth
+   checking that the run and the diff both behave when it does.

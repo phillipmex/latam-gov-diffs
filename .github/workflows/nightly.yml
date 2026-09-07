@@ -3,6 +3,14 @@ name: nightly
 # Fetches every enabled feed, snapshots it if it changed, diffs it, and commits
 # the result. A challenged source fails the job on purpose: GitHub emails the
 # repository owner on a failed scheduled run, and that email is the alert.
+#
+# Each feed is its own step. The brief's first suggestion - one step per feed
+# with `continue-on-error: false` - cannot work: that is the default, and it
+# stops the job at the first failing step, so a SAT outage would throw away a
+# perfectly good cClassTrib harvest. So each feed step carries
+# `continue-on-error: true`, the commit step runs on `always()` and commits
+# whatever did land, and a final gate step re-fails the job if any feed failed.
+# The alert survives, and so does the day's good data.
 
 on:
   schedule:
@@ -36,14 +44,29 @@ jobs:
       - name: Run tests
         run: pytest -q
 
-      - name: Harvest every enabled feed
-        run: govdiff run
+      # The three enabled feeds in feeds.yaml, one step each. Keep this list in
+      # step with `enabled: true` there - `govdiff status` lists both.
+      - name: Harvest cclasstrib
+        id: cclasstrib
+        continue-on-error: true
+        run: govdiff run cclasstrib
+
+      - name: Harvest catcfdi
+        id: catcfdi
+        continue-on-error: true
+        run: govdiff run catcfdi
+
+      - name: Harvest sat69b
+        id: sat69b
+        continue-on-error: true
+        run: govdiff run sat69b
 
       - name: Show status
         if: always()
         run: govdiff status
 
       - name: Commit the archive
+        if: always()
         run: |
           git config user.name "govdiff-bot"
           git config user.email "govdiff-bot@users.noreply.github.com"
@@ -54,3 +77,22 @@ jobs:
           fi
           git commit -m "chore(archive): nightly harvest $(date -u +%Y-%m-%d)"
           git push
+
+      # Everything that could be saved is committed by now, so failing here
+      # costs nothing and still sends the owner the failed-run email.
+      - name: Fail if any feed failed
+        if: always()
+        run: |
+          failed=""
+          for feed in cclasstrib:${{ steps.cclasstrib.outcome }} \
+                      catcfdi:${{ steps.catcfdi.outcome }} \
+                      sat69b:${{ steps.sat69b.outcome }}; do
+            name=${feed%%:*}
+            outcome=${feed##*:}
+            echo "$name: $outcome"
+            [ "$outcome" = "success" ] || failed="$failed $name"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::feeds failed:$failed"
+            exit 1
+          fi

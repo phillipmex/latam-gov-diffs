@@ -1,6 +1,15 @@
 {
   "added": 0,
   "changed": 132,
+  "changed_fields": {
+    "dataatualizacao": 2,
+    "descricao_cclasstrib": 1,
+    "ind_redutorbc": 132,
+    "indcteos": 1,
+    "indnfe": 1,
+    "indnfgas": 1,
+    "nome_cclasstrib": 1
+  },
   "diff_file": "2025-11-24-431d4217__2025-12-15-15ce63cb.jsonl",
   "duplicate_keys_from": 0,
   "duplicate_keys_to": 0,
@@ -9,8 +18,9 @@
   "fields_removed": [
     "ind_redutorbc"
   ],
+  "format": 2,
   "from_version": "2025-11-24-431d4217",
-  "generated_at": "2026-09-07T05:24:58+00:00",
+  "generated_at": "2026-09-07T06:31:26+00:00",
   "key_fields": [
     "cclasstrib"
   ],

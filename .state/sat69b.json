@@ -1,0 +1,13 @@
+{
+  "etag": "\"{E8180FE0-2E1C-4445-9381-A355CB4CFD85},24\"",
+  "feed": "sat69b",
+  "last_error": null,
+  "last_fetched_at": "2026-09-07T06:37:29+00:00",
+  "last_modified": "Thu, 22 Jan 2026 22:59:33 GMT",
+  "last_result": "unchanged",
+  "row_count": 14234,
+  "sha256": "54b95d41c9ca0ea1296f2885d1234e58a562620e76ac2437d2521fc2bbf36685",
+  "source_url": "http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv",
+  "version_count": 1,
+  "version_id": "2026-01-22-54b95d41"
+}

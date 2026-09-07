@@ -190,7 +190,7 @@ def test_the_same_code_in_two_catalogues_does_not_collide():
     records, stats = diff_frames(before, after, catcfdi.KEY_FIELDS)
     assert (stats["added"], stats["removed"], stats["changed"], stats["unchanged"]) == (0, 0, 1, 1)
     assert records[0]["key"]["catalogo"] == "c_Periodicidad"
-    assert records[0]["after"] == {"descripcion": "Diaria"}
+    assert records[0]["fields"] == {"descripcion": {"before": "Diario", "after": "Diaria"}}
     assert stats["duplicate_keys_from"] == 0
 
 

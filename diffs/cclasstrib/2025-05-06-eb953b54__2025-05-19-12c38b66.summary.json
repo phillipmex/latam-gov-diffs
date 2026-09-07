@@ -1,6 +1,27 @@
 {
   "added": 0,
   "changed": 125,
+  "changed_fields": {
+    "credito_anterior_apenas_ligados_ao_cclass": 43,
+    "credito_anterior_apenas_ligados_ao_cclass_2": 26,
+    "credito_para_frente_apenas_ligados_ao_cclass": 44,
+    "credito_para_frente_apenas_ligados_ao_cclass_2": 28,
+    "descricao_cclasstrib": 2,
+    "descricao_cst_ibs_cbs": 2,
+    "exige_nbs_ou_ncm": 21,
+    "icms_cbs_ou_outro": 22,
+    "lc_214_25": 124,
+    "lc_214_25_2": 124,
+    "lc_redacao": 124,
+    "obs": 16,
+    "outro_campo_nfs_e": 5,
+    "predaliq": 47,
+    "sem_nbs_mas_com_codigos_de_servico_especificos": 17,
+    "titulo_capitulo_secao_subsecao": 3,
+    "tomador_especifico": 11,
+    "tomador_especifico_2": 9,
+    "tributacao_nfs_e": 3
+  },
   "diff_file": "2025-05-06-eb953b54__2025-05-19-12c38b66.jsonl",
   "duplicate_keys_from": 0,
   "duplicate_keys_to": 0,
@@ -28,8 +49,9 @@
     "icms_cbs_ou_outro",
     "titulo_capitulo_secao_subsecao"
   ],
+  "format": 2,
   "from_version": "2025-05-06-eb953b54",
-  "generated_at": "2026-09-07T05:24:58+00:00",
+  "generated_at": "2026-09-07T06:31:25+00:00",
   "key_fields": [
     "cclasstrib"
   ],

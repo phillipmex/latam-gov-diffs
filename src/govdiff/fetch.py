@@ -144,17 +144,25 @@ def fetch(
     max_bytes: int = FETCH_MAX_BYTES,
     conditional: bool = True,
     method: str = "GET",
+    use_etag: bool = True,
 ) -> FetchResult:
     """Fetch `url` once (plus at most one retry on a transport fault).
 
     When `state` carries an ETag or Last-Modified from a previous run and
     `conditional` is true, the request is made conditional, and a 304 comes
     back as `not_modified=True` with no body.
+
+    `use_etag=False` drops `If-None-Match` and asks on `Last-Modified` alone.
+    A publisher whose ETag does not track the bytes - SAT's SharePoint front
+    end mints one from the document GUID and a version counter - would
+    otherwise get to answer "unchanged" on the strength of a value that says
+    nothing about the file. The ETag is still read from the response and
+    recorded either way.
     """
     session = session or make_session()
     headers: dict[str, str] = {}
     if conditional and state:
-        if state.get("etag"):
+        if use_etag and state.get("etag"):
             headers["If-None-Match"] = state["etag"]
         if state.get("last_modified"):
             headers["If-Modified-Since"] = state["last_modified"]

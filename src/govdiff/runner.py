@@ -119,8 +119,16 @@ def run_feed(feed_id: str, root: Path | None = None, session=None) -> dict:
     if not document_url:
         raise FeedError("feed '%s' has no document_url to fetch" % feed_id)
 
+    # A parser may declare that its publisher's ETag is not evidence about the
+    # bytes; then the conditional request asks on Last-Modified alone and the
+    # sha256 of the body settles it. See govdiff.feeds.sat69b.
     try:
-        result = fetch(document_url, state=state, session=session)
+        result = fetch(
+            document_url,
+            state=state,
+            session=session,
+            use_etag=getattr(module, "USE_ETAG", True),
+        )
     except SourceChallenged as exc:
         state.update(
             {
@@ -282,6 +290,41 @@ def bootstrap_feed(feed_id: str, root: Path | None = None, delay: int = BOOTSTRA
         }
     )
     save_state(feed.id, state, root)
+    return report
+
+
+def rediff_feed(feed_id: str, root: Path | None = None) -> dict:
+    """Rebuild every consecutive diff of a feed from the stored Parquet versions.
+
+    No network at all: the snapshots are the record, and a diff is a derived
+    file. This is how the archive is migrated when the JSONL record shape
+    changes - each pair is written back over the file it replaces, under the
+    same `<from>__<to>` name, so the old format leaves no orphan behind.
+
+    A diff file whose two versions are no longer neighbours is reported and
+    left alone; nothing is deleted that is not overwritten.
+    """
+    root = root or repo_root()
+    feed = get_feed(feed_id, root / "feeds.yaml")
+    if not feed.key_fields:
+        raise FeedError("feed '%s' has no key_fields, so it cannot be diffed" % feed_id)
+
+    versions = list_versions(feed.id, root)
+    report: dict = {"feed": feed.id, "versions": len(versions), "diffs": [], "orphans": []}
+    if len(versions) < 2:
+        report["note"] = "%d stored version(s); a diff needs 2" % len(versions)
+        return report
+
+    expected = set()
+    for previous, current in zip(versions, versions[1:]):
+        report["diffs"].append(diff_versions(feed.id, previous, current, feed.key_fields, root))
+        expected.add("%s__%s.jsonl" % (previous, current))
+
+    directory = root / "diffs" / feed.id
+    if directory.exists():
+        report["orphans"] = sorted(
+            path.name for path in directory.glob("*.jsonl") if path.name not in expected
+        )
     return report
 
 

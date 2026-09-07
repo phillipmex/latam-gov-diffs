@@ -1,14 +1,31 @@
 {
   "added": 9,
   "changed": 37,
+  "changed_fields": {
+    "anexo": 5,
+    "dataatualizacao": 28,
+    "descricao_cclasstrib": 11,
+    "descricao_cst_ibs_cbs": 8,
+    "dinivig": 2,
+    "ind_gtribregular": 2,
+    "indcteos": 1,
+    "indnfce": 1,
+    "indnfcom": 2,
+    "indnfe": 3,
+    "indnfse": 1,
+    "lc_214_25": 5,
+    "lc_redacao": 12,
+    "nome_cclasstrib": 9
+  },
   "diff_file": "2025-12-15-15ce63cb__2026-01-28-0825eadf.jsonl",
   "duplicate_keys_from": 0,
   "duplicate_keys_to": 0,
   "feed": "cclasstrib",
   "fields_added": [],
   "fields_removed": [],
+  "format": 2,
   "from_version": "2025-12-15-15ce63cb",
-  "generated_at": "2026-09-07T05:24:58+00:00",
+  "generated_at": "2026-09-07T06:31:26+00:00",
   "key_fields": [
     "cclasstrib"
   ],

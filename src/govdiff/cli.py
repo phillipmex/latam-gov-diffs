@@ -1,4 +1,4 @@
-"""Command line entry point: `govdiff run|bootstrap|status`."""
+"""Command line entry point: `govdiff run|bootstrap|rediff|status`."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from govdiff import __version__
 from govdiff.config import load_feeds, repo_root
 from govdiff.errors import GovDiffError, SourceChallenged
 from govdiff.fetch import load_state
-from govdiff.runner import bootstrap_feed, run_all, run_feed
+from govdiff.runner import bootstrap_feed, rediff_feed, run_all, run_feed
 from govdiff.snapshot import list_versions
 
 
@@ -90,6 +90,29 @@ def cmd_bootstrap(args) -> int:
     return 0
 
 
+def cmd_rediff(args) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    report = rediff_feed(args.feed, root)
+    print("%s: %d stored version(s)" % (report["feed"], report["versions"]))
+    if report.get("note"):
+        print(report["note"])
+        return 0
+    for summary in report["diffs"]:
+        print(
+            "  rewrote %s -> %s: +%d added, ~%d changed, -%d removed"
+            % (
+                summary["from_version"],
+                summary["to_version"],
+                summary["added"],
+                summary["changed"],
+                summary["removed"],
+            )
+        )
+    for orphan in report["orphans"]:
+        print("  %s covers versions that are no longer neighbours - left as it is" % orphan)
+    return 0
+
+
 def cmd_status(args) -> int:
     root = Path(args.root).resolve() if args.root else repo_root()
     feeds = load_feeds(root / "feeds.yaml")
@@ -133,6 +156,12 @@ def build_parser() -> argparse.ArgumentParser:
     boot.add_argument("feed")
     boot.add_argument("--delay", type=int, default=3, help="seconds between requests (default 3)")
     boot.set_defaults(func=cmd_bootstrap)
+
+    redo = sub.add_parser(
+        "rediff", help="rebuild every consecutive diff of a feed from the stored snapshots"
+    )
+    redo.add_argument("feed")
+    redo.set_defaults(func=cmd_rediff)
 
     status = sub.add_parser("status", help="one line per feed")
     status.add_argument("--json", action="store_true", help="also print the table as JSON")

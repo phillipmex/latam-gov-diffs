@@ -49,14 +49,22 @@ feeds:
     name: Listado completo 69-B (contribuyentes con operaciones presuntamente inexistentes)
     country: MX
     publisher: Servicio de Administracion Tributaria (SAT)
-    enabled: false
+    enabled: true
     listing_url: null
     document_url: "http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv"
     format: csv
-    parser: null
-    key_fields: []
+    parser: govdiff.feeds.sat69b
+    key_fields: [rfc, numero_y_fecha_de_oficio_global_de_presuncion_sat]
     notes: >-
-      Stub - no parser yet. ~4.4 MB CSV. This is the one feed with no public
-      back-series: the publisher keeps the current snapshot only and organises
-      by legal category, not by date, so Last-Modified is the sole version
-      signal and every day not archived is lost permanently.
+      ~4.4 MB cp1252 CSV, 14,234 rows, two title rows above the header. This is
+      the one feed with no public back-series: the publisher keeps the current
+      snapshot only and organises by legal category, not by date, so there is
+      nothing to bootstrap and history starts with this repository. The URL is
+      fixed - there is no listing page and no dated filename - so document_url
+      is never rediscovered. Change signal is Last-Modified plus the sha256 of
+      the body; the SharePoint ETag is recorded but deliberately not used as a
+      validator (see USE_ETAG in the parser). Rows are keyed by RFC plus the
+      presumption oficio, not by RFC alone: a taxpayer can be presumed twice in
+      unrelated proceedings. The situacion is kept out of the key on purpose,
+      so a move from Presunto to Definitivo reads as a change to one record.
+      The file is over the 2 MB raw ceiling, so no raw copy is committed.
