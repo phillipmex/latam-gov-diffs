@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+import requests
+
 from govdiff.config import Feed, get_feed, load_feeds, repo_root
 from govdiff.diff import diff_versions
 from govdiff.errors import FeedError, SourceChallenged
@@ -191,19 +193,26 @@ def run_all(root: Path | None = None) -> list[dict]:
     return outcomes
 
 
-def bootstrap_cclasstrib(root: Path | None = None, delay: int = BOOTSTRAP_DELAY_SECONDS) -> dict:
-    """Load every release the portal indexes, then diff consecutive versions."""
+def bootstrap_feed(feed_id: str, root: Path | None = None, delay: int = BOOTSTRAP_DELAY_SECONDS) -> dict:
+    """Load every release the publisher indexes, then diff consecutive versions.
+
+    Works for any feed whose parser exposes `list_versions()`. A back-version
+    URL that has been taken down (404) is recorded and the walk continues; the
+    surviving releases still diff against each other.
+    """
     root = root or repo_root()
-    feed = get_feed("cclasstrib", root / "feeds.yaml")
+    feed = get_feed(feed_id, root / "feeds.yaml")
     module = feed.load_parser()
+    if not hasattr(module, "list_versions"):
+        raise FeedError("feed '%s' has no list_versions(), so it cannot be bootstrapped" % feed_id)
     session = make_session()
 
     entries = module.list_versions(session=session)
-    report: dict = {"feed": feed.id, "listed": len(entries), "versions": [], "diffs": []}
+    report: dict = {"feed": feed.id, "listed": len(entries), "versions": [], "diffs": [], "missing": []}
     if len(entries) < 2:
         report["note"] = (
-            "the listing page shows %d cClassTrib release(s); a back-catalogue needs "
-            "at least 2, so no history was built" % len(entries)
+            "the listing shows %d %s release(s); a back-catalogue needs "
+            "at least 2, so no history was built" % (len(entries), feed.id)
         )
         return report
 
@@ -211,7 +220,19 @@ def bootstrap_cclasstrib(root: Path | None = None, delay: int = BOOTSTRAP_DELAY_
     for index, entry in enumerate(entries):
         if index:
             time.sleep(delay)
-        result = fetch(entry["url"], session=session, conditional=False)
+        started = time.monotonic()
+        try:
+            result = fetch(entry["url"], session=session, conditional=False)
+        except requests.HTTPError as exc:
+            report["missing"].append(
+                {
+                    "published": entry["published"],
+                    "url": entry["url"],
+                    "status": exc.response.status_code if exc.response is not None else None,
+                }
+            )
+            continue
+        fetch_seconds = round(time.monotonic() - started, 1)
         outcome = _ingest(
             feed,
             result.content,
@@ -232,8 +253,13 @@ def bootstrap_cclasstrib(root: Path | None = None, delay: int = BOOTSTRAP_DELAY_
                 "bytes": result.size,
                 "created": outcome["created"],
                 "url": entry["url"],
+                "fetch_seconds": fetch_seconds,
             }
         )
+
+    if not ordered_versions:
+        report["note"] = "every listed release failed to download; nothing was stored"
+        return report
 
     for previous, current in zip(ordered_versions, ordered_versions[1:]):
         report["diffs"].append(diff_versions(feed.id, previous, current, feed.key_fields, root))
@@ -257,3 +283,8 @@ def bootstrap_cclasstrib(root: Path | None = None, delay: int = BOOTSTRAP_DELAY_
     )
     save_state(feed.id, state, root)
     return report
+
+
+def bootstrap_cclasstrib(root: Path | None = None, delay: int = BOOTSTRAP_DELAY_SECONDS) -> dict:
+    """The cClassTrib back catalogue. Kept as a name because day 1 exposed it."""
+    return bootstrap_feed("cclasstrib", root, delay)

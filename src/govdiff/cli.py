@@ -11,7 +11,7 @@ from govdiff import __version__
 from govdiff.config import load_feeds, repo_root
 from govdiff.errors import GovDiffError, SourceChallenged
 from govdiff.fetch import load_state
-from govdiff.runner import bootstrap_cclasstrib, run_all, run_feed
+from govdiff.runner import bootstrap_feed, run_all, run_feed
 from govdiff.snapshot import list_versions
 
 
@@ -57,25 +57,25 @@ def cmd_run(args) -> int:
 
 def cmd_bootstrap(args) -> int:
     root = Path(args.root).resolve() if args.root else repo_root()
-    if args.feed != "cclasstrib":
-        print("bootstrap is only implemented for cclasstrib", file=sys.stderr)
-        return 2
-    report = bootstrap_cclasstrib(root, delay=args.delay)
-    print("listing shows %d cClassTrib release(s)" % report["listed"])
+    report = bootstrap_feed(args.feed, root, delay=args.delay)
+    print("listing shows %d %s release(s)" % (report["listed"], args.feed))
     if report.get("note"):
         print(report["note"])
         return 0
     for version in report["versions"]:
         print(
-            "  %s  %s  %5d rows  %7d bytes  %s"
+            "  %s  %s  %7d rows  %10d bytes  %5s s  %s"
             % (
                 version["published"],
                 version["version_id"],
                 version["rows"],
                 version["bytes"],
+                version["fetch_seconds"],
                 "new" if version["created"] else "already stored",
             )
         )
+    for gone in report.get("missing", []):
+        print("  %s  %s  HTTP %s - skipped" % (gone["published"], gone["url"], gone["status"]))
     for summary in report["diffs"]:
         print(
             "  diff %s -> %s: +%d added, ~%d changed, -%d removed"

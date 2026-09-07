@@ -119,5 +119,4 @@ def test_registry_points_at_this_module():
     assert feed.parser == "govdiff.feeds.cclasstrib"
     assert feed.key_fields == ["cclasstrib"]
     assert feed.load_parser() is cclasstrib
-    assert feeds["catcfdi"].enabled is False
     assert feeds["sat69b"].enabled is False

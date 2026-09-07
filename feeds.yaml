@@ -26,18 +26,24 @@ feeds:
     name: Catalogos del CFDI version 4.0 (Anexo 20)
     country: MX
     publisher: Servicio de Administracion Tributaria (SAT)
-    enabled: false
+    enabled: true
     listing_url: "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20.htm"
     document_url: "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260903.xls"
     format: xls
-    parser: null
-    key_fields: []
+    parser: govdiff.feeds.catcfdi
+    key_fields: [catalogo, clave, clave_2, clave_3]
     notes: >-
-      Stub - no parser yet (day 2). The workbook is ~46.5 MB of legacy .xls with
-      many sheets; it is parsed in memory and never committed raw. The landing
-      page is a SharePoint stub behind an F5 fingerprinting script: fetch the
-      document URL directly and never the HTML. "Versiones anteriores" on the
-      Anexo 20 page links dated back-versions.
+      28 catalogue sheets in one ~46.5 MB legacy .xls. The workbook is parsed in
+      memory and never committed raw. list_versions() reads anexo_20.htm exactly
+      once per run - that is the only HTML page this feed ever fetches, and
+      everything else is a document URL. The page links the current 4.0 workbook
+      and the retired 3.3 one; its two "Versiones anteriores" links are about the
+      guias de llenado, not the catalogues, so the one live back-version
+      (catCFDI_V_4_20241204.xls, recorded at day 0) is listed in the adapter.
+      document_url is the workbook SAT linked as current on 2026-09-07; every
+      release has its own dated filename. Rows are keyed by catalogue plus up to
+      three code columns, so a code in c_ClaveProdServ never collides with the
+      same code in c_ClaveUnidad.
 
   - id: sat69b
     name: Listado completo 69-B (contribuyentes con operaciones presuntamente inexistentes)
