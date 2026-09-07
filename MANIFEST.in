@@ -21,5 +21,9 @@ prune .state
 prune .github
 prune tests
 
+# The launch material is owner-facing: a Show HN draft and a manual checklist
+# for 2026-09-22. It is not part of the tool and has no business in an sdist.
+prune launch
+
 global-exclude *.py[cod]
 global-exclude __pycache__

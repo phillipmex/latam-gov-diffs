@@ -1,31 +1,73 @@
 name: nightly
 
-# Fetches every enabled feed, snapshots it if it changed, diffs it, and commits
-# the result. A challenged source fails the job on purpose: GitHub emails the
-# repository owner on a failed scheduled run, and that email is the alert.
+# Two windows, twelve hours apart, and the gap is the product.
 #
-# Each feed is its own step. The brief's first suggestion - one step per feed
-# with `continue-on-error: false` - cannot work: that is the default, and it
-# stops the job at the first failing step, so a SAT outage would throw away a
-# perfectly good cClassTrib harvest. So each feed step carries
-# `continue-on-error: true`, the commit step runs on `always()` and commits
-# whatever did land, and a final gate step re-fails the job if any feed failed.
-# The alert survives, and so does the day's good data.
+#   06:15 UTC  job `harvest`  - fetch every feed, diff it, push each feed's
+#                               slice to the private repositories that paid for
+#                               it, and upload the whole day's result as an
+#                               Actions artifact. It does NOT touch public main.
+#   18:15 UTC  job `publish`  - download that artifact, apply it on top of
+#                               public main, and commit and push it.
+#
+# There is deliberately **no evening re-fetch**. The evening job publishes what
+# the morning job produced and nothing else, so:
+#
+#   * the head start is always exactly 12 hours - it can never invert, which is
+#     what would happen if the evening run discovered a change the morning run
+#     had not seen and handed it to the free tier first;
+#   * `.state/<feed>.json` - the conditional request's memory, and a committed
+#     file - never reaches public main early, because the morning job pushes
+#     nothing public at all;
+#   * the evening job makes zero requests to any publisher.
+#
+# `docs/paid.md` states this rule as the commitment; this file implements it,
+# and `tests/test_schedule.py` asserts the gap between the two cron lines below
+# still equals `govdiff.config.HEAD_START_HOURS`.
+#
+# Per-feed failure handling is day 3's and is unchanged: each feed is its own
+# step with `continue-on-error: true`, so one publisher's outage cannot discard
+# another publisher's good harvest, and a final gate step re-fails the job so
+# the owner still gets GitHub's failed-run email.
 
 on:
   schedule:
+    # harvest - keep in step with govdiff.config.HARVEST_CRON
     - cron: "15 6 * * *"
+    # publish - keep in step with govdiff.config.PUBLISH_CRON
+    - cron: "15 18 * * *"
   workflow_dispatch:
+    inputs:
+      job:
+        description: "which window to run"
+        type: choice
+        options:
+          - harvest
+          - publish
+        default: harvest
+      date:
+        description: "publish only: which day's artifact to publish (YYYY-MM-DD; blank = today, UTC)"
+        type: string
+        default: ""
+      simulate_failure:
+        description: "harvest only: force this feed id to fail, to exercise the failure path"
+        type: string
+        default: ""
 
 permissions:
   contents: write
+  # The publish job reads the morning run's artifact through the REST API.
+  actions: read
 
 concurrency:
   group: nightly
   cancel-in-progress: false
 
 jobs:
+  # ------------------------------------------------------------------ 06:15 UTC
   harvest:
+    if: >-
+      (github.event_name == 'schedule' && github.event.schedule == '15 6 * * *') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'harvest')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -44,44 +86,321 @@ jobs:
       - name: Run tests
         run: pytest -q
 
+      - name: Name the day
+        id: day
+        run: echo "day=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
       # The three enabled feeds in feeds.yaml, one step each. Keep this list in
       # step with `enabled: true` there - `govdiff status` lists both.
+      #
+      # `simulate_failure` exists for one reason: to prove, on a real run, that
+      # a failed feed produces a failed job and therefore the owner's failed-run
+      # email. It fails the step before any request is made.
       - name: Harvest cclasstrib
         id: cclasstrib
         continue-on-error: true
-        run: govdiff run cclasstrib
+        env:
+          SIMULATE_FAILURE: ${{ github.event.inputs.simulate_failure }}
+        run: |
+          if [ "$SIMULATE_FAILURE" = "cclasstrib" ]; then
+            echo "::warning::simulate_failure=cclasstrib - failing this feed on purpose"
+            exit 1
+          fi
+          govdiff run cclasstrib
 
       - name: Harvest catcfdi
         id: catcfdi
         continue-on-error: true
-        run: govdiff run catcfdi
+        env:
+          SIMULATE_FAILURE: ${{ github.event.inputs.simulate_failure }}
+        run: |
+          if [ "$SIMULATE_FAILURE" = "catcfdi" ]; then
+            echo "::warning::simulate_failure=catcfdi - failing this feed on purpose"
+            exit 1
+          fi
+          govdiff run catcfdi
 
       - name: Harvest sat69b
         id: sat69b
         continue-on-error: true
-        run: govdiff run sat69b
+        env:
+          SIMULATE_FAILURE: ${{ github.event.inputs.simulate_failure }}
+        run: |
+          if [ "$SIMULATE_FAILURE" = "sat69b" ]; then
+            echo "::warning::simulate_failure=sat69b - failing this feed on purpose"
+            exit 1
+          fi
+          govdiff run sat69b
 
       - name: Show status
         if: always()
         run: govdiff status
 
       # Rebuilds everything derived from the archive in one command:
-      # docs/index.json (the machine-readable index the npm client and the
-      # viewer read), docs/feed.xml plus docs/<feed>/feed.xml (the Atom change
-      # feed anyone can subscribe to), and CHANGES.md (the same thing for a
-      # human). One command on purpose - one nightly step, one commit.
-      #
-      # It runs on always() for the same reason the commit step does: a feed
-      # that failed must not stop the index describing the feeds that
-      # succeeded. Every one of those files is left untouched when only a
-      # timestamp would have moved, so this step does not manufacture a commit
-      # on a night when nothing changed.
+      # docs/index.json, docs/feed.xml plus docs/<feed>/feed.xml, the per-feed
+      # docs/<feed>/changes.json, and CHANGES.md. It runs here so that the
+      # paid targets get the same derived files the public archive will get
+      # twelve hours later - the evening job rebuilds them again from whatever
+      # actually landed, which is what makes a skipped feed consistent.
       - name: Rebuild the archive index and change feed
         if: always()
         run: govdiff index
 
-      - name: Commit the archive
+      # This repository is public from 2026-09-22, and a public repository's
+      # Actions logs are public with it. A subscriber's repository URL is not
+      # ours to publish, and GitHub only masks the secret's exact value - not
+      # the URLs inside it - so each one is registered as a mask of its own
+      # before any step can echo it.
+      - name: Mask the paid target repositories
         if: always()
+        env:
+          PAID_TARGETS: ${{ secrets.PAID_TARGETS }}
+        run: |
+          python - <<'PY'
+          import json, os
+          raw = os.environ.get("PAID_TARGETS") or ""
+          if raw.strip():
+              try:
+                  for target in json.loads(raw) or []:
+                      if isinstance(target, dict) and target.get("repo"):
+                          print("::add-mask::%s" % target["repo"])
+              except ValueError:
+                  print("::error::PAID_TARGETS is not valid JSON")
+                  raise SystemExit(1)
+          PY
+
+      - name: Paid push cclasstrib
+        id: paid_cclasstrib
+        if: always()
+        continue-on-error: true
+        env:
+          PAID_TARGETS: ${{ secrets.PAID_TARGETS }}
+        run: govdiff paid-push --feed cclasstrib --report paid-cclasstrib.json
+
+      - name: Paid push catcfdi
+        id: paid_catcfdi
+        if: always()
+        continue-on-error: true
+        env:
+          PAID_TARGETS: ${{ secrets.PAID_TARGETS }}
+        run: govdiff paid-push --feed catcfdi --report paid-catcfdi.json
+
+      - name: Paid push sat69b
+        id: paid_sat69b
+        if: always()
+        continue-on-error: true
+        env:
+          PAID_TARGETS: ${{ secrets.PAID_TARGETS }}
+        run: govdiff paid-push --feed sat69b --report paid-sat69b.json
+
+      # The artifact is one tarball per feed plus a manifest, rather than a
+      # patch or a bundle of one commit. The reason is the evening job: it has
+      # to be able to publish two feeds and hold back a third, and a per-feed
+      # slice is the only shape that lets it do that without rewriting history.
+      # Everything derived (docs/index.json, the Atom feeds, changes.json,
+      # CHANGES.md) is deliberately NOT in the slices - the evening job
+      # regenerates it from what it actually applied.
+      - name: Build the archive artifact
+        if: always()
+        env:
+          DAY: ${{ steps.day.outputs.day }}
+          HARVEST_CCLASSTRIB: ${{ steps.cclasstrib.outcome }}
+          HARVEST_CATCFDI: ${{ steps.catcfdi.outcome }}
+          HARVEST_SAT69B: ${{ steps.sat69b.outcome }}
+          PAID_CCLASSTRIB: ${{ steps.paid_cclasstrib.outcome }}
+          PAID_CATCFDI: ${{ steps.paid_catcfdi.outcome }}
+          PAID_SAT69B: ${{ steps.paid_sat69b.outcome }}
+        run: |
+          set -e
+          mkdir -p artifact/slices
+          for feed in cclasstrib catcfdi sat69b; do
+            paths=""
+            for candidate in "data/$feed" "diffs/$feed" "raw/$feed" ".state/$feed.json"; do
+              [ -e "$candidate" ] && paths="$paths $candidate"
+            done
+            if [ -n "$paths" ]; then
+              tar -czf "artifact/slices/$feed.tar.gz" $paths
+              echo "$feed slice: $(stat -c%s "artifact/slices/$feed.tar.gz") bytes"
+            else
+              echo "$feed: nothing on disk to slice"
+            fi
+          done
+          python - <<'PY'
+          import json, os, pathlib
+          feeds = ["cclasstrib", "catcfdi", "sat69b"]
+          out = []
+          for feed in feeds:
+              key = feed.upper()
+              harvest = os.environ.get("HARVEST_%s" % key) or "skipped"
+              paid_outcome = os.environ.get("PAID_%s" % key) or "skipped"
+              report = {}
+              report_path = pathlib.Path("paid-%s.json" % feed)
+              if report_path.exists():
+                  report = json.loads(report_path.read_text(encoding="utf-8"))
+              slice_path = "slices/%s.tar.gz" % feed
+              reasons = []
+              if harvest != "success":
+                  reasons.append("the morning harvest failed")
+              if report.get("outcome") == "failure" or paid_outcome == "failure":
+                  reasons.append("the paid push failed")
+              if not pathlib.Path("artifact", slice_path).exists():
+                  reasons.append("no slice was produced")
+              out.append({
+                  "feed": feed,
+                  "harvest": harvest,
+                  "paid": report.get("outcome") or paid_outcome,
+                  "paid_targets": report.get("targets", []),
+                  "paid_target_count": report.get("target_count", 0),
+                  "slice": slice_path if pathlib.Path("artifact", slice_path).exists() else None,
+                  "publishable": not reasons,
+                  "reasons": reasons,
+              })
+          manifest = {
+              "format": 1,
+              "date": os.environ["DAY"],
+              "harvest_run_id": os.environ.get("GITHUB_RUN_ID"),
+              "harvest_run_url": "%s/%s/actions/runs/%s" % (
+                  os.environ.get("GITHUB_SERVER_URL", ""),
+                  os.environ.get("GITHUB_REPOSITORY", ""),
+                  os.environ.get("GITHUB_RUN_ID", ""),
+              ),
+              "feeds": out,
+          }
+          pathlib.Path("artifact/manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(manifest, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload the archive artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-${{ steps.day.outputs.day }}
+          path: artifact
+          retention-days: 7
+          if-no-files-found: error
+
+      # Everything that could be saved is in the artifact by now, so failing
+      # here costs nothing and still sends the owner the failed-run email.
+      - name: Fail if any feed or any paid push failed
+        if: always()
+        run: |
+          failed=""
+          for entry in cclasstrib:${{ steps.cclasstrib.outcome }}:${{ steps.paid_cclasstrib.outcome }} \
+                       catcfdi:${{ steps.catcfdi.outcome }}:${{ steps.paid_catcfdi.outcome }} \
+                       sat69b:${{ steps.sat69b.outcome }}:${{ steps.paid_sat69b.outcome }}; do
+            name=$(echo "$entry" | cut -d: -f1)
+            harvest=$(echo "$entry" | cut -d: -f2)
+            paid=$(echo "$entry" | cut -d: -f3)
+            echo "$name: harvest=$harvest paid=$paid"
+            [ "$harvest" = "success" ] || failed="$failed $name(harvest)"
+            [ "$paid" = "success" ] || failed="$failed $name(paid)"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::failed this morning:$failed"
+            exit 1
+          fi
+
+  # ------------------------------------------------------------------ 18:15 UTC
+  publish:
+    if: >-
+      (github.event_name == 'schedule' && github.event.schedule == '15 18 * * *') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'publish')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Name the day
+        id: day
+        env:
+          REQUESTED: ${{ github.event.inputs.date }}
+        run: |
+          day="$REQUESTED"
+          [ -n "$day" ] || day="$(date -u +%Y-%m-%d)"
+          echo "publishing archive-$day"
+          echo "day=$day" >> "$GITHUB_OUTPUT"
+
+      # `actions/download-artifact` only reaches into the run it is part of, and
+      # the artifact belongs to this morning's run. So it is fetched through the
+      # REST API by name, with the job's own token.
+      - name: Download this morning's artifact
+        env:
+          DAY: ${{ steps.day.outputs.day }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts?name=archive-$DAY&per_page=10" \
+            > artifacts.json
+          id=$(python -c "
+          import json, sys
+          found = json.load(open('artifacts.json')).get('artifacts', [])
+          live = [a for a in found if not a.get('expired')]
+          print(live[0]['id'] if live else '')
+          ")
+          if [ -z "$id" ]; then
+            echo "::error::no artifact named archive-$DAY exists. The 06:15 harvest either did not run or failed before it could upload one, so there is nothing to publish and nothing was pushed."
+            exit 1
+          fi
+          curl -sSL -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -o archive.zip \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip"
+          mkdir -p incoming
+          unzip -q -o archive.zip -d incoming
+          ls -R incoming | head -50
+
+      # This is the whole of D2's rule, and the only place a feed is held back.
+      - name: Apply the slices this morning earned
+        id: apply
+        run: |
+          set -e
+          python - <<'PY'
+          import json, pathlib, subprocess, sys
+
+          manifest = json.loads(pathlib.Path("incoming/manifest.json").read_text(encoding="utf-8"))
+          print("manifest for %s, from run %s" % (manifest["date"], manifest.get("harvest_run_id")))
+          applied, skipped = [], []
+          for entry in manifest["feeds"]:
+              feed = entry["feed"]
+              if not entry.get("publishable") or not entry.get("slice"):
+                  reasons = ", ".join(entry.get("reasons") or ["no reason recorded"])
+                  print("::warning::%s: HELD BACK - %s. paid=%s, harvest=%s."
+                        % (feed, reasons, entry.get("paid"), entry.get("harvest")))
+                  print("  %s is not published tonight. docs/paid.md promises the paid copy "
+                        "lands first; publishing a feed whose paid push failed this morning "
+                        "would hand it to the free tier first instead." % feed)
+                  skipped.append(feed)
+                  continue
+              archive = pathlib.Path("incoming") / entry["slice"]
+              subprocess.run(["tar", "-xzf", str(archive)], check=True)
+              print("%s: applied %s" % (feed, entry["slice"]))
+              applied.append(feed)
+
+          with open(pathlib.Path(__import__("os").environ["GITHUB_OUTPUT"]), "a") as fh:
+              fh.write("applied=%s\n" % " ".join(applied))
+              fh.write("skipped=%s\n" % " ".join(skipped))
+          PY
+
+      # Derived files are rebuilt here rather than carried in the artifact, so
+      # that a held-back feed leaves an index, an Atom feed and a CHANGES.md
+      # that describe what was actually published and nothing else. This reads
+      # only local files - no publisher is contacted in the evening.
+      - name: Rebuild the archive index and change feed
+        run: govdiff index
+
+      - name: Commit the archive
         run: |
           git config user.name "govdiff-bot"
           git config user.email "govdiff-bot@users.noreply.github.com"
@@ -90,24 +409,16 @@ jobs:
             echo "nothing changed today"
             exit 0
           fi
-          git commit -m "chore(archive): nightly harvest $(date -u +%Y-%m-%d)"
+          git commit -m "chore(archive): nightly harvest ${{ steps.day.outputs.day }}"
           git push
 
-      # Everything that could be saved is committed by now, so failing here
-      # costs nothing and still sends the owner the failed-run email.
-      - name: Fail if any feed failed
+      - name: Fail if any feed was held back
         if: always()
+        env:
+          SKIPPED: ${{ steps.apply.outputs.skipped }}
         run: |
-          failed=""
-          for feed in cclasstrib:${{ steps.cclasstrib.outcome }} \
-                      catcfdi:${{ steps.catcfdi.outcome }} \
-                      sat69b:${{ steps.sat69b.outcome }}; do
-            name=${feed%%:*}
-            outcome=${feed##*:}
-            echo "$name: $outcome"
-            [ "$outcome" = "success" ] || failed="$failed $name"
-          done
-          if [ -n "$failed" ]; then
-            echo "::error::feeds failed:$failed"
+          if [ -n "$SKIPPED" ]; then
+            echo "::error::held back from public main tonight:$SKIPPED - the paid push failed this morning, so the head start was never delivered for those feeds. Fix the paid target and re-run the harvest before publishing them."
             exit 1
           fi
+          echo "every feed that harvested this morning is published"

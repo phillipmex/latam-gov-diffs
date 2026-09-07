@@ -25,10 +25,11 @@ byte-identical files, which is what the tests assert.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from govdiff.config import repo_root
+from govdiff.config import HEAD_START_HOURS, repo_root
 from govdiff.index import _read_json, build_index
 
 # Where the viewer is published. Deep links are built against it.
@@ -43,6 +44,10 @@ TAG_PREFIX = "tag:%s,%s:latam-gov-diffs" % (TAG_AUTHORITY, TAG_DATE)
 # Relative to the repository root.
 DEFAULT_ATOM_PATH = "docs/feed.xml"
 DEFAULT_CHANGES_PATH = "CHANGES.md"
+
+# Bumped when the shape of changes.json changes. docs/paid.md documents it and
+# a subscriber's code reads it, so the number is a promise.
+CHANGES_JSON_FORMAT = 1
 
 # How many columns the Atom summary and the CHANGES.md table name.
 ATOM_TOP_FIELDS = 5
@@ -363,6 +368,87 @@ def render_changes(index: dict, entries: list[dict]) -> str:
     return "\n".join(out).rstrip("\n") + "\n"
 
 
+# ------------------------------------------------------------- changes.json
+#
+# The one file a subscriber's code polls. `docs/paid.md` specifies it, this is
+# the only implementation of it, and `govdiff paid-push` copies the same bytes
+# into a paid target's repository root - so the paid file and the public file
+# are the same file, generated once.
+
+
+def change_record(entry: dict) -> dict:
+    """One recorded change, in the shape docs/paid.md documents."""
+    return {
+        "from": entry["from"],
+        "to": entry["to"],
+        "published": entry["to_date"],
+        "added": entry["added"],
+        "changed": entry["changed"],
+        "removed": entry["removed"],
+        "rows_from": entry["rows_from"],
+        "rows_to": entry["rows_to"],
+        "fields_added": list(entry["fields_added"]),
+        "fields_removed": list(entry["fields_removed"]),
+        "jsonl": entry["jsonl"],
+        "summary": entry["summary_path"],
+    }
+
+
+def build_changes_json(
+    feed_id: str, entries: list[dict], generated_at: str | None = None
+) -> dict:
+    """`changes.json` for one feed: the whole recorded history, newest first.
+
+    `latest` is the first element of `changes`, repeated rather than referenced
+    so a reader that only wants "is there anything new" reads one object and
+    stops. It is `null` for a feed that has never recorded a change - `sat69b`
+    is one today - because an empty object would read as a change with zero
+    counts.
+
+    `head_start_hours` is not typed here: it comes from the one constant the
+    workflow's two cron lines are checked against.
+    """
+    mine = [change_record(e) for e in entries if e["feed"] == feed_id]
+    return {
+        "format": CHANGES_JSON_FORMAT,
+        "feed": feed_id,
+        "generated_at": generated_at
+        or datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "head_start_hours": HEAD_START_HOURS,
+        "path_base": "repository-root",
+        "change_count": len(mine),
+        "latest": mine[0] if mine else None,
+        "changes": mine,
+    }
+
+
+def render_changes_json(document: dict) -> str:
+    """Deterministic bytes, the same shape as `docs/index.json`."""
+    return json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def _write_changes_json_if_changed(target: Path, document: dict) -> bool:
+    """Write only when something other than `generated_at` moved.
+
+    docs/paid.md promises that a byte-identical `changes.json` means there is
+    nothing to do, so a quiet night must not move the timestamp. This is the
+    same mechanism `docs/index.json` has used since day 4: build the document,
+    compare it with the committed one with the timestamp excluded, and keep the
+    committed one when they agree.
+    """
+    if target.exists():
+        try:
+            previous = _read_json(target)
+        except (ValueError, OSError):
+            previous = None
+        if previous is not None:
+            left = {k: v for k, v in previous.items() if k != "generated_at"}
+            right = {k: v for k, v in document.items() if k != "generated_at"}
+            if left == right:
+                return False
+    return _write_if_changed(target, render_changes_json(document))
+
+
 def _write_if_changed(target: Path, body: str) -> bool:
     """Write only on a real difference, so an unchanged night touches nothing."""
     encoded = body.encode("utf-8")
@@ -401,6 +487,15 @@ def write_change_feed(root: Path | None = None, index: dict | None = None) -> di
         record(
             root / "docs" / feed["id"] / "feed.xml",
             render_atom(index, entries, feed_id=feed["id"]),
+        )
+        # The same file a paid target gets, written where anyone can see the
+        # shape before they buy it.
+        target = root / "docs" / feed["id"] / "changes.json"
+        changed = _write_changes_json_if_changed(
+            target, build_changes_json(feed["id"], entries)
+        )
+        (written if changed else unchanged).append(
+            target.resolve().relative_to(root).as_posix()
         )
     record(root / DEFAULT_CHANGES_PATH, render_changes(index, entries))
 

@@ -1,0 +1,302 @@
+#!/usr/bin/env python3
+"""Generate `launch/checklist.md` - everything only the owner's hands can do.
+
+Run it from anywhere:
+
+    python launch/make_checklist.py            # rewrite launch/checklist.md
+    python launch/make_checklist.py --check    # exit 1 if it is out of date
+    python launch/make_checklist.py --stdout   # print it instead of writing
+
+Why generate it rather than type it. The checklist's most error-prone section is
+the Stripe one: one payment link per buy button has to be created and pasted
+onto the offer pages, and the pages already carry the exact button ids the links
+belong to. There are four buttons today; there is no list of them anywhere but
+the pages, and this script counts them rather than trusting a number in prose.
+Typing that list a second time by hand is how a product ships with one button
+that silently goes nowhere. So the list is read off the pages themselves, the
+same way `tests/test_docs_links.py` reads it, and `tests/test_launch.py` fails
+if the committed checklist stops matching what a fresh run produces.
+
+Standard library only - it must run on a bare Python with nothing installed,
+which is the state the owner's machine is in at 09:22 on launch morning.
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from html.parser import HTMLParser
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+OFFERS = REPO / "docs" / "offers"
+OUTPUT = REPO / "launch" / "checklist.md"
+
+LAUNCH_DATE = "2026-09-22"
+VIEWER_URL = "https://phillipmex.github.io/latam-gov-diffs/"
+REPO_URL = "https://github.com/phillipmex/latam-gov-diffs"
+
+# The placeholder every buy button carries until a real Stripe link replaces it.
+# Kept identical to `tests/test_docs_links.py`, which enforces it.
+BUY_HREF = "#stripe-pending"
+
+
+# ------------------------------------------------------- reading the pages
+
+
+class BuyButtonCollector(HTMLParser):
+    """Every `<a class="buy">` on a page, with its href, product id and text.
+
+    This is the same scan `tests/test_docs_links.py` performs. It is repeated
+    here rather than imported because this script has to run standalone, with
+    no pytest and no `src/` on the path.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.buttons: list[dict[str, str]] = []
+        self._open: dict[str, str] | None = None
+        # The price is not inside the button - it is in the `<span class="amount">`
+        # above it, which is where a reader sees it. The last one seen before a
+        # button is that button's price; the pages have been laid out that way
+        # since day 6 and `tests/test_launch.py` checks the answer is not blank.
+        self._amount = ""
+        self._in_amount = False
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        mapping = {name: (value or "") for name, value in attrs}
+        classes = mapping.get("class", "").split()
+        if "amount" in classes:
+            self._in_amount = True
+            self._amount = ""
+            return
+        if tag != "a" or "buy" not in classes:
+            return
+        self._open = {
+            "href": mapping.get("href", ""),
+            "product": mapping.get("data-product", ""),
+            "price": self._amount,
+            "text": "",
+        }
+
+    handle_startendtag = handle_starttag
+
+    def handle_data(self, data: str) -> None:
+        if self._in_amount:
+            self._amount += data
+        if self._open is not None:
+            self._open["text"] += data
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._in_amount:
+            self._amount = " ".join(self._amount.split())
+            self._in_amount = False
+            return
+        if tag == "a" and self._open is not None:
+            self._open["text"] = " ".join(self._open["text"].split())
+            self.buttons.append(self._open)
+            self._open = None
+
+
+def buy_buttons() -> list[dict[str, str]]:
+    """Every buy button in `docs/offers/`, sorted by product id."""
+    found: list[dict[str, str]] = []
+    for page in sorted(OFFERS.glob("*.html")):
+        collector = BuyButtonCollector()
+        collector.feed(page.read_text(encoding="utf-8"))
+        for button in collector.buttons:
+            button["page"] = "docs/offers/" + page.name
+            found.append(button)
+    return sorted(found, key=lambda b: (b["product"], b["page"]))
+
+
+def price_of(button: dict[str, str]) -> str:
+    """The price shown above the button, or an empty string if the page has none."""
+    return button.get("price", "")
+
+
+# ------------------------------------------------------------- the document
+
+
+def render() -> str:
+    buttons = buy_buttons()
+    pending = [b for b in buttons if b["href"] == BUY_HREF]
+
+    out: list[str] = []
+    add = out.append
+
+    add("# Launch checklist - %s" % LAUNCH_DATE)
+    add("")
+    add("**Generated by `launch/make_checklist.py`. Do not edit by hand** - edit the")
+    add("script, re-run it, and commit both. `tests/test_launch.py` fails if this file")
+    add("and a fresh run disagree.")
+    add("")
+    add("Every item below needs the owner's own logged-in accounts. None of it can be")
+    add("done by an agent, and none of it has been done: this is the whole of the")
+    add("manual work between a finished repository and a live product.")
+    add("")
+
+    # ---------------------------------------------------------------- Stripe
+    add("## 1. Stripe - %d payment link%s" % (len(buttons), "" if len(buttons) == 1 else "s"))
+    add("")
+    add("Create one payment link per row at dashboard.stripe.com, then replace that")
+    add("button's `href` on the page named beside it. The `data-product` value is the")
+    add("id to search the page for; there is exactly one button per id.")
+    add("")
+    add("| # | `data-product` | price | page | button text |")
+    add("|--:|---|---|---|---|")
+    for number, button in enumerate(buttons, start=1):
+        add(
+            "| %d | `%s` | %s | `%s` | %s |"
+            % (
+                number,
+                button["product"],
+                price_of(button) or "-",
+                button["page"],
+                button["text"] or "-",
+            )
+        )
+    add("")
+    if pending:
+        add(
+            "All %d still point at `%s`, the deliberate placeholder. A button whose "
+            "`href` is still that fragment on launch morning is a button that takes "
+            "money from nobody." % (len(pending), BUY_HREF)
+        )
+    else:
+        add("Every button already carries a real link. Nothing to do here.")
+    add("")
+    add("- [ ] every link created, in **live** mode, not test mode")
+    add("- [ ] every `href` replaced and the pages committed")
+    add("- [ ] each link opened once and checked against its price above")
+    add("")
+    add("**About 5 minutes per link, plus one Stripe account setup.**")
+    add("")
+
+    # ------------------------------------------------------------ publishing
+    add("## 2. Publishing - PyPI and npm")
+    add("")
+    add("From day 4. Register both trusted publishers **before** pushing any tag;")
+    add("`release.yml` carries no token and cannot publish without them.")
+    add("")
+    add("| step | where | what to enter | min |")
+    add("|---|---|---|--:|")
+    add(
+        "| Create two environments | GitHub, repo Settings, Environments | names "
+        "exactly `pypi` and `npm`; no secrets, no reviewers | 2 |"
+    )
+    add(
+        "| PyPI pending publisher | pypi.org, Account, Publishing, add a *pending* "
+        "publisher | project `govdiff`, owner `phillipmex`, repository "
+        "`latam-gov-diffs`, workflow `release.yml`, environment `pypi` | 5 |"
+    )
+    add(
+        "| npm trusted publisher | npmjs.com, the `govdiff` package, Settings, "
+        "Trusted publisher | the same four values, environment `npm` | 5 |"
+    )
+    add(
+        "| *only if npm refuses because the package does not exist yet* | a terminal "
+        "| `cd js` then `npm publish --access public` once by hand (2FA prompt), then "
+        "set the trusted publisher on the now-existing package | +5 |"
+    )
+    add("| then | a terminal | `git tag v0.1.0` and `git push origin v0.1.0` | 1 |")
+    add("")
+    add("- [ ] environments `pypi` and `npm` created")
+    add("- [ ] PyPI pending publisher registered")
+    add("- [ ] npm trusted publisher registered (or the one manual publish done)")
+    add("- [ ] `v0.1.0` tagged and pushed, and `release.yml` went green")
+    add("")
+    add("**About 13 minutes, 18 if npm needs the manual first publish.**")
+    add("")
+
+    # ----------------------------------------------------------- the flip
+    add("## 3. The public flip")
+    add("")
+    add("The repository is private until this moment. Nothing above depends on it")
+    add("being public, and nothing below works until it is.")
+    add("")
+    add("- [ ] Settings → General → Danger Zone → **Change visibility → Public**")
+    add("- [ ] Settings → Pages → **Deploy from a branch**, branch `main`, folder `/docs`")
+    add("- [ ] wait for the first Pages build, then open %s" % VIEWER_URL)
+    add("- [ ] check one offer page and one diff deep-link actually load")
+    add("")
+    add(
+        "**About 3 minutes.** Note that Actions logs and artifacts become public at "
+        "the same moment. The nightly never prints a subscriber's repository URL - "
+        "targets are logged as `target-<hash>` - but this is the day that starts "
+        "mattering."
+    )
+    add("")
+
+    # ---------------------------------------------------------- paid targets
+    add("## 4. Paid delivery, ready but empty")
+    add("")
+    add(
+        "Nothing to do until the first order. The `PAID_TARGETS` secret does not "
+        "exist yet, and the nightly prints *\"no paid targets configured - "
+        "skipping\"* and stays green without it. `docs/paid.md` has the five "
+        "fulfilment steps and their honest cost, about twelve minutes per order."
+    )
+    add("")
+    add("- [ ] read `docs/paid.md` § Fulfilment once, before the first order arrives")
+    add("")
+
+    # ----------------------------------------------------------------- post
+    add("## 5. The post")
+    add("")
+    add("- [ ] `launch/show-hn.md`, posted at news.ycombinator.com/submit")
+    add("- [ ] title pasted exactly; it is already inside Hacker News' 80-character limit")
+    add("- [ ] both links in the body open: %s and %s" % (REPO_URL, VIEWER_URL))
+    add("- [ ] posted **after** the flip, the Pages build and the tag, not before")
+    add("")
+
+    # ------------------------------------------------------------- ordering
+    add("## Order of operations")
+    add("")
+    add("1. Stripe links created and committed (§1)")
+    add("2. trusted publishers registered (§2)")
+    add("3. repository made public and Pages enabled (§3)")
+    add("4. `v0.1.0` tagged and the release workflow green (§2)")
+    add("5. Show HN posted (§5)")
+    add("")
+    add(
+        "Steps 1 and 2 can happen on any earlier day. Steps 3 to 5 belong to %s "
+        "itself and want about half an hour together." % LAUNCH_DATE
+    )
+    add("")
+    return "\n".join(out) + "\n"
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--check", action="store_true",
+                        help="exit 1 if the committed checklist is out of date")
+    parser.add_argument("--stdout", action="store_true",
+                        help="print the checklist instead of writing it")
+    args = parser.parse_args(argv)
+
+    body = render()
+
+    if args.stdout:
+        sys.stdout.write(body)
+        return 0
+
+    if args.check:
+        if not OUTPUT.exists():
+            print("%s does not exist - run this script" % OUTPUT.name)
+            return 1
+        if OUTPUT.read_text(encoding="utf-8") != body:
+            print("%s is out of date - re-run this script and commit it" % OUTPUT.name)
+            return 1
+        print("%s is up to date" % OUTPUT.name)
+        return 0
+
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    with open(OUTPUT, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(body)
+    print("wrote %s (%d bytes)" % (OUTPUT.name, len(body.encode("utf-8"))))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

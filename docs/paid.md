@@ -41,9 +41,36 @@ below is what is in it and what happens to it.
 
 ### 1. The diffs land there first - a 12-hour head start
 
-The harvester runs once a night at **06:15 UTC**. The diffs it produces are
-committed to the private repository in that same run. The public archive's
-commit for the same night is pushed **12 hours later, at 18:15 UTC**.
+The harvester runs **once a night, at 06:15 UTC**, and that single run is the
+only moment in the day when anything is fetched from a government publisher.
+What it produces is committed to the private repositories in that same run, and
+to nothing else - the public archive is not touched at 06:15.
+
+Twelve hours later, at **18:15 UTC**, a second job publishes that *same*
+result to the public archive. It re-fetches nothing. It takes the morning run's
+own output, applies it, rebuilds the index and the change feed from what it
+applied, and commits.
+
+There is deliberately no evening re-fetch, and that is what turns the head start
+from an average into a number:
+
+* **It cannot invert.** If the evening job went back to the publishers, a file
+  that first appeared at, say, 14:00 UTC would reach the free archive that same
+  night and the private repositories the next morning - the free tier first, by
+  ten hours. There is no evening fetch, so that cannot happen.
+* **It is exactly twelve hours, every night.** Not "up to twelve", not "about
+  twelve". The two jobs run from the same constant in the source, and a test
+  fails the build if the schedule and the constant ever stop agreeing.
+* **Nothing leaks early.** `.state/<feed>.json` - the conditional-request memory
+  recording which version was last seen - is a committed file, and a reader who
+  watched it would learn that something had changed before the diff was public.
+  The morning job pushes nothing public at all, so it cannot.
+* **A feed whose delivery failed is not published.** If the 06:15 push to a paid
+  repository fails, the 18:15 job holds that feed back from the public archive,
+  says exactly why in the run log, and ends by failing so the operator gets
+  GitHub's failed-run email. That feed goes public the following evening, after
+  a morning run that actually delivered it. What is never allowed to happen is
+  the free copy going out for a night the paid copy did not.
 
 Twelve hours, and not some other number, because that is exactly one working
 morning in both publishing countries. 06:15 UTC is 03:15 in Brasilia and 00:15
@@ -108,6 +135,16 @@ if they match. `generated_at` moves only when the archive moved, so a
 byte-identical file means there is nothing to do. The paths inside it are
 relative to the repository root, exactly as in the public
 [`docs/index.json`](./index.json), so the same reader code works against either.
+Two more fields sit beside those shown: `change_count`, the length of `changes`,
+and `path_base`, which is the string `repository-root` and exists so a future
+change of convention is detectable rather than silent. On a feed that has never
+recorded a change, `latest` is `null` and `changes` is `[]`.
+
+The same file is written for the free archive at `docs/<feed>/changes.json` -
+[cclasstrib](./cclasstrib/changes.json), [catcfdi](./catcfdi/changes.json),
+[sat69b](./sat69b/changes.json) - twelve hours behind. It is the identical
+format; the only difference between the paid copy and the free copy is when it
+appears.
 
 ### 4. Support is a GitHub issue, answered within 2 business days
 
@@ -220,26 +257,68 @@ secret.
 
 ## Fulfilment - the operator's steps
 
-One checkout, five steps, no automation. Done by hand, same day where possible.
+One checkout, five steps, no automation, and about **twelve minutes of the
+operator's own hands per order**. That cost is paid again for every order, and
+it does not go down with volume - there is no self-serve provisioning here and
+there is no plan to build any. It is written down because a delivery step
+quietly assumed to be free is how a small product starts losing money without
+noticing. At $28/month, an order is roughly its own first month of revenue.
 
-1. **Create the private repository.** `latam-gov-diffs-<product>-<short buyer
-   ref>` under the same GitHub account, private, no description, no topics.
-   Seed it with the archive's existing history for that one feed
-   (`data/<feed>/`, `diffs/<feed>/`, `.state/<feed>.json`), the feed's
-   `README.md`, and `changes.json`.
-2. **Add the feed to the nightly job's private targets** so that night's harvest
-   commits there at 06:15 UTC.
-3. **Send the invite.** GitHub → repository → Settings → Collaborators → add the
-   username or email the buyer gave at checkout, **Read** permission. GitHub
-   sends the invitation itself; no message from us is needed and none is sent.
-4. **Record the order** in the private ledger: product, date, buyer's GitHub
-   handle, repository name, Stripe reference. Nothing else about the buyer is
-   kept.
-5. **On cancellation - the invite is revoked.** Stripe reports the cancellation;
-   at the end of the paid period the collaborator is removed and the private
-   repository is archived. Anything already cloned stays cloned; nothing is
-   clawed back, and there is nothing to uninstall. The public archive is still
-   there, free, twelve hours behind.
+1. **Create the private repository.** *(~3 min)*
+   `latam-gov-diffs-<product>-<short buyer ref>` under the same GitHub account,
+   private, no description, no topics. Leave it empty - the first nightly run
+   fills it, including its `README.md` and `changes.json`.
+2. **Give the nightly job a key to it, and add it to the targets.** *(~6 min)*
+   There is exactly one secret to edit, `PAID_TARGETS`, and it holds a JSON
+   array of objects - one object per repository, so one feed sold twice is two
+   objects with the same `feed`.
+
+   ```
+   ssh-keygen -t ed25519 -N "" -C "govdiff-bot" -f ./key
+   base64 -w0 key          # the value for deploy_key_b64
+   ```
+
+   Add `key.pub` to the new repository under **Settings → Deploy keys → Add
+   deploy key**, with **Allow write access** ticked. Then append one object to
+   the `PAID_TARGETS` repository secret:
+
+   ```json
+   [
+     {
+       "feed": "cclasstrib",
+       "repo": "git@github.com:<owner>/<the new repo>.git",
+       "deploy_key_b64": "<the base64 blob>"
+     }
+   ]
+   ```
+
+   The private key is base64-encoded because a multi-line PEM does not survive
+   being pasted into a JSON string in a GitHub secret. Delete `key` and
+   `key.pub` from the machine afterwards; the secret is now the only copy, and
+   a lost key costs one minute to replace.
+
+   When the secret is absent or empty the nightly prints *"no paid targets
+   configured - skipping"* and carries on, so an archive with no subscribers
+   runs green.
+3. **Send the invite.** *(~2 min)* GitHub → repository → Settings →
+   Collaborators → add the username or email the buyer gave at checkout,
+   **Read** permission. GitHub sends the invitation itself; no message from us
+   is needed and none is sent.
+4. **Record the order** *(~1 min)* in the private ledger: product, date, buyer's
+   GitHub handle, repository name, Stripe reference. Nothing else about the
+   buyer is kept.
+5. **On cancellation - the invite is revoked.** *(~2 min)* Stripe reports the
+   cancellation; at the end of the paid period the collaborator is removed, the
+   target's object is deleted from `PAID_TARGETS`, and the private repository is
+   archived. Anything already cloned stays cloned; nothing is clawed back, and
+   there is nothing to uninstall. The public archive is still there, free,
+   twelve hours behind.
+
+**A note on what the operator's logs can see.** The nightly never prints a
+subscriber's repository URL. Each target appears in the run log and in the run's
+manifest as `target-<8 hex characters>`, a hash of its URL. This repository
+becomes public on 2026-09-22 and a public repository's Actions logs are public
+with it; a buyer's private repository name is not ours to publish.
 
 **Refunds:** full refund on request within 14 days of a first payment or of an
 attestation order; after that, cancel any time and access runs to the end of the

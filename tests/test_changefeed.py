@@ -9,14 +9,18 @@ import json
 import xml.etree.ElementTree as ET
 
 from govdiff.changefeed import (
+    CHANGES_JSON_FORMAT,
     SITE_URL,
+    build_changes_json,
     build_entries,
     entry_id,
     render_atom,
     render_changes,
+    render_changes_json,
     write_change_feed,
 )
 from govdiff.cli import main
+from govdiff.config import HEAD_START_HOURS
 from govdiff.index import build_index
 
 ATOM = "{http://www.w3.org/2005/Atom}"
@@ -300,8 +304,10 @@ def test_writing_twice_produces_identical_bytes(tmp_path):
     assert first["entries"] == 2
     assert sorted(first["written"]) == [
         "CHANGES.md",
+        "docs/alpha/changes.json",
         "docs/alpha/feed.xml",
         "docs/feed.xml",
+        "docs/zulu/changes.json",
         "docs/zulu/feed.xml",
     ]
     before = {p: (root / p).read_bytes() for p in first["written"]}
@@ -383,3 +389,121 @@ def test_the_committed_change_feed_is_current():
     for feed in index["feeds"]:
         path = root / "docs" / feed["id"] / "feed.xml"
         assert path.read_text(encoding="utf-8") == render_atom(index, entries, feed_id=feed["id"])
+
+
+# ------------------------------------------------- docs/<feed>/changes.json
+#
+# The per-feed JSON is what a paying subscriber's own tooling reads, and
+# docs/paid.md documents its shape as a promise. These tests are that promise
+# written down: the shape, the ordering, the paths, and - the one that costs
+# money if it breaks - that a quiet night leaves the file byte-identical.
+
+
+def _changes_json(root, feed):
+    with open(root / "docs" / feed / "changes.json", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def test_changes_json_has_the_documented_shape(tmp_path):
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+
+    doc = _changes_json(root, "alpha")
+    assert doc["format"] == CHANGES_JSON_FORMAT
+    assert doc["feed"] == "alpha"
+    assert doc["head_start_hours"] == HEAD_START_HOURS
+    assert doc["path_base"] == "repository-root"
+    assert doc["generated_at"].endswith("+00:00")
+
+    # Newest first, and `latest` is the head of that list, not a second copy
+    # assembled somewhere else.
+    published = [c["published"] for c in doc["changes"]]
+    assert published == sorted(published, reverse=True)
+    assert doc["latest"] == doc["changes"][0]
+    assert doc["change_count"] == len(doc["changes"])
+
+    # Every path is relative to the repository root and resolves on disk, so a
+    # subscriber can open it without knowing anything about our layout.
+    for change in doc["changes"]:
+        for key in ("jsonl", "summary"):
+            assert not change[key].startswith("/")
+            assert (root / change[key]).exists()
+        for key in ("from", "to", "published", "added", "changed", "removed",
+                    "rows_from", "rows_to", "fields_added", "fields_removed"):
+            assert key in change
+
+
+def test_changes_json_is_written_for_a_feed_with_no_diffs(tmp_path):
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+    doc = _changes_json(root, "zulu")
+    assert doc["changes"] == []
+    assert doc["change_count"] == 0
+    assert doc["latest"] is None
+
+
+def test_changes_json_counts_match_the_index(tmp_path):
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+    with open(root / "docs" / "index.json", encoding="utf-8") as fh:
+        index = json.load(fh)
+    for feed in index["feeds"]:
+        doc = _changes_json(root, feed["id"])
+        assert doc["change_count"] == feed["diff_count"]
+
+
+def test_changes_json_does_not_move_on_a_quiet_night(tmp_path):
+    """The whole point: an unchanged archive produces an unchanged file.
+
+    If `generated_at` moved every run, the nightly job would commit three
+    files every night whether or not a publisher had touched anything, and
+    "a byte-identical file means there is nothing to do" - which docs/paid.md
+    says in as many words - would stop being true.
+    """
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+    before = (root / "docs" / "alpha" / "changes.json").read_bytes()
+    assert main(["--repo", str(root), "index"]) == 0
+    assert (root / "docs" / "alpha" / "changes.json").read_bytes() == before
+
+
+def test_changes_json_moves_when_a_diff_appears(tmp_path):
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+    before = _changes_json(root, "alpha")
+
+    _version(root, "alpha", "2026-08-01-dddddddd")
+    _diff(
+        root,
+        "alpha",
+        "2026-06-23-cccccccc",
+        "2026-08-01-dddddddd",
+        added=4,
+        changed=0,
+        removed=0,
+        generated_at="2026-09-07T06:00:00+00:00",
+    )
+    assert main(["--repo", str(root), "index"]) == 0
+    after = _changes_json(root, "alpha")
+    assert after["change_count"] == before["change_count"] + 1
+    assert after["latest"]["to"] == "2026-08-01-dddddddd"
+
+
+def test_the_committed_changes_json_is_current():
+    """The three docs/<feed>/changes.json in this repository are up to date."""
+    from govdiff.config import repo_root
+
+    root = repo_root()
+    if not (root / "docs" / "index.json").exists():  # pragma: no cover
+        return
+    index = build_index(root)
+    entries = build_entries(root, index)
+    for feed in index["feeds"]:
+        path = root / "docs" / feed["id"] / "changes.json"
+        assert path.exists(), "%s has no changes.json" % feed["id"]
+        with open(path, encoding="utf-8") as fh:
+            committed = json.load(fh)
+        fresh = build_changes_json(
+            feed["id"], entries, generated_at=committed["generated_at"]
+        )
+        assert render_changes_json(fresh) == path.read_text(encoding="utf-8")

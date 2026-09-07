@@ -21,6 +21,29 @@ RAW_KEEP_MAX_BYTES = 2 * 1024 * 1024
 FETCH_MAX_BYTES = 128 * 1024 * 1024
 
 
+# ------------------------------------------------------------------ schedule
+#
+# The head start docs/paid.md sells, written down once. Everything else about
+# the two-window nightly is derived from it: the harvest cron, the publish
+# cron, and the `head_start_hours` field in every `changes.json`. There is no
+# second copy of the number 12 anywhere in the repository, and
+# `tests/test_schedule.py` parses `.github/workflows/nightly.yml` and fails if
+# the gap between its two cron lines stops matching this constant.
+HEAD_START_HOURS = 12
+
+# The morning window: harvest, push to the paid targets, upload the artifact.
+HARVEST_HOUR_UTC = 6
+HARVEST_MINUTE_UTC = 15
+
+# The evening window: apply that artifact to the public archive. Derived, not
+# typed: the whole point is that the two cannot drift apart.
+PUBLISH_HOUR_UTC = (HARVEST_HOUR_UTC + HEAD_START_HOURS) % 24
+PUBLISH_MINUTE_UTC = HARVEST_MINUTE_UTC
+
+HARVEST_CRON = "%d %d * * *" % (HARVEST_MINUTE_UTC, HARVEST_HOUR_UTC)
+PUBLISH_CRON = "%d %d * * *" % (PUBLISH_MINUTE_UTC, PUBLISH_HOUR_UTC)
+
+
 # The one file that proves a directory is an archive checkout.
 ARCHIVE_MARKER = "feeds.yaml"
 

@@ -1,4 +1,7 @@
-"""Command line entry point: `govdiff run|bootstrap|rediff|index|attest|status`."""
+"""Command line entry point.
+
+`govdiff run|bootstrap|rediff|index|attest|paid-push|status`.
+"""
 
 from __future__ import annotations
 
@@ -15,6 +18,7 @@ from govdiff.config import load_feeds, resolve_repo_root
 from govdiff.errors import AttestationNotPossible, GovDiffError, SourceChallenged
 from govdiff.fetch import load_state
 from govdiff.index import write_index
+from govdiff.paidpush import TARGETS_ENV, load_targets, paid_push
 from govdiff.runner import bootstrap_feed, rediff_feed, run_all, run_feed
 from govdiff.snapshot import list_versions
 
@@ -179,6 +183,48 @@ def cmd_attest(args) -> int:
     return 0
 
 
+def cmd_paid_push(args) -> int:
+    root = resolve_repo_root(args.root)
+    targets = load_targets(args.targets_json)
+    report = paid_push(
+        args.feed,
+        root=root,
+        targets=targets,
+        dry_run=args.dry_run,
+        message=args.message,
+    )
+
+    if report["outcome"] == "no-targets":
+        print("%s: no paid targets configured - skipping" % args.feed)
+    else:
+        print(
+            "%s: %d target(s), %d file(s) in the slice"
+            % (args.feed, report["target_count"], len(report["files"]))
+        )
+    for line in report.get("tree", []):
+        print("  %10d  %s" % (line["bytes"], line["path"]))
+    for outcome in report["targets"]:
+        # `target` is a hash of the URL, never the URL: this log is public from
+        # 2026-09-22 and a subscriber's repository name is not ours to publish.
+        print(
+            "  %s: %s%s"
+            % (
+                outcome["target"],
+                outcome["outcome"],
+                " - %s" % outcome["note"] if outcome.get("note") else "",
+            )
+        )
+
+    if args.report:
+        target = Path(args.report)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with open(target, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        print("wrote %s" % target)
+
+    return 1 if report["outcome"] == "failure" else 0
+
+
 def cmd_status(args) -> int:
     root = resolve_repo_root(args.root)
     feeds = load_feeds(root / "feeds.yaml")
@@ -242,13 +288,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     idx = sub.add_parser(
         "index",
-        help="write docs/index.json, docs/feed.xml, docs/<feed>/feed.xml and CHANGES.md",
+        help=(
+            "write docs/index.json, docs/feed.xml, docs/<feed>/feed.xml,"
+            " docs/<feed>/changes.json and CHANGES.md"
+        ),
     )
     idx.add_argument("--output", help="write the index somewhere other than docs/index.json")
     idx.add_argument(
         "--no-change-feed",
         action="store_true",
-        help="write only docs/index.json, not the Atom feeds or CHANGES.md",
+        help="write only docs/index.json, not the Atom feeds, changes.json or CHANGES.md",
     )
     idx.set_defaults(func=cmd_index)
 
@@ -274,6 +323,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     att.add_argument("--output", metavar="PATH", help="write to a file instead of stdout")
     att.set_defaults(func=cmd_attest)
+
+    paid = sub.add_parser(
+        "paid-push",
+        help="push one feed's slice to the private repositories configured for it",
+        description=(
+            "Copy one feed's data, diffs, state, Atom feed and changes.json into every "
+            "paid target configured for it, and commit and push. Targets come from a "
+            "JSON array of {feed, repo, deploy_key_b64} objects - a file, or the "
+            "%s environment variable. No targets is a success, not a failure: it is "
+            "what an unsold feed looks like. Nothing in the output names a target "
+            "repository." % TARGETS_ENV
+        ),
+    )
+    paid.add_argument("--feed", required=True, help="the feed to push")
+    paid.add_argument(
+        "--targets-json",
+        metavar="FILE|env",
+        default="env",
+        help=(
+            "a JSON file holding the targets array, or 'env' to read $%s"
+            " (the default), or 'env:NAME' for a different variable" % TARGETS_ENV
+        ),
+    )
+    paid.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="stage the slice into a temporary directory and print it; push nothing",
+    )
+    paid.add_argument("--message", help="the commit message to use in each target")
+    paid.add_argument(
+        "--report", metavar="PATH", help="also write the outcome as JSON to this file"
+    )
+    paid.set_defaults(func=cmd_paid_push)
 
     status = sub.add_parser("status", help="one line per feed")
     status.add_argument("--json", action="store_true", help="also print the table as JSON")

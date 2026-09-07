@@ -61,7 +61,7 @@ jobs:
         run: |
           python - <<'PY'
           import glob, sys, tarfile
-          banned = ("data", "diffs", "raw", "docs", ".state", "js")
+          banned = ("data", "diffs", "raw", "docs", ".state", "js", "launch")
           names = tarfile.open(glob.glob("dist/*.tar.gz")[0]).getnames()
           # Every name is "<name>-<version>/<path inside the sdist>".
           inside = [n.split("/", 1)[1] for n in names if "/" in n]

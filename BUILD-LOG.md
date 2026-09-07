@@ -1649,3 +1649,271 @@ one write-up.
    `catalogos-sat-monthly`, `listas-mx-monthly` and `listas-mx-attestation`, the last two on one
    page. The test added today enumerates them, so the checklist can be generated from it rather than
    kept in sync by hand.
+
+## 2026-09-07 - day 8 - the machinery behind the prices, and a README that sells
+
+Every price on the offer pages rests on a sentence in `docs/paid.md` that the repository could not
+yet keep: *the diffs land in your repository twelve hours before they land in the public one*. The
+nightly had one job, one cron, and a `git push` to public `main`. Today that sentence becomes code.
+
+The PM settled five questions before work started, and they are recorded here as decisions rather
+than re-argued: one harvest per day, an evening job that re-fetches nothing, one secret for all paid
+targets, one constant for the head start, and `changes.json` written by `govdiff index`.
+
+No publisher was contacted today. Every byte was already on disk. External HTTP requests: zero. No
+workflow was dispatched - that is day 9.
+
+### Part A: two windows, and why the evening one is deliberately blind
+
+`.github/workflows/nightly.yml` now carries two crons at the workflow level and two jobs gated on
+`github.event.schedule`, with `workflow_dispatch` able to reach either through a `job` input.
+
+`harvest`, 06:15 UTC: tests, then the three feeds in their own `continue-on-error` steps exactly as
+before, then `govdiff index`, then one `govdiff paid-push` per feed, then an artifact, then the gate
+step that re-fails the job. It does not push to public `main` at all - `tests/test_schedule.py`
+greps every step in that job for `git push` and fails if one appears.
+
+`publish`, 18:15 UTC: download this morning's artifact, apply the feeds it is allowed to, rebuild the
+derived files, commit, push.
+
+The decision worth writing down is that **`publish` makes no request to any publisher**. The
+obvious design - re-fetch in the evening with conditional GETs - was rejected because it can invert
+the product. A file that first appears at 14:00 UTC would be found by the evening run, published free
+that night, and pushed to the paying repositories the next morning: the free tier first, by ten hours,
+on exactly the kind of urgent change somebody paid for. Publishing the morning's own output instead
+makes the head start exactly twelve hours every night, with no case in which it is less. It also
+means `.state/<feed>.json` - a committed file, and one that betrays that something changed before the
+diff is public - cannot reach public `main` early, because the morning job pushes nothing public.
+
+**The artifact is one gzipped tarball per feed plus a `manifest.json`**, not a git bundle or a patch
+of one commit. That was forced by the requirement that the evening job be able to publish two feeds
+and hold back a third: a single commit cannot be partially applied without rewriting it, and a
+manifest of per-feed outcomes can. Derived files - `docs/index.json`, the Atom feeds, the
+`changes.json` files, `CHANGES.md` - are deliberately **not** in the slices. The publish job runs
+`govdiff index` again after restoring the slices it accepted, so the index always describes exactly
+what landed rather than what the morning hoped would land.
+
+Holding a feed back is loud, not silent. The publish job prints a `::warning::` naming the feed, the
+recorded reasons, and the sentence explaining why publishing it anyway would be worse than not
+publishing it, and then fails the job at the end so GitHub sends the owner the failed-run email. A
+morning that produced no artifact at all is an `::error::` saying so and a failed job - never a
+quiet green run that published nothing.
+
+### Part B: `govdiff paid-push`, and one secret
+
+Delivery is a Python subcommand rather than shell in the workflow, because shell in a workflow can
+only be tested by running the workflow. `src/govdiff/paidpush.py` stages a feed's slice - a short
+faceless `README.md`, `data/<feed>/`, `diffs/<feed>/`, `.state/<feed>.json`, `docs/<feed>/feed.xml`
+and that feed's `changes.json` - and pushes it to every target configured for that feed.
+
+Four decisions inside it:
+
+1. **One secret, `PAID_TARGETS`**, holding a JSON array of `{feed, repo, deploy_key_b64}`. An order
+   is one edit to one secret and no workflow change. The private key is base64-encoded because a
+   multi-line PEM does not survive being pasted into a JSON string in a GitHub secret. **An absent or
+   empty secret is a success, not an error** - it prints *"no paid targets configured - skipping"* and
+   the step goes green, which is what an archive with no subscribers looks like and will look like
+   until the first order.
+2. **A fresh shallow clone every night, not a force-pushed orphan branch.** The subscriber's commit
+   history is part of what is sold: it is the dated record, and it is what GitHub's notifications are
+   built on. An orphan force-push would leave a repository with exactly one commit, nothing to read
+   backwards, and a "forced update" in every notification. Cloning costs a few seconds; the working
+   tree is then replaced wholesale so that a deletion upstream propagates rather than lingering.
+3. **`file://` remotes are supported**, and that is the seam that makes the whole thing testable.
+   `tests/test_paid_push.py` runs the real code path - clone, replace, commit, push - against a bare
+   repository in a temp directory, with no GitHub account, no deploy key and no network. It checks
+   that a second run with nothing new makes no commit, that a new diff arrives, that two targets for
+   one feed both get it, and that nothing from the neighbouring feed leaks into the slice.
+4. **No log line ever names a buyer.** This repository goes public on 2026-09-22 and a public
+   repository's Actions logs and artifacts are public with it. A target is `target-<sha256[:8]>` of
+   its URL, everywhere: in the printed output, in the `--report` JSON, and in the run manifest. The
+   git stderr is dropped from error messages for the same reason - it quotes the remote URL. The
+   workflow additionally registers each target URL with `::add-mask::` before any step can echo one,
+   because GitHub masks the secret's exact value and not the strings inside it. Two tests assert that
+   a repository named `acme-secret-name` appears in neither the output nor the report.
+
+`docs/paid.md`'s fulfilment section was rewritten for this model and **costed honestly**: five steps,
+about twelve minutes of the owner's own hands per order, forever, with no self-serve provisioning
+planned. At $28/month that is roughly the first month's revenue spent on delivering the order. It is
+written down because a delivery step quietly assumed to be free is how a small product starts losing
+money without noticing.
+
+### Part C: one constant, and `changes.json`
+
+`HEAD_START_HOURS = 12` lives in `src/govdiff/config.py` and nowhere else. The publish hour is
+derived from the harvest hour plus the constant; both crons are rendered from those; every
+`changes.json` reports the same number. The workflow file is the one place the value is retyped, and
+it cannot drift - `tests/test_schedule.py` parses the YAML with pyyaml, reads the two `- cron:` lines,
+and fails if the gap between them stops equalling the constant. (A note for whoever reads that test:
+PyYAML resolves the bare key `on:` to the boolean `True` under YAML 1.1, which is why it looks the
+key up under both spellings.)
+
+`docs/<feed>/changes.json` is written by `govdiff index`, beside the Atom writer, in the same walk.
+Its shape is exactly the one `paid.md` documented - `format`, `feed`, `generated_at`,
+`head_start_hours`, `path_base`, `change_count`, a `latest` block, and every change newest first with
+repo-root-relative paths - plus the two fields the worked example did not show, which have now been
+added to `paid.md` rather than left as a surprise. It reuses the `index.json`
+compare-excluding-the-timestamp rule, because `paid.md` promises that a byte-identical file means
+there is nothing to do, and a `generated_at` that moved nightly would have made that false and
+committed three files every night for nothing. Verified by running `govdiff index` twice: the second
+run reports *"unchanged, left alone"*.
+
+### Part D: the README's first screen
+
+The README was accurate and read like a build record. The first screen is now: one sentence on what
+this is, **a real diff** - four records out of the 36 the NF-e portal published on 2025-11-24, copied
+out of the committed `.jsonl` and trimmed only for width - two links (the viewer, the change feed),
+the install block, and the four prices each linking to its offer page. Everything else is below a
+horizontal rule in the order it was already in.
+
+Two honest bits the day-7 hand-off asked to protect were, in fact, **missing** from the README
+entirely, so they were written rather than preserved: that both packages install a binary called
+`govdiff` and whichever is later on `PATH` wins, and that `govdiff --version` says `0.0.0+source`
+from a clone that was never installed. They now sit in the install section, which is where somebody
+about to hit them is standing.
+
+No fact was deleted. The `Install` section moved up whole; the `Paid feeds` section lost its
+duplicate price table and gained a paragraph explaining the two windows; the `Change feed` section
+gained the `changes.json` row and how to poll it.
+
+### Part E: `launch/`, at the repository root
+
+Day 7's hand-off flagged that `docs/` is the published site with no exclusion mechanism, so
+"excluded from the site" and "under `docs/`" are not both achievable. The launch material therefore
+sits at `launch/` in the repository root: `prune launch` in `MANIFEST.in`, `launch` added to the
+`release.yml` banned-directory check, and a test asserting that nothing under `docs/` links to it.
+
+`launch/show-hn.md` is a faceless Show HN draft - a 73-character title, a 341-word body, no first
+person, no name, no address. It leads with 69-B because that is the feed with a real argument (SAT
+publishes a replacement file and keeps no history, so the question "was this RFC on the definitive
+list on 14 March?" is unanswerable and the archive makes it answerable from its first night), is
+straight that the other two are diffs of back-versions the publishers still host, states the free
+tier, and gives one honest limitation that is not the 69-B one already stated.
+
+`launch/checklist.md` is generated by `launch/make_checklist.py` (stdlib only - it has to run on the
+owner's machine with nothing installed). It re-scans `docs/offers/*.html` for buy buttons the same
+way `tests/test_docs_links.py` does, reads each button's price out of the `<span class="amount">`
+above it, and absorbs day 4's owner table, the public flip, the Pages enablement and the 09-22 date.
+`tests/test_launch.py` regenerates it and fails if the committed file differs.
+
+**A correction to the brief and to day 7's own note.** Both say "five Stripe button ids". There are
+**four** - `cclasstrib-monthly`, `catalogos-sat-monthly`, `listas-mx-monthly`,
+`listas-mx-attestation` - which is also the list day 7 wrote out immediately after saying five. The
+checklist counts what is on the pages rather than trusting a number in prose, so it says four, and a
+test cross-checks the script's scan against the `PRODUCT_PAGES` map in `tests/test_docs_links.py`.
+
+### Requests made
+
+None. Zero HTTP requests to any host, internal or external. `gh workflow view nightly.yml` was run
+against the GitHub API to confirm the workflow is registered (`ID: 352014017`, `Total runs 0`); no
+workflow was dispatched.
+
+### Tests
+
+185 to 244, 59 added, all passing, plus the 20 Node tests unchanged.
+
+- `tests/test_schedule.py` (11) - the two crons, the gap against `HEAD_START_HOURS`, each job gated
+  on its own cron, no `git push` in the morning job, no `govdiff run` in the evening job, and the
+  three `workflow_dispatch` inputs.
+- `tests/test_paid_push.py` (27) - target parsing including every shape of "no targets", the slice
+  contents and its isolation from other feeds, a real clone/commit/push against a local bare
+  repository, the unchanged-second-run case, the failure case, two targets for one feed, and the two
+  redaction tests.
+- `tests/test_launch.py` (15) - the checklist regenerates identically, every buy button on every
+  offer page is in it with a price, the owner-only steps are all named, the Show HN title fits and
+  the body is under 350 words and faceless, and nothing in `docs/` links to `launch/`.
+- `tests/test_changefeed.py` (+7, 19 to 26) - `changes.json` shape, ordering, resolvable paths, the
+  empty-feed case, counts matching `index.json`, byte-identity on a quiet night, and the three
+  committed files being current. One existing assertion was updated: the list of files a first
+  `write_change_feed()` writes now includes the two `changes.json` files.
+
+`python -c "import yaml; yaml.safe_load(open('.github/workflows/nightly.yml'))"` parses clean: two
+jobs, two crons, three dispatch inputs, 17 harvest steps and 9 publish steps.
+
+### Defects and caveats
+
+1. **Not one line of the new workflow has run.** Both jobs, the artifact round-trip, the REST-API
+   artifact lookup, the `::add-mask::` step and the tarball layout are unexercised. That is day 9's
+   entire purpose and the hand-off below carries the commands.
+2. **`paid-push` has never talked to GitHub over SSH.** Everything is tested over `file://`, which
+   exercises clone, replace, commit and push but not `_ssh_env` - the base64 decode, the `chmod 600`,
+   the `GIT_SSH_COMMAND`, `IdentitiesOnly=yes` and `StrictHostKeyChecking=accept-new`. The first real
+   deploy key will be the first test of that path, and it is owner-hand.
+3. **The publish job's `gh api` artifact lookup assumes the `name=` query parameter works.** If it
+   does not, the fallback is listing artifacts and filtering client-side; the step already fails
+   loudly rather than publishing nothing quietly, so day 9 will see it.
+4. **A held-back feed stays held back until a morning run delivers it.** There is no "publish it
+   anyway" switch, deliberately. If a paid target is permanently broken, the fix is to remove it from
+   `PAID_TARGETS`; otherwise the public archive stalls on that feed. Worth revisiting only if it
+   actually happens.
+5. **The artifact retains for 7 days.** Publishing a date older than that is impossible, and the
+   error message says the artifact does not exist rather than that it expired.
+6. **Day 7's caveats stand**, including the 69-B `Last-Modified` still reading 22 January 2026 and
+   `sat69b` still having zero diffs, which is why its `changes.json` has `"latest": null`.
+
+### Day 9
+
+Verify the nightly over **real runs**. Nothing below can be done from a test.
+
+Dispatch the morning window and watch it:
+
+```
+gh workflow run nightly.yml -f job=harvest
+gh run list --workflow=nightly.yml --limit 1
+gh run watch <run-id>
+gh run view <run-id> --log > harvest.log
+```
+
+Then confirm the artifact and the manifest by hand:
+
+```
+gh run download <run-id> -n archive-$(date -u +%Y-%m-%d) -D ./incoming
+cat incoming/manifest.json
+ls -la incoming/slices/
+tar -tzf incoming/slices/cclasstrib.tar.gz | head
+```
+
+What to check in the log: the paid-push steps printed *"no paid targets configured - skipping"* and
+went green; `govdiff index` ran; **no `git push` happened**; the manifest lists all three feeds with
+`publishable: true` and `paid: "no-targets"`; each slice holds `data/`, `diffs/`, `raw/` and
+`.state/` for its own feed and nothing else.
+
+Then the evening window, against that same date:
+
+```
+gh workflow run nightly.yml -f job=publish -f date=$(date -u +%Y-%m-%d)
+gh run watch <run-id>
+gh run view <run-id> --log > publish.log
+git fetch && git log origin/main -1 --stat
+```
+
+Expect either a `chore(archive): nightly harvest <date>` commit on `main`, or the honest *"nothing
+changed today"* path with no commit - both are correct, and which one depends on whether a publisher
+moved. What must not happen is a commit that includes a feed the manifest marked unpublishable.
+
+Fix whatever breaks. The likely candidates are caveat 3 above, the heredoc-inside-`run` blocks, and
+`unzip` / `tar` behaviour on the runner.
+
+Day 10 is the unattended run and the failure path. Let the real 06:15 and 18:15 crons fire once with
+nobody watching, then read both runs. Separately, force a failure and confirm the job **concludes as
+failure** (that is what triggers the owner's failed-run email - a `continue-on-error` step alone does
+not):
+
+```
+gh workflow run nightly.yml -f job=harvest -f simulate_failure=catcfdi
+gh run watch <run-id>
+gh run view <run-id> --json conclusion -q .conclusion
+```
+
+That last command must print `failure`. Then publish that date and confirm `catcfdi` is held back
+with the warning, the other two feeds land, and the publish job also concludes `failure`:
+
+```
+gh workflow run nightly.yml -f job=publish -f date=<that date>
+gh run view <run-id> --log | grep -A3 "HELD BACK"
+gh run view <run-id> --json conclusion -q .conclusion
+```
+
+Leave the archive consistent afterwards: a `simulate_failure` run still uploads an artifact and still
+publishes the other two feeds, so re-run a clean `harvest` and `publish` pair for the same day before
+finishing, and confirm `catcfdi` catches up.

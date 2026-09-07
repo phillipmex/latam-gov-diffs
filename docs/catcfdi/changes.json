@@ -1,0 +1,38 @@
+{
+  "change_count": 1,
+  "changes": [
+    {
+      "added": 7917,
+      "changed": 108,
+      "fields_added": [],
+      "fields_removed": [],
+      "from": "2024-12-04-a4b88178",
+      "jsonl": "diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl",
+      "published": "2026-09-03",
+      "removed": 1,
+      "rows_from": 354429,
+      "rows_to": 362345,
+      "summary": "diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.summary.json",
+      "to": "2026-09-03-a5ce7a60"
+    }
+  ],
+  "feed": "catcfdi",
+  "format": 1,
+  "generated_at": "2026-09-07T08:45:20+00:00",
+  "head_start_hours": 12,
+  "latest": {
+    "added": 7917,
+    "changed": 108,
+    "fields_added": [],
+    "fields_removed": [],
+    "from": "2024-12-04-a4b88178",
+    "jsonl": "diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl",
+    "published": "2026-09-03",
+    "removed": 1,
+    "rows_from": 354429,
+    "rows_to": 362345,
+    "summary": "diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.summary.json",
+    "to": "2026-09-03-a5ce7a60"
+  },
+  "path_base": "repository-root"
+}

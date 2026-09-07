@@ -1,10 +1,64 @@
 # latam-gov-diffs
 
-A nightly archive and **machine-readable change feed** for Latin American government reference data.
+**A nightly archive and machine-readable change feed for Latin American government reference
+data** - each source fetched, stored as a dated Parquet snapshot, and diffed record by record
+against the version before it. The diff, not the file, is the product.
 
-Governments publish these tables as spreadsheets and quietly restructure them. This repository fetches
-each source, stores a dated snapshot as Parquet, and commits a record-level diff against the previous
-version. The diff, not the file, is the product.
+This is one. Four records out of the 36 in the change the NF-e portal published on 2025-11-24,
+trimmed at the `...` for width; the rest is in
+[`diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl`](diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl):
+
+```json
+{"fields": {"dataatualizacao": {"after": "2025-11-19", "before": "2025-05-19"}, "indnfgas": {"after": "1", "before": "0"}}, "key": {"cclasstrib": "000001"}, "op": "changed"}
+{"fields": {"credito_para": {"after": null, "before": "Fornecedor"}}, "key": {"cclasstrib": "000003"}, "op": "changed"}
+{"after": {"cclasstrib": "410027", "cst_ibs_cbs": "410", "dataatualizacao": "2025-11-19", ...}, "key": {"cclasstrib": "410027"}, "op": "added"}
+{"before": {"cclasstrib": "210001", "cst_ibs_cbs": "210", "dataatualizacao": "2025-05-19", ...}, "key": {"cclasstrib": "210001"}, "op": "removed"}
+```
+
+Two codes lost the credit note they carried, code `410027` appeared, code `210001` was withdrawn.
+Nobody published that summary; it is derived here by comparing two snapshots the publisher put out
+seven weeks apart.
+
+**[Open the viewer](https://phillipmex.github.io/latam-gov-diffs/)** - pick a feed, pick two
+versions, read what moved. **[Subscribe to the change
+feed](https://phillipmex.github.io/latam-gov-diffs/feed.xml)** - Atom, one entry per published
+revision, or `docs/<feed>/changes.json` if you would rather poll JSON.
+
+## Install
+
+Both clients are **available from launch, 2026-09-22**. Nothing is on PyPI or npm before then.
+
+```
+pip install govdiff      # the harvester: fetch, snapshot, diff, index
+npm install govdiff      # a zero-dependency Node reader for the published archive
+npx govdiff feeds        # or just read it, no install
+```
+
+The Python package is the tool that fills this archive; the npm package only reads it, over
+plain HTTPS, with no key and no account. `js/README.md` documents the Node side.
+
+**Both packages install a binary called `govdiff`**, so installing both puts two different
+programs under one name and whichever is later on your `PATH` wins. That is deliberate - the name
+is the point on each registry - but it is worth knowing before you install both on the same
+machine. And `govdiff --version` reads the installed package metadata, so from a clone that was
+never `pip install`ed it honestly reports `0.0.0+source` rather than guessing a number.
+
+## What is for sale
+
+The archive, the viewer, the change feed and both clients are free and stay free. Four things are
+sold on top of them, and nothing is on sale before **2026-09-22**:
+
+| product | feed | price (USD) |
+|---|---|---|
+| `cclasstrib` feed | `cclasstrib` | [$28 / month](docs/offers/cclasstrib.html) |
+| `catalogos-sat` feed | `catcfdi` | [$39 / month](docs/offers/catalogos-sat.html) |
+| `listas-mx` feed | `sat69b` | [$99 / month](docs/offers/listas-mx.html) |
+| `listas-mx` point-in-time attestation | `sat69b` | [$250 one-off](docs/offers/listas-mx.html#attestation) |
+
+A paid feed is the same diffs, in a private GitHub repository, twelve hours earlier -
+[what that means exactly](docs/paid.md).
+
+---
 
 ## Feeds
 
@@ -81,18 +135,9 @@ snapshot only, so every day not archived is lost.
 
 ## Paid feeds
 
-The archive, the viewer, the change feed and both clients are free and stay free. Four things are
-sold on top of them, and nothing is on sale before **2026-09-22**:
-
-| product | feed | price (USD) |
-|---|---|---|
-| `cclasstrib` feed | `cclasstrib` | [$28 / month](docs/offers/cclasstrib.html) |
-| `catalogos-sat` feed | `catcfdi` | [$39 / month](docs/offers/catalogos-sat.html) |
-| `listas-mx` feed | `sat69b` | [$99 / month](docs/offers/listas-mx.html) |
-| `listas-mx` point-in-time attestation | `sat69b` | [$250 one-off](docs/offers/listas-mx.html#attestation) |
-
-Each price links to that product's offer page. Nothing is on sale before 2026-09-22: every buy
-button points at a `#stripe-pending` placeholder and says so.
+The archive, the viewer, the change feed and both clients are free and stay free. The four prices
+are [at the top of this page](#what-is-for-sale) and each links to its offer page. Nothing is on
+sale before 2026-09-22: every buy button points at a `#stripe-pending` placeholder and says so.
 
 A paid feed is an invite to a **private GitHub repository** carrying the same nightly diff stream
 for one output, committed there twelve hours before the public archive, with GitHub's own
@@ -102,22 +147,18 @@ written, printable statement of whether one RFC appeared on the SAT 69-B list on
 with the snapshot ids, their sha256 and the SAT document URL and `Last-Modified` at the time -
 produced by `govdiff attest`, and not legal advice.
 
+**The twelve hours are one fetch, published twice.** `.github/workflows/nightly.yml` harvests once
+a night at 06:15 UTC and commits the result to the private repositories only. A second job at
+18:15 UTC takes that same result - it re-fetches nothing - and publishes it here. So the head
+start is exactly twelve hours rather than an average, the free archive can never be served a
+change the paid copies have not had, and a feed whose paid delivery failed that morning is held
+back from the public archive until it has been delivered. `HEAD_START_HOURS` in
+`src/govdiff/config.py` is the only place the number 12 is written, and a test fails the build if
+the workflow's two cron lines stop matching it.
+
 **[docs/paid.md](docs/paid.md) is the full and binding description**: delivery, what is explicitly
 not included, the attestation's coverage limit, fulfilment and refunds. The offer pages are in
 [docs/offers/](docs/offers/).
-
-## Install
-
-Both clients are **available from launch, 2026-09-22**. Nothing is on PyPI or npm before then.
-
-```
-pip install govdiff      # the harvester: fetch, snapshot, diff, index
-npm install govdiff      # a zero-dependency Node reader for the published archive
-npx govdiff feeds        # or just read it, no install
-```
-
-The Python package is the tool that fills this archive; the npm package only reads it, over
-plain HTTPS, with no key and no account. `js/README.md` documents the Node side.
 
 ## Viewer
 
@@ -272,14 +313,22 @@ night whether or not anything happened.
 
 ## Change feed
 
-`govdiff index` writes the same history in two more shapes, from the same walk of the archive and
-in the same nightly step. Nothing here needs a build, an account, or a key.
+`govdiff index` writes the same history in three more shapes, from the same walk of the archive
+and in the same nightly step. Nothing here needs a build, an account, or a key.
 
 | file | what it is |
 |---|---|
 | [`docs/feed.xml`](https://phillipmex.github.io/latam-gov-diffs/feed.xml) | Atom 1.0, every change across all feeds, newest first |
 | `docs/<feed>/feed.xml` | the same for one feed - e.g. `docs/cclasstrib/feed.xml` |
+| [`docs/<feed>/changes.json`](docs/cclasstrib/changes.json) | the same for one feed as JSON: `latest`, then every change newest first |
 | [`CHANGES.md`](CHANGES.md) | the same history as a table, one section per feed, for reading |
+
+**From a script that would rather not parse Atom**, poll `changes.json` and compare `latest.to`
+with the version id you last processed. Its paths are relative to the repository root, exactly as
+in `docs/index.json`, and `generated_at` moves only when the archive moved - so a byte-identical
+file means there is nothing to do. It is the same format the paid repositories carry; the only
+difference is that theirs is twelve hours older. [The shape is documented in
+docs/paid.md](docs/paid.md).
 
 **In a feed reader**, subscribe to
 `https://phillipmex.github.io/latam-gov-diffs/feed.xml` for everything, or
