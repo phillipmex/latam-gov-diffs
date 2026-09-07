@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>latam-gov-diffs - diff viewer</title>
+    <meta
+      name="description"
+      content="Browse the nightly diffs of Latin American government reference data: Brazil's cClassTrib table, Mexico's SAT CFDI catalogues, and the SAT 69-B list."
+    />
+    <!--
+      No external scripts, no external stylesheets, no fonts to fetch, no
+      analytics. The page is three files and works offline, from a file://
+      copy, and under any Content-Security-Policy a reader cares to apply.
+    -->
+    <link rel="stylesheet" href="./viewer.css" />
+    <!-- Inline, so the browser's automatic /favicon.ico request never 404s and
+         the page still makes no request off its own origin. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2314509a'/%3E%3Cpath d='M4 5h8M4 8h8M4 11h5' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="bar">
+        <h1>latam-gov-diffs</h1>
+        <nav aria-label="Sections">
+          <a href="https://github.com/phillipmex/latam-gov-diffs">Repository</a>
+          <a href="https://github.com/phillipmex/latam-gov-diffs#the-diff-format">Diff format</a>
+          <!-- Offer pages land here later. No prices exist yet, so none are shown. -->
+          <span class="soon" title="Not published yet">Feeds &amp; attestations - soon</span>
+        </nav>
+      </div>
+      <p class="tagline">
+        Nightly archive and diff of Latin American government reference data. Free to read; paid
+        feeds and attestations are described in the README.
+      </p>
+    </header>
+
+    <main>
+      <section class="pickers" aria-label="Choose what to look at">
+        <label>
+          Feed
+          <select id="feed"></select>
+        </label>
+        <label>
+          Change
+          <select id="pair"></select>
+        </label>
+        <p id="source" class="source"></p>
+      </section>
+
+      <section id="summary" aria-label="Summary of this change"></section>
+
+      <section aria-label="Changed records">
+        <div class="controls">
+          <label class="grow">
+            Filter
+            <input
+              id="filter"
+              type="search"
+              placeholder="code, field name, or any value"
+              autocomplete="off"
+            />
+          </label>
+          <label>
+            Show
+            <select id="op">
+              <option value="all">every change</option>
+              <option value="added">added only</option>
+              <option value="changed">changed only</option>
+              <option value="removed">removed only</option>
+            </select>
+          </label>
+        </div>
+
+        <p id="records-note" class="note"></p>
+
+        <div class="table-wrap">
+          <table id="records">
+            <thead>
+              <tr>
+                <th scope="col">What</th>
+                <th scope="col">Record</th>
+                <th scope="col">Detail</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="paging">
+          <button id="prev" type="button">Previous</button>
+          <span id="page-label"></span>
+          <button id="next" type="button">Next</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p id="provenance"></p>
+      <p>
+        Code MIT. The archived data is public government data, reproduced with attribution. This
+        page reads <code>index.json</code> beside it and the diff files from the archive; nothing
+        is sent anywhere.
+      </p>
+    </footer>
+
+    <script src="./viewer.js"></script>
+  </body>
+</html>

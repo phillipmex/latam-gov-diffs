@@ -1,0 +1,47 @@
+{
+  "name": "govdiff",
+  "version": "0.1.0",
+  "description": "Read the latam-gov-diffs archive: nightly snapshots and record-level diffs of Latin American government reference data",
+  "license": "MIT",
+  "author": "latam-gov-diffs maintainers",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "bin": {
+    "govdiff": "cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "index.js",
+    "cli.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "keywords": [
+    "open-data",
+    "diff",
+    "brazil",
+    "mexico",
+    "nfe",
+    "cclasstrib",
+    "sat",
+    "cfdi",
+    "69-b"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phillipmex/latam-gov-diffs.git",
+    "directory": "js"
+  },
+  "homepage": "https://github.com/phillipmex/latam-gov-diffs#readme",
+  "bugs": {
+    "url": "https://github.com/phillipmex/latam-gov-diffs/issues"
+  }
+}

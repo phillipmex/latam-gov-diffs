@@ -1,4 +1,4 @@
-"""Command line entry point: `govdiff run|bootstrap|rediff|status`."""
+"""Command line entry point: `govdiff run|bootstrap|rediff|index|status`."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from govdiff import __version__
 from govdiff.config import load_feeds, repo_root
 from govdiff.errors import GovDiffError, SourceChallenged
 from govdiff.fetch import load_state
+from govdiff.index import write_index
 from govdiff.runner import bootstrap_feed, rediff_feed, run_all, run_feed
 from govdiff.snapshot import list_versions
 
@@ -113,6 +114,27 @@ def cmd_rediff(args) -> int:
     return 0
 
 
+def cmd_index(args) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    output = Path(args.output).resolve() if args.output else None
+    report = write_index(root, output)
+    try:
+        shown = report["path"].relative_to(root).as_posix()
+    except ValueError:
+        shown = str(report["path"])
+    print(
+        "%s: %d feed(s), %d version(s), %d diff(s) - %s"
+        % (
+            shown,
+            report["feeds"],
+            report["versions"],
+            report["diffs"],
+            "rewritten" if report["changed"] else "unchanged, left alone",
+        )
+    )
+    return 0
+
+
 def cmd_status(args) -> int:
     root = Path(args.root).resolve() if args.root else repo_root()
     feeds = load_feeds(root / "feeds.yaml")
@@ -162,6 +184,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     redo.add_argument("feed")
     redo.set_defaults(func=cmd_rediff)
+
+    idx = sub.add_parser(
+        "index", help="write docs/index.json - the machine-readable archive index"
+    )
+    idx.add_argument("--output", help="write somewhere other than docs/index.json")
+    idx.set_defaults(func=cmd_index)
 
     status = sub.add_parser("status", help="one line per feed")
     status.add_argument("--json", action="store_true", help="also print the table as JSON")

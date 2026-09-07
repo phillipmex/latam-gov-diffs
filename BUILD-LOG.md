@@ -567,3 +567,236 @@ the day's good data is still saved.
 3. **Watch the 69-B `Last-Modified`.** It has said 22 January 2026 since the day-0 probe. The first
    time it moves is the first real diff this feed has ever produced anywhere, and it is worth
    checking that the run and the diff both behave when it does.
+
+## 2026-09-07 - day 4
+
+Three things that turn a repository full of Parquet files into something a person or a program can
+use: a machine-readable index, two packages ready to publish, and a static viewer.
+
+**No publisher was contacted today.** Every feed's data was already on disk. The only HTTP traffic
+was to 127.0.0.1:8765 (a local static server) and 127.0.0.1:9222 (the VM's own Chrome).
+
+### Part A: `govdiff index` and `docs/index.json`
+
+One JSON file that says what the archive holds: every feed from `feeds.yaml` with its source
+metadata, every stored version (id, date, row count, column count, sha256, Parquet path and byte
+size), and every diff (from, to, JSONL path and byte size, summary path, and the summary's
+added / changed / removed / unchanged counts and row totals). 15,176 B for 3 feeds, 13 versions
+and 10 diffs. It is the only file the npm client or the viewer needs before it knows what exists.
+
+Three decisions the rest of the day depends on:
+
+1. **Every path is relative to the repository root**, not to `docs/`. On GitHub Pages the site root
+   *is* `docs/`, so `diffs/` is not served there at all - a docs-relative path would be
+   unresolvable in exactly the place the viewer runs. Repo-root paths join onto one base URL:
+   `raw.githubusercontent.com/.../main/` on Pages, `../` on a local server started at the repo
+   root. That is the whole resolution rule, and it is stated in the file as `path_base`.
+2. **Nothing that moves on its own goes in the file.** `.state/<feed>.json` carries
+   `last_fetched_at` and `last_result`, which change on every nightly run whether or not anything
+   was published; including them would have produced a commit every single night that said
+   nothing. Only `version_id`, `sha256`, `last_modified` and `row_count` are taken from `.state`.
+3. **The writer leaves the file alone when only `generated_at` would have moved.** It builds the
+   index, compares it with the committed one with the timestamp excluded, and rewrites only on a
+   real difference. So `git status` after a quiet night is clean, and a touched `index.json` means
+   the archive genuinely changed. Output is sorted keys, 2-space indent, trailing newline - the
+   same shape as `meta.json` and the summaries.
+
+Wired into `.github/workflows/nightly.yml` as a `Rebuild the archive index` step on `always()`,
+between `Show status` and the commit, with `docs` added to that step's `git add`. On `always()` for
+the same reason the commit step is: a feed that failed must not stop the index describing the feeds
+that succeeded.
+
+### Part B: the Python release path
+
+Reused linejudge's publishing shape rather than inventing a second one.
+
+- **`__version__` reads the installed package metadata** (`importlib.metadata.version`), falling
+  back to `0.0.0+source` in a source tree that was never installed. The alternative - a constant in
+  `__init__.py` kept in sync with `pyproject.toml` by hand - is what linejudge shipped, and the two
+  copies are exactly the sort of thing that drifts silently: a version number that disagrees with
+  what PyPI actually served is a small lie, and this project is meant to be the opposite of that.
+  `pyproject.toml` is now the single source of truth and there is no second copy to disagree with
+  it. `govdiff --version` prints it.
+- **`CHANGELOG.md`** in Keep a Changelog form. 0.1.0 covers days 1-4 and is marked *unreleased*: it
+  is built and tag-ready, and deliberately not published, because the archive it reads has to be
+  public before a client that reads it is worth installing.
+- **`MANIFEST.in` prunes `data`, `diffs`, `raw`, `docs`, `js`, `.state`, `.github` and `tests`.**
+  The package is the tool; the repository is the archive. An sdist carrying `data/` and `diffs/`
+  would ship tens of megabytes to everyone who runs `pip install govdiff`, and would grow every
+  night. Checked, not assumed: the sdist is 43,902 B, and every entry in it is `src/govdiff/`,
+  `pyproject.toml`, `README.md`, `CHANGELOG.md`, `LICENSE`, `requirements.txt` or `feeds.yaml`.
+  The release workflow re-checks it and fails the release if any of those directories leaks in, so
+  a future change cannot quietly reintroduce the problem.
+- `python -m build` produces `govdiff-0.1.0.tar.gz` (43,902 B) and `govdiff-0.1.0-py3-none-any.whl`
+  (44,394 B); `twine check dist/*` PASSED on both. `dist/` stays gitignored.
+- **`.github/workflows/release.yml`**, triggered by pushing a `v*` tag: build, `twine check`, the
+  sdist contents check, then publish to PyPI with `pypa/gh-action-pypi-publish` under
+  `permissions: id-token: write` and environment `pypi`; then, only if PyPI succeeded, run the Node
+  tests and `npm publish --provenance --access public`. **There is not one API token in this
+  repository or in its secrets.** Both registries are published to with trusted publishing, so the
+  credential that could leak does not exist. Nothing was tagged and nothing was published.
+
+### Part C: the npm client
+
+`js/`, package name `govdiff`, version 0.1.0, MIT, `"type": "module"`, `"engines": {"node":
+">=18"}`, **zero dependencies** - Node's standard library and global `fetch`, nothing else.
+
+Library: `listFeeds()`, `versions(feed)`, `diffs(feed)`, `latestDiff(feed)`, `summary(feed, from,
+to)` and `readDiff(feed, from, to)` - the last an async iterator over the JSONL rather than an
+array, because one catCFDI revision is 8,026 records and megabytes of text, and a caller who only
+wants the additions should not have to hold the rest in memory. The response body is streamed and
+split on newlines as it arrives. The index is fetched once per base URL per process.
+
+CLI: `govdiff feeds`, `govdiff versions <feed>`, `govdiff latest <feed>` (prints the summary,
+including the changed-fields histogram) and `govdiff diff <feed> <from> <to>` (streams JSONL to
+stdout, so it pipes into `jq`). The version string is read out of `package.json` at runtime, for
+the same reason the Python one is read out of package metadata.
+
+Base URL is `https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/`, overridable with
+`GOVDIFF_BASE_URL` - which is also how the tests point it at a local server. `npm pack --dry-run`
+shows five files (`index.js`, `cli.js`, `README.md`, `LICENSE`, `package.json`), 6.0 kB packed,
+15.6 kB unpacked. `js/README.md` is short and points at the main README.
+
+### Part D: the viewer
+
+`docs/index.html` + `docs/viewer.js` + `docs/viewer.css` + `docs/.nojekyll`. Vanilla JavaScript,
+HTML and CSS with **no build step and not one external request** - no CDN, no web font, no
+analytics, and an inline SVG favicon so even the browser's automatic `/favicon.ico` request does
+not 404. It works from a `file://` copy and under any Content-Security-Policy a reader cares to
+apply.
+
+Feed picker; version-pair picker defaulting to the newest diff; the summary as five counters plus
+the changed-fields histogram and the added / dropped column lists; then the records - a filter box,
+an op filter, 200 rows a page, and per record the key fields beside the changed fields as
+before then after. Every view is a link: `#feed=cclasstrib&from=...&to=...`, and `&base=<url>`
+overrides where the diff files are read from.
+
+**The base-URL question, resolved rather than hand-waved.** Pages serves `docs/` as the site root,
+so `diffs/` is not reachable from a Pages URL at all. The page always fetches `./index.json` from
+beside itself, then resolves the repo-root-relative paths inside it against a base it detects:
+`#base=` if given; otherwise `../` when the host is localhost over http (the page is at `/docs/`
+and the archive is one level up); otherwise `raw_base_url` from `index.json`, which is the
+raw.githubusercontent.com URL. Documented in the README, in the viewer's own header comment, and in
+the error message the page shows if a diff file 404s.
+
+**Big diffs.** The JSONL is streamed with `fetch` and a `ReadableStream` reader, decoded and split
+line by line as chunks arrive. The first 5,000 records are parsed and kept for the table; past that
+the lines are counted, not parsed, and the page says so in as many words. Day 3's format 2 had
+already shrunk the catCFDI diff from 20.6 MB to 2.67 MB, so the cap was exercised against 8,026
+records rather than the 20 MB the brief expected - the mechanism is identical and it is the reason
+the page stays responsive on either.
+
+### Verification in the browser
+
+Served the repository root with `python -m http.server 8765 --bind 127.0.0.1` and drove the page in
+the VM's own CDP Chrome (Chrome 152, `http://127.0.0.1:9222`; tab opened with `/json/new`, driven
+over the DevTools protocol from a small Node 24 script using its built-in WebSocket client,
+screenshotted with `Page.captureScreenshot`, tab closed afterwards). No package was installed for
+this.
+
+What was actually checked, not assumed:
+
+| check | result |
+|---|---|
+| page loads; title and tagline | `latam-gov-diffs - diff viewer`; tagline exact |
+| console and browser log | **zero entries** on the final run |
+| feed picker | all three feeds |
+| deep link `#feed=cclasstrib&from=2025-10-03-b5ed31f4&to=2025-11-24-431d4217` | honoured; pickers and summary match it |
+| summary counters | 7 added / 25 changed / 4 removed / 113 unchanged; 142 rows to 145 |
+| changed-fields histogram | `link`, `credito_para`, `dataatualizacao`, `indnfgas`, `indcteos`, ... |
+| dropped columns | `credito_para`, with the note explaining why a dropped column makes every row read as changed |
+| filter box | `dataatualizacao` narrows to 18 of 36 |
+| op filter | `removed` narrows to 4 of 36; first row `cclasstrib=210001` |
+| catCFDI, the big one | 8,026 of 8,026 counted, first 5,000 shown, the message says so, no freeze |
+| paging | Next moves to records 201-400 |
+| `sat69b` (one version, no diff) | explains that a diff needs two versions |
+| `&base=` override | honoured, preserved in the hash, diff loads from the override |
+| dark mode | rendered dark under the VM's system theme |
+
+Pages was **not** enabled and the repository is still private, per the rules. The one branch that
+cannot be tested until the public flip is the raw.githubusercontent.com base - it is the fallback
+that runs when the host is not localhost, and the first thing to check on 09-22.
+
+### Requests made
+
+**None.** No government publisher was contacted today; nothing in day 4 needs to fetch. Total
+external HTTP requests: zero.
+
+### Tests
+
+`pytest -q`: **105 passed** (92 from day 3, 13 new in `tests/test_index.py`). The new tests build a
+miniature two-feed archive in a temp directory and check the index against it: feed metadata
+straight from `feeds.yaml` including the disabled feed, versions oldest first with dates, row and
+column counts and hashes, repo-root-relative paths with forward slashes on Windows too, diffs in
+chain order carrying the summary counts, the deliberate absence of `last_fetched_at` and
+`last_result` from the state block, the deterministic render, both CLI forms - and the two writer
+behaviours that matter: the file is left byte-for-byte alone when only `generated_at` moved, and is
+rewritten when a version appears. One test rebuilds the index against the real repository and
+asserts the committed `docs/index.json` is what `govdiff index` produces today, so a stale index
+fails the nightly run's own test step rather than shipping quietly.
+
+`npm test` in `js/`: **20 passed**. They run against the real archive in this repository, served by
+a throwaway `node:http` server the test starts, with `GOVDIFF_BASE_URL` pointed at it - not
+`file://`, because global `fetch` refuses that scheme outright, which is the whole reason the
+server exists. Covered: the index, feed metadata, versions oldest first, diffs forming an unbroken
+chain, `latestDiff` returning null on a one-version feed, summary counts read from the real
+`.summary.json`, `readDiff` yielding exactly added + changed + removed records with the right op
+split, an early `break` leaving the rest unread, 2,000 records read across many chunk boundaries
+out of the 2.67 MB catCFDI diff, the format-2 record shape, and four CLI paths including both error
+exits.
+
+### Defects and caveats
+
+1. **`pip install govdiff` outside a clone will not find `feeds.yaml`.** `repo_root()` walks two
+   directories up from the module, which is right in a source tree and points into `site-packages`
+   in a wheel install. `GOVDIFF_ROOT` overrides it, so the tool works, but the default is wrong for
+   the exact install the release path creates. Found today and deliberately not fixed today: it is
+   a behaviour change to code day 4 was not asked to touch. Fix it before anything is tagged.
+2. **Both packages install a binary called `govdiff`.** That is the point brand-wise and it is
+   still a PATH collision for anyone who installs both - whichever came last wins. The Python one
+   harvests, the Node one reads. Kept deliberately; worth one line in each README before launch.
+3. **`govdiff --version` reports `0.0.0+source`** in a source tree that was never `pip install`ed.
+   Honest rather than wrong, but it looks odd to somebody running from a clone.
+4. **The histogram shows the top 25 columns** and says how many more there are. A feed that moved
+   80 columns is summarised, not fully listed.
+5. **npm trusted publishing may need one manual publish first** - see the launch-day table below.
+   It is the single step most likely not to work first time.
+
+### For the owner, on launch day
+
+Register the two trusted publishers before pushing any tag. None of this can be done by an agent -
+all of it needs the owner's own logged-in accounts.
+
+| step | where | what to enter | min |
+|---|---|---|--:|
+| Create two environments | GitHub, repo Settings, Environments | names exactly `pypi` and `npm`; no secrets, no reviewers | 2 |
+| PyPI pending publisher | pypi.org, Account, Publishing, add a *pending* publisher | project `govdiff`, owner `phillipmex`, repository `latam-gov-diffs`, workflow `release.yml`, environment `pypi` | 5 |
+| npm trusted publisher | npmjs.com, the `govdiff` package, Settings, Trusted publisher | the same four values, environment `npm` | 5 |
+| *only if npm refuses because the package does not exist yet* | a terminal | `cd js` then `npm publish --access public` once by hand (2FA prompt), then set the trusted publisher on the now-existing package and let the workflow do every release after | +5 |
+| then | a terminal | `git tag v0.1.0` and `git push origin v0.1.0` | 1 |
+
+**About 13 minutes, 18 if npm needs the manual first publish.** PyPI supports pending publishers
+for projects that do not exist yet; npm configures trusted publishing on the package page, which is
+why a brand-new npm name may have to exist first. Separately, at the public flip: make the
+repository public and enable Pages from `main` and `/docs` - about 3 minutes, after which the
+viewer is live at https://phillipmex.github.io/latam-gov-diffs/ with no further work.
+
+### Day 5
+
+1. **A change feed, generated by `govdiff index`.** It already walks every diff and every summary,
+   so it is the natural place to also write an **Atom feed** (`docs/feed.xml`: one entry per diff,
+   newest first, with the counts and a link straight into the viewer's deep link) and a rolling
+   **`CHANGES.md`**. Both are derived files, both belong under the same
+   deterministic-output-and-do-not-rewrite discipline as `index.json`, and both should come out of
+   the same nightly step. An Atom feed is the one format a finance or compliance team can subscribe
+   to without writing any code, and it is the cheapest thing on the list that turns a repository
+   into a product.
+2. **Finish the viewer.** It is legible but plain. The real gaps: no way to look at a *version*,
+   only at a diff; no per-catalogue filter on catCFDI, where 25 catalogues share one table; no
+   permalink to a single record; and the 5,000-record cap has no "load the next 5,000" escape.
+3. **Fix `repo_root()` for a wheel install** (caveat 1 above) before anything is tagged. A
+   published package whose first command fails outside a clone is a bad first impression, and the
+   fix is small: fall back to the working directory, honour `GOVDIFF_ROOT`, and say so in the
+   error.
+4. **Watch the 69-B `Last-Modified`.** Still 22 January 2026, unchanged from the day-3 note. The
+   first time it moves is the first real diff this feed has ever produced anywhere.

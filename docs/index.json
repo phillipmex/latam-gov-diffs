@@ -1,0 +1,386 @@
+{
+  "feed_count": 3,
+  "feeds": [
+    {
+      "country": "MX",
+      "diff_count": 1,
+      "diffs": [
+        {
+          "added": 7917,
+          "changed": 108,
+          "format": 2,
+          "from": "2024-12-04-a4b88178",
+          "jsonl": "diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl",
+          "jsonl_bytes": 2671236,
+          "removed": 1,
+          "rows_from": 354429,
+          "rows_to": 362345,
+          "summary": "diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.summary.json",
+          "to": "2026-09-03-a5ce7a60",
+          "unchanged": 354320
+        }
+      ],
+      "document_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260903.xls",
+      "enabled": true,
+      "format": "xls",
+      "id": "catcfdi",
+      "key_fields": [
+        "catalogo",
+        "clave",
+        "clave_2",
+        "clave_3"
+      ],
+      "latest_version": "2026-09-03-a5ce7a60",
+      "listing_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20.htm",
+      "publisher": "Servicio de Administracion Tributaria (SAT)",
+      "state": {
+        "last_modified": "Thu, 03 Sep 2026 15:02:36 GMT",
+        "row_count": 362345,
+        "sha256": "a5ce7a602726f08ab8cee71710d5ea8e6029e3bfbdcf9a19a433e31070128b99",
+        "version_id": "2026-09-03-a5ce7a60"
+      },
+      "title": "Catalogos del CFDI version 4.0 (Anexo 20)",
+      "version_count": 2,
+      "versions": [
+        {
+          "column_count": 86,
+          "date": "2024-12-04",
+          "meta": "data/catcfdi/2024-12-04-a4b88178/meta.json",
+          "parquet": "data/catcfdi/2024-12-04-a4b88178/data.parquet",
+          "parquet_bytes": 5509052,
+          "published": "04/12/2024",
+          "row_count": 354429,
+          "sha256": "a4b88178fd0261be44fc374126f1694265c3beb0fbb57d1ab989cd9aba4a419a",
+          "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20241204.xls",
+          "version_id": "2024-12-04-a4b88178"
+        },
+        {
+          "column_count": 86,
+          "date": "2026-09-03",
+          "meta": "data/catcfdi/2026-09-03-a5ce7a60/meta.json",
+          "parquet": "data/catcfdi/2026-09-03-a5ce7a60/data.parquet",
+          "parquet_bytes": 5522918,
+          "published": "03/09/2026",
+          "row_count": 362345,
+          "sha256": "a5ce7a602726f08ab8cee71710d5ea8e6029e3bfbdcf9a19a433e31070128b99",
+          "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260903.xls",
+          "version_id": "2026-09-03-a5ce7a60"
+        }
+      ]
+    },
+    {
+      "country": "BR",
+      "diff_count": 9,
+      "diffs": [
+        {
+          "added": 43,
+          "changed": 82,
+          "format": 2,
+          "from": "2024-12-07-67a71e9a",
+          "jsonl": "diffs/cclasstrib/2024-12-07-67a71e9a__2025-05-06-eb953b54.jsonl",
+          "jsonl_bytes": 188280,
+          "removed": 12,
+          "rows_from": 94,
+          "rows_to": 125,
+          "summary": "diffs/cclasstrib/2024-12-07-67a71e9a__2025-05-06-eb953b54.summary.json",
+          "to": "2025-05-06-eb953b54",
+          "unchanged": 0
+        },
+        {
+          "added": 0,
+          "changed": 125,
+          "format": 2,
+          "from": "2025-05-06-eb953b54",
+          "jsonl": "diffs/cclasstrib/2025-05-06-eb953b54__2025-05-19-12c38b66.jsonl",
+          "jsonl_bytes": 143334,
+          "removed": 0,
+          "rows_from": 125,
+          "rows_to": 125,
+          "summary": "diffs/cclasstrib/2025-05-06-eb953b54__2025-05-19-12c38b66.summary.json",
+          "to": "2025-05-19-12c38b66",
+          "unchanged": 0
+        },
+        {
+          "added": 7,
+          "changed": 125,
+          "format": 2,
+          "from": "2025-05-19-12c38b66",
+          "jsonl": "diffs/cclasstrib/2025-05-19-12c38b66__2025-06-18-f18c6aec.jsonl",
+          "jsonl_bytes": 76846,
+          "removed": 0,
+          "rows_from": 125,
+          "rows_to": 132,
+          "summary": "diffs/cclasstrib/2025-05-19-12c38b66__2025-06-18-f18c6aec.summary.json",
+          "to": "2025-06-18-f18c6aec",
+          "unchanged": 0
+        },
+        {
+          "added": 12,
+          "changed": 130,
+          "format": 2,
+          "from": "2025-06-18-f18c6aec",
+          "jsonl": "diffs/cclasstrib/2025-06-18-f18c6aec__2025-10-03-b5ed31f4.jsonl",
+          "jsonl_bytes": 193806,
+          "removed": 2,
+          "rows_from": 132,
+          "rows_to": 142,
+          "summary": "diffs/cclasstrib/2025-06-18-f18c6aec__2025-10-03-b5ed31f4.summary.json",
+          "to": "2025-10-03-b5ed31f4",
+          "unchanged": 0
+        },
+        {
+          "added": 7,
+          "changed": 25,
+          "format": 2,
+          "from": "2025-10-03-b5ed31f4",
+          "jsonl": "diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl",
+          "jsonl_bytes": 24412,
+          "removed": 4,
+          "rows_from": 142,
+          "rows_to": 145,
+          "summary": "diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217.summary.json",
+          "to": "2025-11-24-431d4217",
+          "unchanged": 113
+        },
+        {
+          "added": 0,
+          "changed": 132,
+          "format": 2,
+          "from": "2025-11-24-431d4217",
+          "jsonl": "diffs/cclasstrib/2025-11-24-431d4217__2025-12-15-15ce63cb.jsonl",
+          "jsonl_bytes": 15934,
+          "removed": 0,
+          "rows_from": 145,
+          "rows_to": 145,
+          "summary": "diffs/cclasstrib/2025-11-24-431d4217__2025-12-15-15ce63cb.summary.json",
+          "to": "2025-12-15-15ce63cb",
+          "unchanged": 13
+        },
+        {
+          "added": 9,
+          "changed": 37,
+          "format": 2,
+          "from": "2025-12-15-15ce63cb",
+          "jsonl": "diffs/cclasstrib/2025-12-15-15ce63cb__2026-01-28-0825eadf.jsonl",
+          "jsonl_bytes": 43723,
+          "removed": 0,
+          "rows_from": 145,
+          "rows_to": 154,
+          "summary": "diffs/cclasstrib/2025-12-15-15ce63cb__2026-01-28-0825eadf.summary.json",
+          "to": "2026-01-28-0825eadf",
+          "unchanged": 108
+        },
+        {
+          "added": 2,
+          "changed": 25,
+          "format": 2,
+          "from": "2026-01-28-0825eadf",
+          "jsonl": "diffs/cclasstrib/2026-01-28-0825eadf__2026-04-15-cc0242ed.jsonl",
+          "jsonl_bytes": 11845,
+          "removed": 0,
+          "rows_from": 154,
+          "rows_to": 156,
+          "summary": "diffs/cclasstrib/2026-01-28-0825eadf__2026-04-15-cc0242ed.summary.json",
+          "to": "2026-04-15-cc0242ed",
+          "unchanged": 129
+        },
+        {
+          "added": 8,
+          "changed": 156,
+          "format": 2,
+          "from": "2026-04-15-cc0242ed",
+          "jsonl": "diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.jsonl",
+          "jsonl_bytes": 205842,
+          "removed": 0,
+          "rows_from": 156,
+          "rows_to": 164,
+          "summary": "diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.summary.json",
+          "to": "2026-06-23-1448cb63",
+          "unchanged": 0
+        }
+      ],
+      "document_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=LeNQXfyYngg=",
+      "enabled": true,
+      "format": "xlsx",
+      "id": "cclasstrib",
+      "key_fields": [
+        "cclasstrib"
+      ],
+      "latest_version": "2026-06-23-1448cb63",
+      "listing_url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D",
+      "publisher": "Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT)",
+      "state": {
+        "last_modified": null,
+        "row_count": 164,
+        "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
+        "version_id": "2026-06-23-1448cb63"
+      },
+      "title": "Tabela de Codigo de Classificacao Tributaria do IBS/CBS (cClassTrib)",
+      "version_count": 10,
+      "versions": [
+        {
+          "column_count": 8,
+          "date": "2024-12-07",
+          "meta": "data/cclasstrib/2024-12-07-67a71e9a/meta.json",
+          "parquet": "data/cclasstrib/2024-12-07-67a71e9a/data.parquet",
+          "parquet_bytes": 28279,
+          "published": "07/12/2024",
+          "row_count": 94,
+          "sha256": "67a71e9a4d2c808b957ee2894e2d027f2edd1304c6bda16e9369ecc82e696385",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=8azpqvtmME8=",
+          "version_id": "2024-12-07-67a71e9a"
+        },
+        {
+          "column_count": 26,
+          "date": "2025-05-06",
+          "meta": "data/cclasstrib/2025-05-06-eb953b54/meta.json",
+          "parquet": "data/cclasstrib/2025-05-06-eb953b54/data.parquet",
+          "parquet_bytes": 53945,
+          "published": "06/05/2025",
+          "row_count": 125,
+          "sha256": "eb953b540e4e0706869358996355805dd2513c288c2fc37c5f09053ad4b87f1e",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=snYp90ubSC8=",
+          "version_id": "2025-05-06-eb953b54"
+        },
+        {
+          "column_count": 9,
+          "date": "2025-05-19",
+          "meta": "data/cclasstrib/2025-05-19-12c38b66/meta.json",
+          "parquet": "data/cclasstrib/2025-05-19-12c38b66/data.parquet",
+          "parquet_bytes": 35989,
+          "published": "19/05/2025",
+          "row_count": 125,
+          "sha256": "12c38b669d0d090b29f3a9c7dfc6b757db6e0b23b2f428ef108074a105dab8e7",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=9M2jv4b8gKA=",
+          "version_id": "2025-05-19-12c38b66"
+        },
+        {
+          "column_count": 21,
+          "date": "2025-06-18",
+          "meta": "data/cclasstrib/2025-06-18-f18c6aec/meta.json",
+          "parquet": "data/cclasstrib/2025-06-18-f18c6aec/data.parquet",
+          "parquet_bytes": 50270,
+          "published": "18/06/2025",
+          "row_count": 132,
+          "sha256": "f18c6aecbaae05339227003f645fea1e3b326b13724cbd4108f5438f3711cd9f",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=XWUq47hwvH4=",
+          "version_id": "2025-06-18-f18c6aec"
+        },
+        {
+          "column_count": 39,
+          "date": "2025-10-03",
+          "meta": "data/cclasstrib/2025-10-03-b5ed31f4/meta.json",
+          "parquet": "data/cclasstrib/2025-10-03-b5ed31f4/data.parquet",
+          "parquet_bytes": 63264,
+          "published": "03/10/2025",
+          "row_count": 142,
+          "sha256": "b5ed31f4cca7f21fb1deb68ddd0d9e5ce91318b7ab6459e186f014d52fff0a65",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=IqSrmDiYSTw=",
+          "version_id": "2025-10-03-b5ed31f4"
+        },
+        {
+          "column_count": 38,
+          "date": "2025-11-24",
+          "meta": "data/cclasstrib/2025-11-24-431d4217/meta.json",
+          "parquet": "data/cclasstrib/2025-11-24-431d4217/data.parquet",
+          "parquet_bytes": 63996,
+          "published": "24/11/2025",
+          "row_count": 145,
+          "sha256": "431d4217fbcc0fa61601a98577195bd7023614cc2c14ecac1176b5775a6257a1",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=uKwmNxCPOcY=",
+          "version_id": "2025-11-24-431d4217"
+        },
+        {
+          "column_count": 37,
+          "date": "2025-12-15",
+          "meta": "data/cclasstrib/2025-12-15-15ce63cb/meta.json",
+          "parquet": "data/cclasstrib/2025-12-15-15ce63cb/data.parquet",
+          "parquet_bytes": 63417,
+          "published": "15/12/2025",
+          "row_count": 145,
+          "sha256": "15ce63cbbe53b5b00fc5e61e775221984a910dcdab547fd130d2ad0c478c7e46",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=LeNQXfyYngg=",
+          "version_id": "2025-12-15-15ce63cb"
+        },
+        {
+          "column_count": 37,
+          "date": "2026-01-28",
+          "meta": "data/cclasstrib/2026-01-28-0825eadf/meta.json",
+          "parquet": "data/cclasstrib/2026-01-28-0825eadf/data.parquet",
+          "parquet_bytes": 66531,
+          "published": "28/01/2026",
+          "row_count": 154,
+          "sha256": "0825eadf1d6fafb947978cc751df42497f92d8ee53527438c0e55bbfd034e6d2",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=VvNIEEiI1V0=",
+          "version_id": "2026-01-28-0825eadf"
+        },
+        {
+          "column_count": 37,
+          "date": "2026-04-15",
+          "meta": "data/cclasstrib/2026-04-15-cc0242ed/meta.json",
+          "parquet": "data/cclasstrib/2026-04-15-cc0242ed/data.parquet",
+          "parquet_bytes": 67339,
+          "published": "15/04/2026",
+          "row_count": 156,
+          "sha256": "cc0242ed17ebf93e23ce892e3316850de2077fbc8cc7a82a54e0a553c045a71a",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=fyAcUaq1mWE=",
+          "version_id": "2026-04-15-cc0242ed"
+        },
+        {
+          "column_count": 43,
+          "date": "2026-06-23",
+          "meta": "data/cclasstrib/2026-06-23-1448cb63/meta.json",
+          "parquet": "data/cclasstrib/2026-06-23-1448cb63/data.parquet",
+          "parquet_bytes": 121169,
+          "published": "23/06/2026",
+          "row_count": 164,
+          "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=D5b4Ov84WDg=",
+          "version_id": "2026-06-23-1448cb63"
+        }
+      ]
+    },
+    {
+      "country": "MX",
+      "diff_count": 0,
+      "diffs": [],
+      "document_url": "http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv",
+      "enabled": true,
+      "format": "csv",
+      "id": "sat69b",
+      "key_fields": [
+        "rfc",
+        "numero_y_fecha_de_oficio_global_de_presuncion_sat"
+      ],
+      "latest_version": "2026-01-22-54b95d41",
+      "listing_url": null,
+      "publisher": "Servicio de Administracion Tributaria (SAT)",
+      "state": {
+        "last_modified": "Thu, 22 Jan 2026 22:59:33 GMT",
+        "row_count": 14234,
+        "sha256": "54b95d41c9ca0ea1296f2885d1234e58a562620e76ac2437d2521fc2bbf36685",
+        "version_id": "2026-01-22-54b95d41"
+      },
+      "title": "Listado completo 69-B (contribuyentes con operaciones presuntamente inexistentes)",
+      "version_count": 1,
+      "versions": [
+        {
+          "column_count": 27,
+          "date": "2026-01-22",
+          "meta": "data/sat69b/2026-01-22-54b95d41/meta.json",
+          "parquet": "data/sat69b/2026-01-22-54b95d41/data.parquet",
+          "parquet_bytes": 762583,
+          "row_count": 14234,
+          "sha256": "54b95d41c9ca0ea1296f2885d1234e58a562620e76ac2437d2521fc2bbf36685",
+          "source_url": "http://omawww.sat.gob.mx/cifras_sat/Documents/Listado_Completo_69-B.csv",
+          "version_id": "2026-01-22-54b95d41"
+        }
+      ]
+    }
+  ],
+  "format": 1,
+  "generated_at": "2026-09-07T07:04:06+00:00",
+  "path_base": "repository-root",
+  "raw_base_url": "https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/",
+  "repository": "https://github.com/phillipmex/latam-gov-diffs"
+}

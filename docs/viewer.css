@@ -1,0 +1,415 @@
+/* Plain, legible, and theme-aware through prefers-color-scheme only - there is
+   no theme switch, because a page this small should not need one. Colours are
+   defined once as custom properties and swapped in the dark block. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --panel: #f6f7f8;
+  --ink: #16191d;
+  --muted: #5b6570;
+  --rule: #d8dde3;
+  --link: #14509a;
+
+  --added: #1c6b3a;
+  --added-bg: #e6f4ec;
+  --removed: #9a2020;
+  --removed-bg: #fbeaea;
+  --changed: #7a4a06;
+  --changed-bg: #fdf1de;
+
+  --before: #9a2020;
+  --after: #1c6b3a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a;
+    --panel: #1c2126;
+    --ink: #e6e9ec;
+    --muted: #9aa4ae;
+    --rule: #333b43;
+    --link: #79b0f0;
+
+    --added: #6fd18f;
+    --added-bg: #16301f;
+    --removed: #f09292;
+    --removed-bg: #34191a;
+    --changed: #e5bd76;
+    --changed-bg: #33280f;
+
+    --before: #f09292;
+    --after: #6fd18f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 1.2rem 3rem;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+header,
+main,
+footer {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+header {
+  padding: 1.4rem 0 0.8rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem 1.4rem;
+  justify-content: space-between;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+nav .soon {
+  color: var(--muted);
+  border: 1px dashed var(--rule);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+}
+
+.tagline {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+a {
+  color: var(--link);
+}
+
+main {
+  padding-top: 1.2rem;
+}
+
+section {
+  margin-bottom: 1.4rem;
+}
+
+.pickers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.9rem 1.4rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+select,
+input[type="search"],
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 0.35rem 0.5rem;
+}
+
+select {
+  max-width: min(60ch, 90vw);
+}
+
+button {
+  cursor: pointer;
+}
+
+button[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.source {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.source code {
+  word-break: break-all;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 0.55rem 0.9rem;
+  min-width: 8.5rem;
+}
+
+.card .n {
+  font-size: 1.5rem;
+  font-weight: 600;
+  display: block;
+  line-height: 1.2;
+}
+
+.card .l {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.card.added .n {
+  color: var(--added);
+}
+
+.card.removed .n {
+  color: var(--removed);
+}
+
+.card.changed .n {
+  color: var(--changed);
+}
+
+.detail {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+}
+
+.detail h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+}
+
+.hist {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr auto;
+  gap: 0.15rem 0.6rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.hist dt {
+  overflow-wrap: anywhere;
+}
+
+.hist .bar-track {
+  background: var(--rule);
+  border-radius: 3px;
+  height: 0.55rem;
+}
+
+.hist .bar-fill {
+  background: var(--changed);
+  border-radius: 3px;
+  height: 100%;
+}
+
+.hist dd {
+  margin: 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pill-list li {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.82rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: end;
+  margin-bottom: 0.6rem;
+}
+
+.controls .grow {
+  flex: 1 1 22rem;
+}
+
+.controls input[type="search"] {
+  width: 100%;
+}
+
+.note {
+  margin: 0.2rem 0 0.7rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.note strong {
+  color: var(--ink);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.88rem;
+}
+
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+thead th {
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.op {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.op-added {
+  background: var(--added-bg);
+  color: var(--added);
+}
+
+.op-removed {
+  background: var(--removed-bg);
+  color: var(--removed);
+}
+
+.op-changed {
+  background: var(--changed-bg);
+  color: var(--changed);
+}
+
+.key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.key .kf {
+  color: var(--muted);
+}
+
+.fields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) 1fr;
+  gap: 0.1rem 0.7rem;
+}
+
+.fields dt {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.was {
+  color: var(--before);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.now {
+  color: var(--after);
+}
+
+.arrow {
+  color: var(--muted);
+  padding: 0 0.3rem;
+}
+
+.paging {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 0.7rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+footer {
+  margin-top: 2rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+footer p {
+  margin: 0.3rem 0;
+  max-width: 78ch;
+}
+
+.error {
+  background: var(--removed-bg);
+  color: var(--removed);
+  border: 1px solid var(--removed);
+  border-radius: 7px;
+  padding: 0.7rem 0.9rem;
+}

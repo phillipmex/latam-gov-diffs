@@ -1,0 +1,25 @@
+# The package is the tool. The repository is the archive.
+#
+# An sdist that carried data/, diffs/ or raw/ would ship tens of megabytes of
+# government tables to everyone who runs `pip install govdiff`, and grow every
+# night. Those directories are the product of the repository, not of the
+# package, and they are pruned here explicitly rather than left to whatever
+# setuptools happens to pick up by default.
+
+include LICENSE
+include README.md
+include CHANGELOG.md
+include requirements.txt
+include feeds.yaml
+
+prune data
+prune diffs
+prune raw
+prune docs
+prune js
+prune .state
+prune .github
+prune tests
+
+global-exclude *.py[cod]
+global-exclude __pycache__

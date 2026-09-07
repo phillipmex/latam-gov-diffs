@@ -74,7 +74,40 @@ changed, and when. That change history - and the change feed built on it - is wh
 makes. The SAT 69-B list is the one genuinely unbackfillable feed: the publisher keeps the current
 snapshot only, so every day not archived is lost.
 
-## Running it
+## Install
+
+Both clients are **available from launch, 2026-09-22**. Nothing is on PyPI or npm before then.
+
+```
+pip install govdiff      # the harvester: fetch, snapshot, diff, index
+npm install govdiff      # a zero-dependency Node reader for the published archive
+npx govdiff feeds        # or just read it, no install
+```
+
+The Python package is the tool that fills this archive; the npm package only reads it, over
+plain HTTPS, with no key and no account. `js/README.md` documents the Node side.
+
+## Viewer
+
+<https://phillipmex.github.io/latam-gov-diffs/> - a static page in `docs/`: pick a feed, pick two
+versions, read what moved. Vanilla JavaScript, no build step, and not one external script, font or
+analytics call, so it works offline and under any Content-Security-Policy.
+
+It reads `index.json` from beside itself and the diff files from wherever the archive is. On
+GitHub Pages the site root **is** `docs/`, so `diffs/` is not served there at all and the page
+fetches diff files from `https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/`
+instead. Running it locally, start the server at the repository root so that `../diffs/` resolves:
+
+```
+python -m http.server 8765          # from the repository root
+# then open http://127.0.0.1:8765/docs/
+```
+
+Every view is a link: `#feed=cclasstrib&from=<version>&to=<version>`. Add `&base=<url>` to point
+the page at a fork or a mirror. A diff of any size streams as it downloads; the table shows the
+first 5,000 records and says how many more it counted but did not load.
+
+## Running it from source
 
 ```
 pip install -r requirements.txt && pip install -e .
@@ -122,6 +155,64 @@ they are matched by position and the key gains an `_occurrence` number so they a
 merged. The `.summary.json` beside each diff declares `"format": 2` and, for changes, a
 `changed_fields` count of how many records each column moved on - the fastest way to see that a
 revision was a mass re-dating rather than real movement.
+
+## The archive index
+
+`docs/index.json` is the machine-readable description of everything in here, rebuilt by
+`govdiff index` at the end of every nightly run. It is the only file a reader needs before it
+knows what exists - the npm client and the viewer both start there.
+
+```json
+{
+  "format": 1,
+  "generated_at": "2026-09-07T07:04:06+00:00",
+  "raw_base_url": "https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/",
+  "path_base": "repository-root",
+  "feed_count": 3,
+  "feeds": [
+    {
+      "id": "cclasstrib", "title": "...", "country": "BR", "publisher": "...",
+      "key_fields": ["cclasstrib"], "document_url": "...", "listing_url": "...",
+      "version_count": 10, "diff_count": 9, "latest_version": "2026-06-23-1448cb63",
+      "state": { "version_id": "...", "sha256": "...", "last_modified": null, "row_count": 164 },
+      "versions": [
+        { "version_id": "2024-12-07-67a71e9a", "date": "2024-12-07", "row_count": 94,
+          "column_count": 8, "sha256": "...", "source_url": "...",
+          "parquet": "data/cclasstrib/2024-12-07-67a71e9a/data.parquet", "parquet_bytes": 4242,
+          "meta": "data/cclasstrib/2024-12-07-67a71e9a/meta.json" }
+      ],
+      "diffs": [
+        { "from": "...", "to": "...", "format": 2,
+          "jsonl": "diffs/cclasstrib/<from>__<to>.jsonl", "jsonl_bytes": 118613,
+          "summary": "diffs/cclasstrib/<from>__<to>.summary.json",
+          "added": 7, "changed": 25, "removed": 4, "unchanged": 113,
+          "rows_from": 142, "rows_to": 145 }
+      ]
+    }
+  ]
+}
+```
+
+Three things are guaranteed. **Every path is relative to the repository root**, never to `docs/`,
+so a reader joins it onto one base URL and is done. **Versions are oldest first and diffs are in
+chain order**, each diff starting where the last one ended. **The file is deterministic** - sorted
+keys, two-space indent, trailing newline - and it is left byte-for-byte alone when only its own
+`generated_at` would have moved, so a nightly commit touching it means the archive really changed.
+That is also why nothing timing-related from `.state/` is in it: `last_fetched_at` moves every
+night whether or not anything happened.
+
+## Releasing
+
+One tag does everything. Bump the version in `pyproject.toml` and `js/package.json`, move the
+`CHANGELOG.md` entry out of unreleased, then push `vX.Y.Z`: `.github/workflows/release.yml` builds
+the sdist and wheel, runs `twine check`, refuses the release if `data/`, `diffs/`, `raw/`, `docs/`
+or `js/` leaked into the sdist, publishes to PyPI, and then - only if PyPI succeeded - runs the
+Node tests and publishes the npm package with `--provenance`. There are no API tokens in the
+repository or in its secrets: both registries use **trusted publishing**, where the job proves who
+it is with a short-lived OIDC token and the registry checks it against a publisher the owner
+registered by hand (environments `pypi` and `npm`). `govdiff --version` reads the installed
+package metadata, so `pyproject.toml` is the only place the Python version number is written.
+
 
 ## Ground rules
 

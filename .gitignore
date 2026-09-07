@@ -24,3 +24,7 @@ Thumbs.db
 
 # NOTE: .state/, data/, diffs/ and raw/ are deliberately NOT ignored.
 # The committed archive is the product of this project.
+
+# Node
+node_modules/
+*.tgz

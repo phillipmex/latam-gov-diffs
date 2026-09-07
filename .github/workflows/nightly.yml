@@ -65,12 +65,22 @@ jobs:
         if: always()
         run: govdiff status
 
+      # Rebuilds docs/index.json, the machine-readable archive index the npm
+      # client and the static viewer both read. It runs on always() for the
+      # same reason the commit step does: a feed that failed must not stop the
+      # index describing the feeds that succeeded. The writer leaves the file
+      # untouched when only its own timestamp would have moved, so this step
+      # does not manufacture a commit on a night when nothing changed.
+      - name: Rebuild the archive index
+        if: always()
+        run: govdiff index
+
       - name: Commit the archive
         if: always()
         run: |
           git config user.name "govdiff-bot"
           git config user.email "govdiff-bot@users.noreply.github.com"
-          git add -A data diffs .state raw
+          git add -A data diffs .state raw docs
           if git diff --cached --quiet; then
             echo "nothing changed today"
             exit 0
