@@ -6,9 +6,94 @@ and a fresh run disagree.
 
 Every item below needs the owner's own logged-in accounts. None of it can be
 done by an agent, and none of it has been done: this is the whole of the
-manual work between a finished repository and a live product.
+manual work between a finished repository and a live product. Each section
+says what it costs in the owner's own minutes, and the total is at the bottom.
 
-## 1. Stripe - 4 payment links
+The dates: Stripe links around **2026-09-19**, the public flip and the post on
+**2026-09-22**, and a hard timebox of **2026-09-26** - after that the project stops
+whether or not every box below is ticked.
+
+## 1. Delete the day-9 smoke repository
+
+`phillipmex/govdiff-paid-smoke` was created on day 9 to prove the paid push against a
+real private GitHub repository over a real deploy key, and it worked. It now
+holds a copy of one feed's slice and a deploy key that nothing uses. It is
+private and it stays private, but it is a loose end with a key in it.
+
+- [ ] github.com/phillipmex/govdiff-paid-smoke → Settings → Danger Zone → **Delete this repository**
+- [ ] the deploy key dies with it; nothing else refers to that repository
+
+**2 minutes.** Can be done today; nothing depends on it.
+
+## 2. Watch the first unattended nightly (2026-09-08)
+
+Every run so far has been dispatched by hand. The two crons - 06:15 UTC
+harvest, 18:15 UTC publish - have never fired on their own. The first time
+they do is 2026-09-08, and that is worth fifteen minutes of attention once.
+
+After **18:30 UTC** on 2026-09-08, from inside the clone:
+
+```sh
+gh run list --workflow nightly.yml --event schedule --limit 4
+gh run view <harvest-run-id>          # the 06:15 one
+gh run view <publish-run-id> --log    # the 18:15 one
+```
+
+What a good night looks like:
+
+- [ ] **two** runs listed with event `schedule`, one near 06:15 and one near 18:15
+- [ ] both say `success`
+- [ ] the harvest log has one line per feed and no `HELD BACK` warning
+- [ ] the harvest log ends with an artifact named `archive-<the date>` uploaded
+- [ ] the publish log either commits, or says the derived files were left alone
+
+If nothing has appeared by 18:45, that is usually not a failure: GitHub delays
+scheduled runs under load, sometimes by half an hour. Check again within the
+hour before touching anything. If a run really is missing, dispatch it by hand
+- Actions → Nightly → Run workflow, with `job` set to the one that did not
+fire - and the day is saved: the artifact holds the morning's work for 7 days.
+
+**15 minutes, once.**
+
+## 3. Decide: the commit author on every commit becomes public
+
+This one is a decision, not a task, and it has to be made **before** the flip
+because it cannot be made after it.
+
+Every commit in the history was made by one of two identities: the owner's
+own git identity, which carries a personal outlook.com mailbox, and
+`govdiff-bot`, which carries a `users.noreply.github.com` address and is fine.
+Those names and addresses are stored inside the commit objects. They show on
+every commit page, in the API and in every clone, and the project's faceless
+rule cannot reach them: no edit to any file changes what is already committed.
+Nothing in the *content* of the repository names a person - that was checked
+on day 10, file by file. This is the one remaining exposure, and it is in the
+history. To see the current count:
+
+```sh
+git log --format='%an <%ae>' | sort | uniq -c
+```
+
+**Option A - accept it (0 minutes).** The account handle is already public by
+design: it is in the repository URL, the Pages domain, the PyPI and npm owner
+and the trusted-publisher configuration. What the history adds beyond that is
+one mailbox.
+
+**Option B - rewrite before the flip (about 10 minutes).** Set a GitHub noreply
+address on the account, then squash the history to a single commit or rewrite
+the author on all of them, and force-push while the repository is still
+private. Two things to know before choosing it: the `govdiff-bot` commits are
+part of the same history and go with it, and the dated record of when each
+snapshot landed goes with it too. `govdiff attest` does not read git - its
+evidence is the snapshots and their `meta.json` - so attestation is unaffected
+either way.
+
+- [ ] decided: **A, accept as is**
+- [ ] decided: **B, rewrite before the flip** - and done, while still private
+
+**5 minutes to decide. 10 more only if the answer is B.**
+
+## 4. Stripe - 4 payment links
 
 Create one payment link per row at dashboard.stripe.com, then replace that
 button's `href` on the page named beside it. The `data-product` value is the
@@ -23,13 +108,25 @@ id to search the page for; there is exactly one button per id.
 
 All 4 still point at `#stripe-pending`, the deliberate placeholder. A button whose `href` is still that fragment on launch morning is a button that takes money from nobody.
 
+**Do not search-and-replace across the repository.** `#stripe-pending` appears in
+two further places - `docs/offers/TEMPLATE.md` and `docs/paid.md` - where it is
+the documented example, not a button. There are exactly 4 paste points and
+they are the 4 rows above.
+
+`docs/paid.md` says the visible text is replaced with the price at the same
+time. The test suite allows both states - the placeholder, or an `https://`
+Stripe link with a price on it - and rejects anything else, so a half-done
+paste is caught by `pytest` rather than by a customer.
+
 - [ ] every link created, in **live** mode, not test mode
-- [ ] every `href` replaced and the pages committed
+- [ ] every `href` replaced and the visible text changed to the price
 - [ ] each link opened once and checked against its price above
+- [ ] `python -m pytest -q` green, `python launch/make_checklist.py` re-run, and
+      the pages, this checklist and the script committed together
 
-**About 5 minutes per link, plus one Stripe account setup.**
+**About 5 minutes per link, plus about 10 for the Stripe account itself.**
 
-## 2. Publishing - PyPI and npm
+## 5. Publishing - PyPI and npm trusted publishers
 
 From day 4. Register both trusted publishers **before** pushing any tag;
 `release.yml` carries no token and cannot publish without them.
@@ -40,16 +137,15 @@ From day 4. Register both trusted publishers **before** pushing any tag;
 | PyPI pending publisher | pypi.org, Account, Publishing, add a *pending* publisher | project `govdiff`, owner `phillipmex`, repository `latam-gov-diffs`, workflow `release.yml`, environment `pypi` | 5 |
 | npm trusted publisher | npmjs.com, the `govdiff` package, Settings, Trusted publisher | the same four values, environment `npm` | 5 |
 | *only if npm refuses because the package does not exist yet* | a terminal | `cd js` then `npm publish --access public` once by hand (2FA prompt), then set the trusted publisher on the now-existing package | +5 |
-| then | a terminal | `git tag v0.1.0` and `git push origin v0.1.0` | 1 |
 
 - [ ] environments `pypi` and `npm` created
 - [ ] PyPI pending publisher registered
 - [ ] npm trusted publisher registered (or the one manual publish done)
-- [ ] `v0.1.0` tagged and pushed, and `release.yml` went green
 
-**About 13 minutes, 18 if npm needs the manual first publish.**
+**About 12 minutes, 17 if npm needs the manual first publish.** Can be done on
+any earlier day; nothing here needs the repository to be public.
 
-## 3. The public flip
+## 6. The public flip
 
 The repository is private until this moment. Nothing above depends on it
 being public, and nothing below works until it is.
@@ -59,28 +155,105 @@ being public, and nothing below works until it is.
 - [ ] wait for the first Pages build, then open https://phillipmex.github.io/latam-gov-diffs/
 - [ ] check one offer page and one diff deep-link actually load
 
-**About 3 minutes.** Note that Actions logs and artifacts become public at the same moment. The nightly never prints a subscriber's repository URL - targets are logged as `target-<hash>` - but this is the day that starts mattering.
+**About 3 minutes.** Note that Actions logs and artifacts become public at the same moment. The nightly never prints a subscriber's repository URL - targets are logged as `target-<hash>` - but this is the day that starts mattering. Actions minutes also stop being billed here: a public repository's runners are free, so the roughly 60 minutes a month the two windows use becomes nothing.
 
-## 4. Paid delivery, ready but empty
+## 7. Tag `v0.1.0`
+
+The tag is what publishes. `release.yml` builds the wheel and the sdist,
+checks the sdist carries none of the archive, publishes to PyPI through the
+`pypi` environment and then npm through `npm`. It cannot run before §5 is
+done, and there is no token to fall back on.
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+- [ ] `git tag v0.1.0` and `git push origin v0.1.0`
+- [ ] `release.yml` went green, both jobs
+- [ ] the PyPI page and the npm page both show 0.1.0
+
+**1 minute to push, a few more watching it.**
+
+## 8. The post-flip smoke test
+
+Six checks, in this order. Every one of them fails while the repository is
+private, which is why they belong after §6 and not before it. All six were
+proved on day 10 against a built wheel and a packed tarball on a local
+server; what cannot be tested before the flip is the public URLs themselves.
+
+| # | check | expected |
+|--:|---|---|
+| 1 | open `https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/docs/index.json` | the JSON index, three feeds |
+| 2 | open https://phillipmex.github.io/latam-gov-diffs/ | the viewer, three feed cards |
+| 3 | click into a feed, then into one change | the URL gains `#feed=...&from=...&to=...` and the records render |
+| 4 | add `https://phillipmex.github.io/latam-gov-diffs/feed.xml` to any feed reader | the change history, newest first |
+| 5 | `pip install govdiff` then `govdiff --version` | `govdiff 0.1.0` |
+| 6 | `npx govdiff feeds` | a three-row table: catcfdi, cclasstrib, sat69b |
+
+Two more worth doing once, because they are the day-5 defect and its fix:
+
+- [ ] `govdiff status` in a directory that is *not* a checkout prints the
+      no-archive message naming all three ways to point at one - not a crash,
+      and not a guess at site-packages
+- [ ] `govdiff --repo <a clone> status` prints the three-feed table, and so
+      does `govdiff status --repo <a clone>`
+
+Check 1 is the one that matters most: `https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/` is the base URL both
+clients default to, so if it 404s then every installed copy of both packages
+is broken, however good the Pages site looks.
+
+**About 10 minutes.**
+
+## 9. Paid delivery, ready but empty
 
 Nothing to do until the first order. The `PAID_TARGETS` secret does not exist yet, and the nightly prints *"no paid targets configured - skipping"* and stays green without it. `docs/paid.md` has the five fulfilment steps and their honest cost, about twelve minutes per order.
 
 - [ ] read `docs/paid.md` § Fulfilment once, before the first order arrives
 
-## 5. The post
+**2 minutes of reading.**
+
+## 10. The post
 
 - [ ] `launch/show-hn.md`, posted at news.ycombinator.com/submit
 - [ ] title pasted exactly; it is already inside Hacker News' 80-character limit
 - [ ] both links in the body open: https://github.com/phillipmex/latam-gov-diffs and https://phillipmex.github.io/latam-gov-diffs/
 - [ ] posted **after** the flip, the Pages build and the tag, not before
+- [ ] then stay at the keyboard for an hour or two and answer questions
+
+**10 minutes to post.** The thread is open-ended and is not counted below.
 
 ## Order of operations
 
-1. Stripe links created and committed (§1)
-2. trusted publishers registered (§2)
-3. repository made public and Pages enabled (§3)
-4. `v0.1.0` tagged and the release workflow green (§2)
-5. Show HN posted (§5)
+1. delete the smoke repository (§1) - any day
+2. watch the first unattended nightly (§2) - 2026-09-08 only
+3. answer the commit-author question (§3) - **before** §6, not after
+4. Stripe links created, pasted and committed (§4) - around 2026-09-19
+5. trusted publishers registered (§5) - any earlier day
+6. repository made public and Pages enabled (§6)
+7. `v0.1.0` tagged and the release workflow green (§7)
+8. the six smoke checks (§8)
+9. Show HN posted (§10)
 
-Steps 1 and 2 can happen on any earlier day. Steps 3 to 5 belong to 2026-09-22 itself and want about half an hour together.
+Steps 1 to 5 can all happen before launch week. Steps 6 to 9 belong to 2026-09-22 itself and want about half an hour together, in that order.
+
+## What it costs the owner
+
+| § | step | min |
+|--:|---|--:|
+| 1 | Delete the day-9 smoke repository | 2 |
+| 2 | Watch the first unattended nightly *(once, on 2026-09-08)* | 15 |
+| 3 | Decide the commit-author question *(10 more only if the answer is B)* | 5 |
+| 4 | Stripe payment links *(4 links at 5 minutes, plus the account itself)* | 30 |
+| 5 | PyPI and npm trusted publishers *(5 more if npm needs a manual first publish)* | 12 |
+| 6 | The public flip and Pages | 3 |
+| 7 | Tag v0.1.0 and watch the release | 1 |
+| 8 | The post-flip smoke test | 10 |
+| 9 | Read the fulfilment steps once | 2 |
+| 10 | Post it and answer the first questions *(the thread itself is open-ended)* | 10 |
+| | **total** | **90** |
+
+**About 90 minutes of the owner's own hands**, spread over 2026-09-08 to 2026-09-22, of which
+roughly half an hour is on launch day itself. Everything else in this project
+is already done.
 

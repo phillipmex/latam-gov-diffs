@@ -360,6 +360,21 @@ def build_parser() -> argparse.ArgumentParser:
     status = sub.add_parser("status", help="one line per feed")
     status.add_argument("--json", action="store_true", help="also print the table as JSON")
     status.set_defaults(func=cmd_status)
+
+    # `govdiff --repo PATH status` is the documented order, and it is what the
+    # no-archive error message prints, but `govdiff status --repo PATH` is what
+    # people type. Accept it after the subcommand as well. SUPPRESS as the
+    # default stops the subparser overwriting the value the top-level option
+    # already put in the namespace when the option is not repeated here.
+    for subparser in sub.choices.values():
+        subparser.add_argument(
+            "--repo",
+            "--root",
+            dest="root",
+            metavar="PATH",
+            default=argparse.SUPPRESS,
+            help="the archive checkout to work in; same as the option before the command",
+        )
     return parser
 
 

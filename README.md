@@ -22,7 +22,9 @@ seven weeks apart.
 **[Open the viewer](https://phillipmex.github.io/latam-gov-diffs/)** - pick a feed, pick two
 versions, read what moved. **[Subscribe to the change
 feed](https://phillipmex.github.io/latam-gov-diffs/feed.xml)** - Atom, one entry per published
-revision, or `docs/<feed>/changes.json` if you would rather poll JSON.
+revision, or `docs/<feed>/changes.json` if you would rather poll JSON. Both of those, and the
+`raw.githubusercontent.com` URLs both clients read, go live with the repository itself on
+**2026-09-22**; until then the archive is only readable from a clone.
 
 ## Install
 
@@ -217,10 +219,11 @@ publishers keep dated back-versions, so a statement about them is reproducible f
 order: the `--repo PATH` option, the `GOVDIFF_REPO` environment variable, then the current
 directory if it holds `feeds.yaml`. If none of those answers, it says so and names all three
 rather than guessing. `--root` is the old spelling of `--repo` and still works, as does
-`GOVDIFF_ROOT`.
+`GOVDIFF_ROOT`, and `--repo` is accepted on either side of the command.
 
 ```
 govdiff --repo /srv/latam-gov-diffs status     # say where the archive is
+govdiff status --repo /srv/latam-gov-diffs     # the same thing, after the command
 export GOVDIFF_REPO=/srv/latam-gov-diffs       # or say it once
 cd /srv/latam-gov-diffs && govdiff status      # or just stand in it
 ```

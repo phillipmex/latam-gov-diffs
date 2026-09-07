@@ -2188,3 +2188,309 @@ Four things, and the last one is the one that is easy to skip.
 
    If that check is skipped, the first evidence that the crons work will be a customer noticing they
    do not.
+
+## 2026-09-07 - day 10 - a second clean cycle, and reading the whole thing as a stranger
+
+Day 9 found a bug that would have emailed every subscriber every night. Day 10 is the day after a
+fix: run it again and see whether it stayed fixed, then stop building and start reading. Everything
+below the second cycle is a reading exercise - install the package the way a stranger will, grep the
+tree for anything with a person in it, and price what is left for the owner to do by hand.
+
+### Part A: the second full cycle
+
+`harvest` (34107796397) then `publish` (34107910818), dispatched by hand for 2026-09-07, on top of
+day 9's two fixes. Both green. 44 s and 31 s of wall clock, 39 s and 27 s of job time.
+
+```
+cclasstrib: unchanged (content hash unchanged) at 2026-06-23-1448cb63
+catcfdi: unchanged (304 Not Modified) at 2026-09-03-a5ce7a60
+sat69b: unchanged (304 Not Modified) at 2026-01-22-54b95d41
+docs/index.json: 3 feed(s), 13 version(s), 10 diff(s) - unchanged, left alone
+change feed: 10 entry(s) - unchanged, left alone
+```
+
+No feed was held back, so the publish job had nothing to warn about and the final gate stayed quiet.
+The publish commit is `290b182` and it touches three files: `.state/cclasstrib.json`,
+`.state/catcfdi.json`, `.state/sat69b.json`. Nothing under `data/`, `diffs/`, `docs/` or
+`CHANGES.md` moved, which is the correct shape for a night in which no publisher moved a byte.
+
+Both standing promises were re-checked rather than assumed. `grep -c "git push"` over the harvest
+log is 0 - the morning job still never touches public `main`. All three paid-push steps printed
+*"no paid targets configured - skipping"* and went green with no `PAID_TARGETS` secret set, which is
+worth re-checking precisely because day 9 briefly had one and it is now deleted.
+
+**And for the second day running, no publisher changed anything.** Two days, twelve runs, not one
+new version. So there is still no first live nightly diff to write up, and day 9's caveat 4 stands
+untouched: the new-version path through the workflow - a diff written on the runner, `changes.json`
+regenerated, a real archive commit with data in it - has been exercised locally many times and never
+once on GitHub's hardware. It is the largest single thing this project has not proven, and no amount
+of dispatching fixes it; it needs a publisher to publish.
+
+### Part B: what Actions costs, and for how long
+
+GitHub bills each job rounded up to a whole minute, and a night is two jobs.
+
+| | job time | billed |
+| --- | --- | --- |
+| `harvest` | 39 s | 1 min |
+| `publish` | 27 s | 1 min |
+| **a full night** | **66 s** | **2 min** |
+
+Two windows a day is **2 billed minutes a day, about 62 a month**, against the 2,000 free minutes a
+month that a private repository gets on the free plan. **Roughly 3%.** Days 9 and 10 together cost
+about 12 billed minutes across twelve dispatched runs, which is 0.6% of one month's allowance for
+two days of deliberately abusing the workflow.
+
+Artifacts are the other meter: about 9.7 MB a night at 7-day retention, so about 68 MB at steady
+state against the 500 MB the free plan gives.
+
+Two honest notes on those figures. First, they are derived from the run timings, not read from the
+billing API: `gh api users/phillipmex/settings/billing/actions` returns 404 without the `user` OAuth
+scope, and widening a token's scope is the owner's decision, not a build agent's. Second, and more
+usefully: **after the 2026-09-22 flip this line disappears entirely.** Actions minutes on public
+repositories are free and unmetered. The budget above matters for the fifteen days before launch and
+never again after it.
+
+### Part C: installing it the way a stranger will
+
+Day 5 fixed the defect that made `pip install govdiff && govdiff status` look for `feeds.yaml`
+inside site-packages. That fix has had unit tests since, and unit tests run inside the clone with
+the source tree on the path, which is exactly the condition the defect needs to hide in. So: build
+it, install it somewhere else, and stand in an empty directory.
+
+`python -m build` produced a 73,993-byte wheel and a 79,807-byte sdist. Day 4's were 44,394 and
+43,902; the difference is days 5 to 9 of code. The wheel went into a throwaway virtual environment
+created with `--system-site-packages`, so `pandas`, `pyarrow` and `requests` are the copies already
+on the machine - pip reported every dependency already satisfied and downloaded nothing. Then, from
+an empty directory, using that environment's own `govdiff`:
+
+| # | command | result |
+| --- | --- | --- |
+| 1 | `govdiff --version` | `govdiff 0.1.0` |
+| 2 | `govdiff status` | the no-archive error, naming all three ways to point at a checkout and the directory it looked in; exit 1 |
+| 3 | `govdiff --repo <clone> status` | the three-feed table |
+| 4 | `govdiff attest sat69b --rfc AAA010101AAA --on 2026-09-07 --repo <clone>` | the attestation document: **No**, with the snapshot version id, its sha256, the SAT document URL, the `Last-Modified` SAT reported and 14,234 rows searched |
+
+Check 2 is day 5's fix, proven for the first time outside pytest, outside the clone and against a
+real wheel rather than an editable install. Check 4 is the $250 product rendering from a package
+that has no archive inside it.
+
+**And check 3 found a defect that no unit test could have.** `govdiff status --repo PATH` - the
+option *after* the command, which is how most people type it - was an argparse usage error:
+
+```
+govdiff: error: unrecognized arguments: --repo C:\...\latam-gov-diffs
+```
+
+`--repo` existed only on the top-level parser. Every test, every example in the README and the
+no-archive message itself use the leading form, so nothing in the project had ever typed the other
+one. A stranger following the error message would have been fine; a stranger typing what habit
+suggests would have hit a usage error on their first command. The option is now added to every
+subcommand as well, with `argparse.SUPPRESS` as its default so that a subcommand that does not carry
+it cannot erase the value the leading option already set. Two tests: the two orders produce
+identical output, and the leading form still survives a subcommand that omits it.
+
+The npm half. `npm pack` produced `govdiff-0.1.0.tgz`, 5,965 bytes, five files, 15.6 kB unpacked.
+`npm install --no-save` of that tarball into an empty directory said **"added 1 package"** and left
+a `node_modules` holding exactly one entry, `govdiff`. Zero dependencies, confirmed rather than
+claimed. Then `python -m http.server` over the repository root, `GOVDIFF_BASE_URL` pointed at it,
+and `npx govdiff feeds` printed the three-row table - `catcfdi` 2/1, `cclasstrib` 10/9, `sat69b` 1/0
+- which is the same client, over the same code path, that will read
+`raw.githubusercontent.com` after the flip. Neither the wheel nor the tarball is committed; `dist/`
+and `*.tgz` are both gitignored, and the scratch environments are outside the repository.
+
+### Part D: the faceless audit, and the one thing that cannot be fixed in a file
+
+Everything in this repository becomes visible to strangers on 2026-09-22. The whole tree, excluding
+`.git`, was swept for personal names, personal email addresses, the owner's account-adjacent
+handles, `Admin`, `C:\Users` and any machine path that had leaked into a committed file, a test or a
+document.
+
+**The files are clean.** No personal name, no personal address, no `C:\Users`, no machine path in
+any tracked content file. The only email address anywhere in the tree is `govdiff-bot`'s
+`users.noreply.github.com` in the workflow, which is what it should be. Every hit for `Admin` is
+inside *Administracion Tributaria*. `phillipmex` appears only as the GitHub account handle, in the
+places where it is structurally required and cannot be anything else: repository URLs, the Pages
+domain, the RFC 4151 tag ids in the Atom feeds, and the trusted-publisher configuration in
+`release.yml` and the launch checklist.
+
+**The exposure that is left is not in a file.** `git log --format='%an <%ae>'`, over the 15
+commits that existed when the audit ran:
+
+| commits | author |
+| --- | --- |
+| 10 | the owner's own git identity, carrying a personal mailbox |
+| 5 | `govdiff-bot`, carrying a `users.noreply.github.com` address |
+
+Those strings live inside the commit objects. They appear on every commit page, in the API and in
+every clone, and no edit to any file reaches them. Changing them means rewriting history and
+force-pushing, which is a decision about the owner's own identity and about the archive's dated
+commit record - **so it was not done, and nothing was rewritten.** It is now §3 of the launch
+checklist, stated as a decision with both options priced: accept it at zero minutes, on the grounds
+that the account handle is already public by design and the history adds one mailbox to it; or set a
+noreply address and squash before the flip, about ten minutes, taking the five bot commits and the
+dated record of when each snapshot landed with it. `govdiff attest` reads snapshots and their
+`meta.json`, never git, so attestation is unaffected either way.
+
+Size, against GitHub's 100 MB hard limit, its 50 MB warning and this project's own 2 MB rule for raw
+source files. `.git` is 12 MB on disk - 381 loose objects, 10.69 MiB, no packs yet - and the working
+tree is 19 MB. The five largest blobs in the whole of history:
+
+| bytes | blob |
+| --- | --- |
+| 20,627,995 | `diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl` (the retired format-1 diff) |
+| 5,522,918 | `data/catcfdi/2026-09-03-a5ce7a60/data.parquet` |
+| 5,509,052 | `data/catcfdi/2024-12-04-a4b88178/data.parquet` |
+| 2,671,236 | `diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl` (format 2, the current one) |
+| 762,583 | `data/sat69b/2026-01-22-54b95d41/data.parquet` |
+
+Nothing is within an order of magnitude of either GitHub limit. The four blobs over 2 MB are all
+derived Parquet and JSONL, which the 2 MB rule was never about; the largest file under `raw/` is
+156,899 bytes, 7.5% of that ceiling. The 20.6 MB blob is day 3's format-1 catcfdi diff, replaced the
+same day and still in history because nothing rewrites history here - a squash under §3 option B
+would remove it, which is the only argument for option B that is not about privacy.
+
+### Part E: the checklist, priced
+
+`launch/checklist.md` was written on day 8 from what was planned. It is regenerated today from a
+`make_checklist.py` that knows what actually happened, and it is now ten sections in the order they
+have to occur rather than five in the order they were thought of:
+
+1. delete `phillipmex/govdiff-paid-smoke`, day 9's leftover, 2 min
+2. watch the first unattended nightly on 2026-09-08 after 18:30 UTC - the exact `gh run list` and
+   `gh run view` commands, five things a good night looks like, and what to do if GitHub is simply
+   late rather than broken, 15 min once
+3. the commit-author decision from part D, 5 min to decide
+4. the four Stripe links, 30 min
+5. the two trusted publishers, 12 min
+6. the flip and Pages, 3 min
+7. the `v0.1.0` tag, 1 min
+8. a six-check post-flip smoke test with its expected output, 10 min
+9. read the fulfilment steps once, 2 min
+10. post it, 10 min
+
+Every section carries what it costs in the owner's own minutes and the total - **90** - is summed
+from those numbers rather than typed, for the same reason the Stripe rows are counted off the offer
+pages rather than typed. The smoke test in §8 is the six things scope asked for in the order they
+break: the `raw.githubusercontent.com` base URL first, because that is what both clients default to
+and a 404 there breaks every installed copy however good the Pages site looks; then the viewer, a
+deep link, `feed.xml` in a reader, `pip install govdiff`, `npx govdiff feeds`.
+
+**And writing §4 found the launch-day landmine.** `tests/test_docs_links.py` asserted that every buy
+button is still the `#stripe-pending` placeholder with its fixed text. That was correct for the
+whole build and wrong from the moment the owner does the paste that `docs/paid.md` describes - and
+the harvest job runs the test suite *before* it fetches anything, so the first nightly after launch
+would have gone red on four working checkout buttons. The owner would have been reading a failed-run
+email on the morning after launch, about a test that was complaining the product had shipped. The
+test now allows exactly two states - the placeholder, or an `https://` Stripe link with a price on
+it - and rejects everything in between: a relative href, `http://`, an empty one, or a live link
+whose text still says checkout opens on launch. The launch-morning state is exercised against a
+synthetic page rather than waited for. The checklist also warns, in §4, against a repository-wide
+search-and-replace: `#stripe-pending` appears twice more, in `docs/offers/TEMPLATE.md` and
+`docs/paid.md`, where it is the documented example rather than a button. Four paste points, and they
+are the four rows of the table.
+
+The rest of part E was a re-read rather than a rewrite: `README.md`, `docs/paid.md` and
+`launch/show-hn.md` checked line by line against what the archive actually contains. The feed table
+(10/9, 2/1, 1/0), the cClassTrib diff quoted on the first screen, the `docs/index.json` sample
+block, catcfdi's 362,345 rows and 69-B's 14,234, the two-window description, the attestation's
+2026-09-07 coverage floor and the `PAID_TARGETS` fallback message are all still exactly true.
+`docs/paid.md` needed no change at all. Neither did the post: it is still faceless - no first person
+anywhere in its body, no name, no address, two GitHub links and no other way to reach anybody - its
+*"nine changes and one, respectively"* still matches 9 diffs and 1, its title is 74 characters
+against Hacker News' 80, and it is careful to describe the archive's diffs as reconstructed from
+back-versions rather than caught live, which is still the honest framing.
+
+Two edits to the README. The first documents `--repo` on either side of the command, with its own
+example line. The second is the one worth naming: the first screen linked the viewer and the change
+feed as though a reader could click them. They are GitHub Pages URLs on a repository that is
+private, so today they fail for everybody, and the README caveats the two clients - *"available from
+launch, 2026-09-22"* - three lines further down without caveating the links above them. It now says
+that those URLs, and the `raw.githubusercontent.com` base both clients read, go live with the
+repository itself. That is the same fact as check 1 of the smoke test, said in the place a reader
+meets it first.
+
+### Requests made
+
+**5 requests to publishers, all from the one harvest job**; the publish job makes zero by design.
+
+| feed | requests | statuses |
+| --- | --- | --- |
+| `cclasstrib` | 2 | 200 (listing page) + 200 (document) |
+| `catcfdi` | 2 | 200 (`anexo_20.htm`) + **304** (document) |
+| `sat69b` | 1 | **304** (document) |
+
+`cclasstrib` costs two full 200s because the NF-e portal sends neither an ETag nor a
+`Last-Modified`, so the only way to know it has not changed is to fetch its 156 KB and hash it. The
+other two answered `304 Not Modified` to a conditional request and sent no body at all. Only SAT
+document URLs were fetched; no omawww landing page was touched. **No 403, no 429, no 503 and no
+challenge marker in any response body. Nothing to report as SourceChallenged.**
+
+### Tests
+
+247 to 250, 3 added, all passing, plus the 20 Node tests unchanged.
+
+- `govdiff status --repo PATH` and `govdiff --repo PATH status` produce identical output;
+- a subcommand that omits `--repo` does not erase the one given before it;
+- the launch-morning buy button - a live Stripe link with a price on it - passes, and a relative
+  href, an `http://` one, an empty one, a non-Stripe one and a live link with the placeholder text
+  still on it all fail.
+
+Each of the three fails against yesterday's code and passes against today's, which is the only
+reason to add a test.
+
+### Defects and caveats
+
+1. **No publisher has changed anything on either of the two days of real runs.** The new-version
+   path on the runner is still untested. Unchanged from day 9 and now two days old.
+2. **The crons have still never fired unattended.** The first scheduled cycle is 2026-09-08 and
+   checking it is §2 of the checklist - fifteen minutes of the owner's attention, once.
+3. **The smoke repository still exists.** `phillipmex/govdiff-paid-smoke`, private, archived.
+   Deleting a repository needs the owner's account. §1 of the checklist, 2 minutes.
+4. **The commit author on all 15 commits becomes public at the flip** and was deliberately not
+   rewritten. §3 of the checklist.
+5. **The public URLs cannot be tested before the flip.** Every one of the six smoke checks in §8
+   fails today by construction, because the repository is private. They were each proved against a
+   local equivalent - a built wheel, a packed tarball, a local HTTP server - which is as close as it
+   is possible to get from this side of 2026-09-22.
+6. **A held-back feed still waits for a clean harvest**, and artifact retention is still 7 days.
+   Both unchanged and both correct.
+
+### Launch
+
+The building is finished. What is left is 90 minutes of the owner's own hands, and it is all in
+`launch/checklist.md`, in order, priced, with the exact commands.
+
+**What is done.** Three feeds, 13 snapshots, 10 recorded changes, a record-level diff format, a
+viewer, an Atom change feed, a machine-readable index, two clients, a point-in-time attestation, a
+two-window nightly with a real twelve-hour head start, per-feed hold-back, paid delivery proven over
+SSH against a real private repository, four offer pages, 250 Python tests and 20 Node ones. The
+repository is private, nothing is published, and there is no tag - all three on purpose.
+
+**What only the owner can do.** All of it is in the checklist. In date order: delete the smoke
+repository and watch the first unattended nightly on **2026-09-08**; create the four Stripe payment
+links around **2026-09-19** and register the two trusted publishers any time before that; then on
+**2026-09-22** answer the commit-author question, flip the repository public, enable Pages on
+`main:/docs`, push `v0.1.0`, run the six smoke checks and post it. The hard timebox is
+**2026-09-26**: if it is not launched by then it stops, finished or not.
+
+**The three things most likely to bite on launch day.**
+
+1. **The `raw.githubusercontent.com` base URL.** Both clients default to it, and it 404s until the
+   moment the repository goes public. If the flip is done after the tag - or if it is forgotten
+   entirely because the Pages site looks fine - then every `pip install govdiff` and every
+   `npx govdiff feeds` in the Show HN thread fails on its first command, in public, on the one day
+   anybody is looking. It is check 1 of §8 for that reason.
+2. **The tag before the trusted publishers.** `release.yml` carries no token at all. Pushing
+   `v0.1.0` before the PyPI pending publisher and the npm trusted publisher exist produces a red
+   release and a burnt tag, and re-tagging the same version is not possible on PyPI. §5 before §7,
+   and the checklist says so twice.
+3. **The Stripe paste.** Four buttons, four links, and the visible text has to change with the
+   `href` or the page advertises a checkout that opens on a date that has already passed. Do it,
+   then run `python -m pytest -q` and `python launch/make_checklist.py` before committing - the
+   suite now checks both halves of the paste, and the nightly runs that suite every morning.
+
+The fourth thing, which is not a launch-day risk but is the real one: **no publisher has moved a
+byte in the two days this has been running for real.** The first live nightly diff is still ahead,
+and the day it lands is the day the archive stops being a promise. Everything is in place to catch
+it.

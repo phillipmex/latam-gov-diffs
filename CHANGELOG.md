@@ -147,8 +147,39 @@ Nothing here has been uploaded to PyPI or npm.
   `docs/offers/`, day 4's trusted-publishing table, the public flip and Pages
   enablement, and the 2026-09-22 date. `tests/test_launch.py` fails if the
   committed checklist and a fresh run disagree.
+- **The checklist is now the whole of the owner's remaining work, priced.** Ten
+  sections in the order they have to happen: delete the day-9 smoke repository,
+  watch the first unattended nightly on 2026-09-08 with the exact `gh` commands
+  and what a good night looks like, decide the commit-author question before the
+  flip, the four Stripe links with a warning against a repository-wide
+  search-and-replace, the two trusted publishers, the flip and Pages, the
+  `v0.1.0` tag, a six-check post-flip smoke test with its expected output, the
+  fulfilment reading, and the post. Every section carries what it costs in the
+  owner's own minutes and the total - 90 - is summed from those numbers rather
+  than typed, the same way the Stripe rows are counted off the pages rather than
+  typed.
 
 ### Fixed
+
+- **`--repo` works on either side of the command.** `govdiff --repo PATH status`
+  was the only accepted order; `govdiff status --repo PATH`, which is what
+  people type, was an argparse usage error. Found by installing the wheel into a
+  throwaway environment and running the documented commands from a directory
+  that is not a checkout - the only way this class of defect shows up, and the
+  same way day 5's was found. Both orders now mean the same thing, on every
+  subcommand, and the option after the command no longer erases the one before
+  it when it is absent.
+- **A pasted Stripe link would have turned the nightly red.**
+  `tests/test_docs_links.py` asserted that every buy button was still the
+  `#stripe-pending` placeholder with its fixed text - correct for the whole
+  build, and wrong from the moment the owner does the launch-morning paste that
+  `docs/paid.md` describes. The harvest job runs the test suite before it
+  fetches anything, so the first nightly after launch would have failed on the
+  four working checkout buttons. The test now allows exactly two states, the
+  placeholder or an `https://` Stripe link with a price on it, and rejects
+  everything else - a relative href, `http://`, an empty one, or a live link
+  whose text still says checkout opens on launch. The launch-morning state is
+  exercised against a synthetic page rather than waiting for launch morning.
 
 - **The archive root is resolved, not guessed.** `repo_root()` walks up from the
   installed module, which is correct in a clone and points into site-packages

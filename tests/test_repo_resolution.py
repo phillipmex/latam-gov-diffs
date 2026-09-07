@@ -145,3 +145,18 @@ def test_cli_reports_the_missing_archive_instead_of_crashing(tmp_path, monkeypat
     monkeypatch.chdir(outside)
     assert main(["status"]) == 1
     assert "no archive found" in capsys.readouterr().err
+
+
+def test_cli_accepts_repo_after_the_subcommand_too(tmp_path, capsys):
+    """`govdiff status --repo PATH` is what people type; it must not be a usage error."""
+    root = _checkout(tmp_path, "trailing-checkout")
+    assert main(["--repo", str(root), "status"]) == 0
+    before = capsys.readouterr().out
+    assert main(["status", "--repo", str(root)]) == 0
+    assert capsys.readouterr().out == before
+
+
+def test_repo_after_the_subcommand_does_not_erase_the_one_before_it(tmp_path, capsys):
+    """The trailing option is absent here, so the leading one must survive."""
+    root = _checkout(tmp_path, "leading-only")
+    assert main(["--repo", str(root), "index", "--no-change-feed"]) == 0

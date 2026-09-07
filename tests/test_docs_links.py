@@ -123,8 +123,9 @@ def test_no_page_loads_an_external_stylesheet_or_font(page: Path):
 # The offer pages are the only part of the site that will ever ask anyone for
 # money, so two things about them are asserted rather than eyeballed: that the
 # index does not advertise a product it cannot link to, and that every buy
-# button is still the placeholder rather than a live checkout. Both are the kind
-# of mistake that is invisible in a browser and expensive in public.
+# button is either the placeholder or a real Stripe link and never a dead one.
+# Both are the kind of mistake that is invisible in a browser and expensive in
+# public.
 
 OFFERS = DOCS / "offers"
 
@@ -196,13 +197,62 @@ def test_the_offers_index_links_every_product_and_promises_nothing():
 
 
 @pytest.mark.parametrize("page", sorted(OFFERS.glob("*.html")), ids=lambda p: p.name)
-def test_every_buy_button_is_still_the_placeholder(page: Path):
+def test_every_buy_button_is_the_placeholder_or_a_real_checkout(page: Path):
+    """Two states are allowed, and nothing between them.
+
+    Before launch morning a button is the `#stripe-pending` fragment with its
+    fixed text. After it, it is an `https://` Stripe payment link with a price
+    on it. Insisting on the placeholder for ever would have turned the archive
+    red the morning the owner pasted the four links in - the nightly harvest
+    runs this suite before it fetches anything - which is a bad way to find out
+    that a launch step and a test disagree. What is still forbidden is the
+    thing that costs money: a button pointing at a relative path, at `http://`,
+    or at nothing.
+    """
     for button in _buy_buttons(page):
-        assert button["href"] == BUY_HREF, "%s: buy button href is %r" % (page.name, button["href"])
-        assert button["text"] == BUY_TEXT, "%s: buy button text is %r" % (page.name, button["text"])
+        href = button["href"]
         assert button["product"] in PRODUCT_PAGES, (
             "%s: unknown data-product %r" % (page.name, button["product"])
         )
+        if href == BUY_HREF:
+            assert button["text"] == BUY_TEXT, (
+                "%s: buy button text is %r" % (page.name, button["text"])
+            )
+            continue
+        assert href.startswith("https://"), (
+            "%s: a live buy button must be an https link, not %r" % (page.name, href)
+        )
+        assert "stripe.com/" in href, (
+            "%s: a live buy button must be a Stripe payment link, not %r" % (page.name, href)
+        )
+        assert button["text"].strip(), "%s: a live buy button has no text" % page.name
+        assert BUY_TEXT not in button["text"], (
+            "%s: the link is live but the text still says checkout opens on launch" % page.name
+        )
+
+
+def _synthetic_offer_page(tmp_path: Path, href: str, text: str) -> Path:
+    """One buy button on a page of its own, for exercising the launch-day state."""
+    page = tmp_path / "synthetic-offer.html"
+    page.write_text(
+        '<a class="buy" href="%s" data-product="cclasstrib-monthly">%s</a>' % (href, text),
+        encoding="utf-8",
+    )
+    return page
+
+
+def test_the_launch_morning_state_is_accepted_and_a_dead_button_is_not(tmp_path):
+    """Exercise the live branch now, not at 09:22 on launch morning."""
+    check = test_every_buy_button_is_the_placeholder_or_a_real_checkout
+    check(_synthetic_offer_page(tmp_path, "https://buy.stripe.com/aEU00abc", "Subscribe - $28/month"))
+    check(_synthetic_offer_page(tmp_path, BUY_HREF, BUY_TEXT))
+    for dead in ("", "/checkout", "#stripe", "http://buy.stripe.com/aEU00abc",
+                 "https://example.com/pay"):
+        with pytest.raises(AssertionError):
+            check(_synthetic_offer_page(tmp_path, dead, "Subscribe - $28/month"))
+    # Link pasted, text forgotten: the button would sell at a price nobody sees.
+    with pytest.raises(AssertionError):
+        check(_synthetic_offer_page(tmp_path, "https://buy.stripe.com/aEU00abc", BUY_TEXT))
 
 
 def test_each_priced_product_has_exactly_one_buy_button_somewhere():
