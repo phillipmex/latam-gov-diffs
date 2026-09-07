@@ -53,7 +53,35 @@ Nothing here has been uploaded to PyPI or npm.
   `readDiff` (an async iterator over the JSONL) and `summary`, plus a
   `govdiff feeds|versions|latest|diff` command line.
 - **Static diff viewer** - `docs/index.html`, ready for GitHub Pages, with no
-  build step, no external scripts and no fonts to fetch.
+  build step, no external scripts and no fonts to fetch. Three states, all
+  addressable: the feed cards and how-to-read block at no hash, a feed overview
+  with the source details and every recorded change at `#feed=<id>`, and one
+  change record-by-record at `#feed=<id>&from=<version>&to=<version>`. The diff
+  view adds a copy-link button, a download link to the raw JSONL, and a
+  changed-fields bar list sortable by count or by name; it keeps the 5,000
+  record cap and says how many records it counted past it. One column below
+  720 px, and nothing needs a keyboard.
+- **Atom change feed** - `govdiff index` also writes `docs/feed.xml` (every
+  change across all feeds, newest first), a per-feed `docs/<feed>/feed.xml`, and
+  `CHANGES.md`, the same history as a readable table. One entry per published
+  revision, with stable RFC 4151 tag ids, a viewer deep link, an enclosure
+  pointing at the raw `.jsonl`, and a plain-text summary naming the columns that
+  moved. The feed's `updated` is the newest diff's timestamp rather than the
+  time of writing, so a night with no change rewrites nothing.
+- **`--repo PATH`** on every command, with `GOVDIFF_REPO` in the environment and
+  the current directory as the two fallbacks.
+
+### Fixed
+
+- **The archive root is resolved, not guessed.** `repo_root()` walks up from the
+  installed module, which is correct in a clone and points into site-packages
+  from a wheel - so `pip install govdiff && govdiff status` looked for
+  `feeds.yaml` inside the package. Commands now resolve the checkout from
+  `--repo`, then `GOVDIFF_REPO`, then the working directory when it holds
+  `feeds.yaml`, and otherwise fail with a message naming all three and the
+  directory they tried. The package directory is never a fallback, and a
+  `--repo` or `GOVDIFF_REPO` that points at the wrong place is an error rather
+  than a silent fall-through. `repo_root()` itself is unchanged.
 
 ### Notes
 

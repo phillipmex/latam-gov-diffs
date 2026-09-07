@@ -8,7 +8,8 @@ import sys
 from pathlib import Path
 
 from govdiff import __version__
-from govdiff.config import load_feeds, repo_root
+from govdiff.changefeed import write_change_feed
+from govdiff.config import load_feeds, resolve_repo_root
 from govdiff.errors import GovDiffError, SourceChallenged
 from govdiff.fetch import load_state
 from govdiff.index import write_index
@@ -44,7 +45,7 @@ def _print_outcome(outcome: dict) -> None:
 
 
 def cmd_run(args) -> int:
-    root = Path(args.root).resolve() if args.root else repo_root()
+    root = resolve_repo_root(args.root)
     if args.feed:
         outcomes = [run_feed(args.feed, root)]
     else:
@@ -57,7 +58,7 @@ def cmd_run(args) -> int:
 
 
 def cmd_bootstrap(args) -> int:
-    root = Path(args.root).resolve() if args.root else repo_root()
+    root = resolve_repo_root(args.root)
     report = bootstrap_feed(args.feed, root, delay=args.delay)
     print("listing shows %d %s release(s)" % (report["listed"], args.feed))
     if report.get("note"):
@@ -92,7 +93,7 @@ def cmd_bootstrap(args) -> int:
 
 
 def cmd_rediff(args) -> int:
-    root = Path(args.root).resolve() if args.root else repo_root()
+    root = resolve_repo_root(args.root)
     report = rediff_feed(args.feed, root)
     print("%s: %d stored version(s)" % (report["feed"], report["versions"]))
     if report.get("note"):
@@ -115,7 +116,7 @@ def cmd_rediff(args) -> int:
 
 
 def cmd_index(args) -> int:
-    root = Path(args.root).resolve() if args.root else repo_root()
+    root = resolve_repo_root(args.root)
     output = Path(args.output).resolve() if args.output else None
     report = write_index(root, output)
     try:
@@ -132,11 +133,27 @@ def cmd_index(args) -> int:
             "rewritten" if report["changed"] else "unchanged, left alone",
         )
     )
+    # The change feed comes out of the same walk and the same command, so the
+    # nightly job stays one step. `--output` is the "write the index somewhere
+    # else" escape hatch and does not touch the repository, so it skips this.
+    if not output and not args.no_change_feed:
+        feed_report = write_change_feed(root)
+        print(
+            "change feed: %d entry(s) - %s"
+            % (
+                feed_report["entries"],
+                (
+                    "rewrote " + ", ".join(feed_report["written"])
+                    if feed_report["written"]
+                    else "unchanged, left alone"
+                ),
+            )
+        )
     return 0
 
 
 def cmd_status(args) -> int:
-    root = Path(args.root).resolve() if args.root else repo_root()
+    root = resolve_repo_root(args.root)
     feeds = load_feeds(root / "feeds.yaml")
     rows = []
     for feed in feeds.values():
@@ -167,7 +184,18 @@ def cmd_status(args) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="govdiff", description=__doc__)
     parser.add_argument("--version", action="version", version="govdiff %s" % __version__)
-    parser.add_argument("--root", help="repository root (default: the installed package's repo)")
+    # `--repo` is the documented spelling; `--root` is days 1-4's name for the
+    # same thing and still works. Both land in args.root.
+    parser.add_argument(
+        "--repo",
+        "--root",
+        dest="root",
+        metavar="PATH",
+        help=(
+            "the archive checkout to work in. Default: $GOVDIFF_REPO, or the current"
+            " directory when it holds feeds.yaml."
+        ),
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     run = sub.add_parser("run", help="fetch a feed, snapshot it if it changed, diff it")
@@ -186,9 +214,15 @@ def build_parser() -> argparse.ArgumentParser:
     redo.set_defaults(func=cmd_rediff)
 
     idx = sub.add_parser(
-        "index", help="write docs/index.json - the machine-readable archive index"
+        "index",
+        help="write docs/index.json, docs/feed.xml, docs/<feed>/feed.xml and CHANGES.md",
     )
-    idx.add_argument("--output", help="write somewhere other than docs/index.json")
+    idx.add_argument("--output", help="write the index somewhere other than docs/index.json")
+    idx.add_argument(
+        "--no-change-feed",
+        action="store_true",
+        help="write only docs/index.json, not the Atom feeds or CHANGES.md",
+    )
     idx.set_defaults(func=cmd_index)
 
     status = sub.add_parser("status", help="one line per feed")

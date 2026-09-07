@@ -65,13 +65,18 @@ jobs:
         if: always()
         run: govdiff status
 
-      # Rebuilds docs/index.json, the machine-readable archive index the npm
-      # client and the static viewer both read. It runs on always() for the
-      # same reason the commit step does: a feed that failed must not stop the
-      # index describing the feeds that succeeded. The writer leaves the file
-      # untouched when only its own timestamp would have moved, so this step
-      # does not manufacture a commit on a night when nothing changed.
-      - name: Rebuild the archive index
+      # Rebuilds everything derived from the archive in one command:
+      # docs/index.json (the machine-readable index the npm client and the
+      # viewer read), docs/feed.xml plus docs/<feed>/feed.xml (the Atom change
+      # feed anyone can subscribe to), and CHANGES.md (the same thing for a
+      # human). One command on purpose - one nightly step, one commit.
+      #
+      # It runs on always() for the same reason the commit step does: a feed
+      # that failed must not stop the index describing the feeds that
+      # succeeded. Every one of those files is left untouched when only a
+      # timestamp would have moved, so this step does not manufacture a commit
+      # on a night when nothing changed.
+      - name: Rebuild the archive index and change feed
         if: always()
         run: govdiff index
 
@@ -80,7 +85,7 @@ jobs:
         run: |
           git config user.name "govdiff-bot"
           git config user.email "govdiff-bot@users.noreply.github.com"
-          git add -A data diffs .state raw docs
+          git add -A data diffs .state raw docs CHANGES.md
           if git diff --cached --quiet; then
             echo "nothing changed today"
             exit 0

@@ -14,6 +14,9 @@
       copy, and under any Content-Security-Policy a reader cares to apply.
     -->
     <link rel="stylesheet" href="./viewer.css" />
+    <!-- The Atom change feed, so a reader's browser or reader extension can
+         offer to subscribe from the page itself. -->
+    <link rel="alternate" type="application/atom+xml" title="latam-gov-diffs: every change" href="./feed.xml" />
     <!-- Inline, so the browser's automatic /favicon.ico request never 404s and
          the page still makes no request off its own origin. -->
     <link
@@ -24,12 +27,14 @@
   <body>
     <header>
       <div class="bar">
-        <h1>latam-gov-diffs</h1>
+        <h1><a href="#" id="home-link">latam-gov-diffs</a></h1>
         <nav aria-label="Sections">
+          <a href="./feed.xml">Change feed</a>
           <a href="https://github.com/phillipmex/latam-gov-diffs">Repository</a>
           <a href="https://github.com/phillipmex/latam-gov-diffs#the-diff-format">Diff format</a>
-          <!-- Offer pages land here later. No prices exist yet, so none are shown. -->
-          <span class="soon" title="Not published yet">Feeds &amp; attestations - soon</span>
+          <!-- Offer pages land here later. No prices exist yet, so the link
+               goes to the README rather than to a page that does not exist. -->
+          <a href="https://github.com/phillipmex/latam-gov-diffs#readme">Paid feeds</a>
         </nav>
       </div>
       <p class="tagline">
@@ -39,63 +44,153 @@
     </header>
 
     <main>
-      <section class="pickers" aria-label="Choose what to look at">
-        <label>
-          Feed
-          <select id="feed"></select>
-        </label>
-        <label>
-          Change
-          <select id="pair"></select>
-        </label>
-        <p id="source" class="source"></p>
+      <!-- ============================================================ home -->
+      <section id="view-home" hidden>
+        <h2>Three feeds, archived nightly</h2>
+        <p class="lede">
+          Each source is fetched every night, stored as a dated snapshot, and compared with the
+          version before it. Pick a feed to see everything it has recorded.
+        </p>
+
+        <div id="feed-cards" class="feed-cards"></div>
+
+        <div class="panels">
+          <div class="panel">
+            <h3>Subscribe to the changes</h3>
+            <p>
+              Every revision of every feed, newest first, as an Atom feed any reader can follow.
+              Nothing to install and no account.
+            </p>
+            <p class="links">
+              <a href="./feed.xml" class="button">Atom feed - all feeds</a>
+              <a href="https://github.com/phillipmex/latam-gov-diffs/blob/main/CHANGES.md"
+                >CHANGES.md - the same thing to read</a
+              >
+            </p>
+          </div>
+
+          <div class="panel">
+            <h3>How to use it</h3>
+            <dl class="howto">
+              <dt>Read it in a browser</dt>
+              <dd>This page. Every view is a link you can bookmark or paste to a colleague.</dd>
+
+              <dt>Poll it from a script <span class="tag">no install</span></dt>
+              <dd>
+                Fetch the index, then the diff file it names. Plain HTTPS, no key, no account.
+                <code id="raw-example">https://raw.githubusercontent.com/…/docs/index.json</code>
+              </dd>
+
+              <dt>Python <span class="tag">available from launch</span></dt>
+              <dd><code>pip install govdiff</code> - the harvester: fetch, snapshot, diff, index.</dd>
+
+              <dt>Node <span class="tag">available from launch</span></dt>
+              <dd>
+                <code>npm install govdiff</code> - a zero-dependency reader for the published
+                archive, or <code>npx govdiff feeds</code> with no install at all.
+              </dd>
+            </dl>
+          </div>
+        </div>
       </section>
 
-      <section id="summary" aria-label="Summary of this change"></section>
+      <!-- ==================================================== feed overview -->
+      <section id="view-overview" hidden>
+        <p class="crumbs"><a href="#">&larr; All feeds</a></p>
+        <h2 id="overview-title"></h2>
+        <p id="overview-lede" class="lede"></p>
 
-      <section aria-label="Changed records">
-        <div class="controls">
-          <label class="grow">
-            Filter
-            <input
-              id="filter"
-              type="search"
-              placeholder="code, field name, or any value"
-              autocomplete="off"
-            />
+        <div class="panels">
+          <div class="panel">
+            <h3>Source</h3>
+            <dl id="overview-meta" class="meta"></dl>
+          </div>
+          <div class="panel">
+            <h3>Subscribe</h3>
+            <p id="overview-subscribe-note"></p>
+            <p class="links">
+              <a id="overview-feed-link" class="button" href="./feed.xml">Atom feed - this feed</a>
+              <a href="./feed.xml">Atom feed - all feeds</a>
+            </p>
+          </div>
+        </div>
+
+        <h3>Every recorded change</h3>
+        <p id="overview-timeline-note" class="note"></p>
+        <ol id="timeline" class="timeline"></ol>
+      </section>
+
+      <!-- ============================================================ diff -->
+      <section id="view-diff" hidden>
+        <p class="crumbs">
+          <a href="#">&larr; All feeds</a>
+          <a id="crumb-feed" href="#"></a>
+        </p>
+
+        <section class="pickers" aria-label="Choose what to look at">
+          <label>
+            Feed
+            <select id="feed"></select>
           </label>
           <label>
-            Show
-            <select id="op">
-              <option value="all">every change</option>
-              <option value="added">added only</option>
-              <option value="changed">changed only</option>
-              <option value="removed">removed only</option>
-            </select>
+            Change
+            <select id="pair"></select>
           </label>
-        </div>
+          <div class="actions">
+            <button id="copy-link" type="button">Copy link</button>
+            <a id="download-jsonl" class="button" href="#" download>Download JSONL</a>
+          </div>
+          <p id="source" class="source"></p>
+        </section>
 
-        <p id="records-note" class="note"></p>
+        <section id="summary" aria-label="Summary of this change"></section>
 
-        <div class="table-wrap">
-          <table id="records">
-            <thead>
-              <tr>
-                <th scope="col">What</th>
-                <th scope="col">Record</th>
-                <th scope="col">Detail</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <section aria-label="Changed records">
+          <div class="controls">
+            <label class="grow">
+              Filter
+              <input
+                id="filter"
+                type="search"
+                placeholder="code, field name, or any value"
+                autocomplete="off"
+              />
+            </label>
+            <label>
+              Show
+              <select id="op">
+                <option value="all">every change</option>
+                <option value="added">added only</option>
+                <option value="changed">changed only</option>
+                <option value="removed">removed only</option>
+              </select>
+            </label>
+          </div>
 
-        <div class="paging">
-          <button id="prev" type="button">Previous</button>
-          <span id="page-label"></span>
-          <button id="next" type="button">Next</button>
-        </div>
+          <p id="records-note" class="note"></p>
+
+          <div class="table-wrap">
+            <table id="records">
+              <thead>
+                <tr>
+                  <th scope="col">What</th>
+                  <th scope="col">Record</th>
+                  <th scope="col">Detail</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="paging">
+            <button id="prev" type="button">Previous</button>
+            <span id="page-label"></span>
+            <button id="next" type="button">Next</button>
+          </div>
+        </section>
       </section>
+
+      <p id="fatal" class="note error" hidden></p>
     </main>
 
     <footer>

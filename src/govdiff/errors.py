@@ -20,3 +20,12 @@ class SourceTooLarge(GovDiffError):
 
 class FeedError(GovDiffError):
     """A feed is misconfigured, or its parser could not make sense of the file."""
+
+
+class RepoNotFound(GovDiffError):
+    """No archive checkout could be resolved.
+
+    Raised when `--repo` was not given, `GOVDIFF_REPO` is unset or wrong, and
+    the working directory is not an archive checkout. The message tells the
+    reader how to fix it; see `config.resolve_repo_root`.
+    """

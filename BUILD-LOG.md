@@ -800,3 +800,261 @@ viewer is live at https://phillipmex.github.io/latam-gov-diffs/ with no further 
    error.
 4. **Watch the 69-B `Last-Modified`.** Still 22 January 2026, unchanged from the day-3 note. The
    first time it moves is the first real diff this feed has ever produced anywhere.
+
+## 2026-09-07 - day 5 - the change feed, and a viewer that is finished
+
+Day 4 left a repository that a program could read. Today it becomes something a person can
+subscribe to: an Atom feed and a readable changelog written by the same command that writes the
+index, a viewer with a front door instead of only a diff table, and the wheel-install defect closed
+before anything is tagged.
+
+**No publisher was contacted today.** Every byte was already on disk. The only HTTP traffic was to
+127.0.0.1:8765 (a local static server), 127.0.0.1:9222 (the VM's own Chrome) and 127.0.0.1:9223 (a
+second, throwaway Chrome - see the verification note). Total external requests: **zero**.
+
+### Part A: where the archive lives
+
+The day-4 defect, fixed first. `repo_root()` walks two directories up from the module. In a clone
+that is the repository; in a wheel it is `site-packages`, so `pip install govdiff && govdiff
+status` looked for `feeds.yaml` inside the installed package. The failure mode was worse than an
+error message: a command that *writes* could have created a `data/` directory inside site-packages.
+
+`config.resolve_repo_root(explicit)` is the fix, and it is four branches and nothing else:
+
+1. `--repo PATH` (the global CLI option; `--root` is day 1-4's spelling and still lands in the same
+   place),
+2. `$GOVDIFF_REPO` (`$GOVDIFF_ROOT` is honoured as an alias, because that is what day 4 documented),
+3. the current working directory, if it holds `feeds.yaml`,
+4. otherwise `RepoNotFound`, whose message names `git clone`, `--repo`, `GOVDIFF_REPO` **and the
+   directory it actually tried**.
+
+Two decisions inside that:
+
+- **`repo_root()` is deliberately not in the chain.** It is tempting - it would make a source-tree
+  checkout work from anywhere - but it is exactly the guess that caused the defect, and including
+  it would make branch 4 untestable from a source tree. `repo_root()` itself is untouched: it is
+  still what `load_feeds()` and the library callers use, and one test asserts it still answers the
+  source-tree question correctly.
+- **A wrong `--repo` or a wrong `GOVDIFF_REPO` is an error, not a fall-through.** If someone says
+  where the archive is and is wrong about it, silently harvesting into a different directory is the
+  worst possible outcome. Say so and stop.
+
+All five commands now start with `resolve_repo_root(args.root)`. Ten tests in
+`tests/test_repo_resolution.py` cover all four branches, both env spellings, both flag spellings,
+the "package directory is not a fallback" case, and the CLI's exit code 1 with `no archive found`
+on stderr.
+
+### Part B: the change feed
+
+`src/govdiff/changefeed.py`, written by `govdiff index` - **the same command, the same walk of the
+archive, the same nightly step.** No new workflow step, because a second step is a second thing
+that can fail on its own and a second commit that can race the first.
+
+Five files come out of it:
+
+| file | bytes | what |
+|---|--:|---|
+| `docs/feed.xml` | 13,778 | Atom 1.0, all 10 diffs across all feeds, newest first |
+| `docs/cclasstrib/feed.xml` | 12,865 | the same, one feed |
+| `docs/catcfdi/feed.xml` | 1,791 | " |
+| `docs/sat69b/feed.xml` | 843 | " - no entries yet, and written anyway |
+| `CHANGES.md` | 4,215 | the same history as a table, for reading |
+
+One entry per published revision. The title carries the counts the way a reader sees them in a
+list - `cclasstrib 2026-04-15 -> 2026-06-23: +8 / ~156 / -0` - because an Atom reader shows titles
+and hides everything else until you click. The content is plain text: the four counts, the row
+total before and after, the top five columns that moved with their record counts, any column the
+publisher added or dropped, the diff file and its size, and the publisher's name. Two links:
+`rel="alternate"` is the viewer deep link (`.../#feed=...&from=...&to=...`), `rel="enclosure"` is
+the raw `.jsonl` on raw.githubusercontent.com with its byte length, so a reader can hand the file
+straight to a script.
+
+The decisions worth recording:
+
+1. **`updated` is the newest diff's `generated_at`, never `now()`.** This is the whole reason the
+   file can be committed. A feed stamped with the time of writing changes every night, produces a
+   commit every night, and tells every subscriber that something happened when nothing did. Taking
+   the timestamp from the data means a quiet night rewrites nothing at all - and `_write_if_changed`
+   compares bytes, so the committed file is only touched when the archive really moved. Verified by
+   running `govdiff index` twice: the second run prints `unchanged, left alone`.
+2. **Entry ids are RFC 4151 tag URIs** built from feed, from-version and to-version -
+   `tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/<from>__<to>`. They do not contain a
+   date of generation and they do not change if the file is rewritten, so no reader ever shows the
+   same change twice. A `tag:` URI is also the correct thing here rather than a URL: the id is an
+   identity, not a location, and the location is already in the two `link` elements.
+3. **The `generator` element carries no version number.** It would be the one field that differs
+   between a clone (`0.0.0+source`) and a wheel (`0.1.0`), which would make the file's bytes depend
+   on how the tool was installed. Byte-stability wins over a nicety.
+4. **`build_entries` reads the `.summary.json` files directly** rather than widening
+   `docs/index.json`. The feed needs each diff's `generated_at` and `changed_fields`; the index
+   carries neither, on purpose - it is a description of what exists, not of what moved. Adding them
+   would have changed the index's shape and its do-not-rewrite comparison on day 5 of its life.
+5. **An empty feed still gets a file.** `sat69b` has one version and no diff, so its Atom has no
+   entries and its `updated` falls back to the newest archived version's date at midnight UTC. The
+   alternative is the overview page's subscribe link 404ing for the one feed most likely to matter
+   first.
+6. **`--output` skips the change feed**, and there is a `--no-change-feed` flag for the same
+   purpose. `--output` means "write the index somewhere else"; it must not have the side effect of
+   writing five files into the repository.
+
+`CHANGES.md` is a section per feed with the source line, the key fields, the version span and a
+reverse-chronological table: published date, from-version to to-version, the three counts, the top
+three columns that moved, and a link to the `.jsonl`. Its header says **generated by `govdiff
+index`, do not edit**, because the first thing anyone does with a file called CHANGES.md is edit it.
+
+`nightly.yml`'s commit step now reads `git add -A data diffs .state raw docs CHANGES.md`. `docs/`
+was already covered; `CHANGES.md` sits at the repository root and was not.
+
+### Part C: the viewer, finished
+
+Three states, all addressable, all in the same three files with no build step and still not one
+external request:
+
+- **no hash** - the three feeds as cards (publisher, country, title, versions archived, the latest
+  change's counts and date), a subscribe panel pointing at `feed.xml` and `CHANGES.md`, and a
+  four-row *How to use it* block: read it in a browser, poll it from a script (with the actual raw
+  URL, marked *no install*), `pip install govdiff` and `npm install govdiff` (both marked
+  *available from launch*, which is the honest label until 09-22).
+- **`#feed=<id>`** - the source: publisher, country, a link to the published document, the listing
+  page, key fields, format, versions archived, first and latest version dates with the row count,
+  and changes recorded. Beside it the subscribe links for that feed and for all feeds. Then the
+  timeline: every diff, newest first, each row a deep link showing the date, the version span, the
+  three counts and the file size.
+- **`#feed=<id>&from=...&to=...`** - the diff view from day 4, plus a **Copy link** button, a
+  **Download JSONL** link to the raw file with its size in the tooltip, and a *Changed fields* block
+  that is now sortable by count or by name. The record key is rendered as the largest thing in its
+  row rather than one label among many, since it is the first thing anyone looks for.
+
+Decisions:
+
+- **Routing is `readHash()` and `hashFor()`, and nothing else.** Every link on the page is built by
+  `hashFor`, which carries an existing `&base=` override through every navigation, so a reader
+  pointed at a fork stays pointed at it. Navigation is *setting the hash*; a single `hashchange`
+  listener does the rendering. That means the back button works everywhere for free, and there is
+  one code path whether you arrived from a bookmark, from the Atom feed, or by clicking.
+- **A feed with no diff routes to its overview, not to an empty table.** Picking `sat69b` in the
+  feed picker lands on the overview, which explains that a diff needs two versions.
+- **Copy link degrades rather than throwing.** The async clipboard needs a focused document and a
+  secure context; when it is unavailable the button falls back to a hidden textarea, and if that
+  fails too it says *Copy failed - use the address bar*. Never a console error.
+- Every existing function name, the 5,000-record cap, the streaming reader and the base-URL
+  resolution from day 4 are unchanged. The new code is around them, not through them.
+- Below 720 px everything is one column: the panels, the feed cards, the pickers, the detail grids
+  and the timeline rows. Verified as zero horizontal overflow at 390 px, not eyeballed.
+
+### Verification in the browser
+
+Served the repository root with `python -m http.server 8765 --bind 127.0.0.1` and drove the page
+over CDP in the VM's own Chrome 152 at 127.0.0.1:9222 - home, both overviews, the newest cclasstrib
+diff, the big catCFDI diff, the filter, the op filter, paging, the sort chips, copy link, dark mode
+and a 390 px viewport. Everything rendered correctly.
+
+**The console was not clean, and the reason is worth writing down.** Five errors appeared, all of
+the form *"the message port closed before a response was received"*, one of them naming
+`chrome-extension://.../kwift.CHROME.js`. That profile is the owner's daily browser: it has
+extensions, and one of them is Dark Reader, which is also why `getComputedStyle(body)` returned
+pure black in both light and dark - the extension was repainting the page, so the theme could not
+be verified there at all.
+
+So the run was repeated in a second Chrome started with a throwaway profile,
+`--headless=new --disable-extensions`, on port 9223. Same binary, same VM, no extensions:
+
+| check | result |
+|---|---|
+| console and browser log, all three states | **zero errors, zero warnings** |
+| home | 3 feed cards, correct counts and dates, raw URL rendered |
+| overview `cclasstrib` | 9 timeline rows, first one 2026-06-23, +8 ~156 -0, 201 kB; all metadata present |
+| overview `sat69b` | explains that a diff needs two versions |
+| diff, newest `cclasstrib` | 164 records, 17 changed-field bars, key `cclasstrib 221002` |
+| sort chips | by count then by name; by name gives `dataatualizacao, descricao_cclasstrib, dfimvig` |
+| filter | `aliquota` narrows to 8 of 164 |
+| catCFDI, the big one | 8,026 counted, first 5,000 loaded, 200 shown, the notice says so |
+| Copy link | copies the full deep link, button says *Link copied* |
+| light theme | body `rgb(255,255,255)`, panel `rgb(246,247,248)` |
+| dark theme | body `rgb(20,23,26)`, ink `rgb(230,233,236)`, link `rgb(121,176,240)` |
+| 390 px, overview and home | 0 px horizontal overflow; panels and cards single column |
+
+Both browsers' tabs were closed and both servers stopped. Pages was not enabled and the repository
+is still private.
+
+### Requests made
+
+**None.** No government publisher was contacted. External HTTP requests: zero. Local only:
+`127.0.0.1:8765` (static server), `127.0.0.1:9222` and `127.0.0.1:9223` (Chrome DevTools).
+
+### Tests
+
+`pytest -q`: **135 passed**, up from 105. Thirty new:
+
+- `tests/test_repo_resolution.py` (10) - the four branches, both env spellings, both flag
+  spellings, a bad `--repo` and a bad `GOVDIFF_REPO` each raising rather than falling through, the
+  package directory not being a fallback, and the CLI's exit code and stderr.
+- `tests/test_changefeed.py` (20) - the Atom output parsed with `xml.etree.ElementTree` and checked
+  for well-formedness and every required element; entry titles, ids, both link hrefs and the
+  content text; `updated` equal to the newest diff's timestamp and not to `now()`; per-feed
+  filtering; the empty-feed case; XML escaping of angle brackets and ampersands in a field name;
+  `CHANGES.md`'s header, sections, ordering and *+1 more* truncation; **determinism** -
+  `write_change_feed` run twice produces identical bytes and reports nothing written the second
+  time; a new diff appearing does rewrite it; the CLI integration; and both escape hatches. Plus
+  `test_the_committed_change_feed_is_current`, which regenerates against the real repository and
+  fails if what is committed is stale - the same guard `docs/index.json` has had since day 4.
+
+`npm test` in `js/`: **20 passed**, unchanged. The Node client reads `index.json` and the diffs and
+is untouched by today's work.
+
+### Defects and caveats
+
+1. **The Atom feed's entry order is by `to` version, then `from`, then feed id - not by wall
+   clock.** Two publishers releasing on the same date sort by feed name, which is arbitrary but
+   stable. Stable matters more than clever here.
+2. **`CHANGES.md` grows without bound.** 10 changes today, 4.2 kB. At a few revisions a month per
+   feed it is years away from being a problem, but there is no truncation and no archive split.
+3. **The changed-fields bar list still shows the top 25** and says how many more there are. Day 4's
+   caveat, unchanged.
+4. **Both packages still install a binary called `govdiff`.** Day 4's caveat 2, unchanged.
+5. **`govdiff --version` still reports `0.0.0+source`** from a clone. Day 4's caveat 3, unchanged,
+   and now load-bearing: it is why the Atom `generator` carries no version.
+6. **The raw.githubusercontent.com base URL is still untested in anger.** It is the branch the
+   viewer takes on Pages, and it cannot run until the repository is public. First thing to check on
+   09-22.
+7. **The 69-B `Last-Modified` is still 22 January 2026.** Unmoved since day 3.
+
+### Day 6
+
+Three offer pages and a README polish. What matters is that nothing on them can be a claim the
+archive does not support, so here is exactly what it supports as of tonight:
+
+| feed | versions | span | diffs | latest row count | records moved (added / changed / removed) |
+|---|--:|---|--:|--:|---|
+| `cclasstrib` | 10 | 2024-12-07 to 2026-06-23 | 9 | 164 | 88 / 837 / 18 |
+| `catcfdi` | 2 | 2024-12-04 to 2026-09-03 | 1 | 362,345 | 7,917 / 108 / 1 |
+| `sat69b` | 1 | 2026-01-22 | 0 | 14,234 | none yet |
+| **total** | **13** | | **10** | | |
+
+1. **`docs/offers/cclasstrib.html`, about $28/mo.** Truthfully: 10 archived versions over 18
+   months, 9 diffs, the full IBS/CBS classification table at 164 rows, and a record-level history
+   of every revision that the NF-e portal does not publish anywhere. Do **not** claim the raw
+   versions are exclusive - the portal keeps its dated releases and anyone can re-download them.
+   The diff history is the product.
+2. **`docs/offers/catalogos-sat.html`, $39/mo.** 25 catalogues, 362,345 rows, one revision recorded
+   so far (7,917 additions, 108 changes, 1 removal, 2024-12-04 to 2026-09-03) with the columns that
+   moved named. One diff is a thin claim; lead with the coverage and the format, and say plainly
+   that the change history starts here. The honest hook is that SAT links only the current
+   workbook, so nobody who has not been recording has this.
+3. **`docs/offers/listas-mx.html`, $99/mo plus a $250 point-in-time attestation.** This is the one
+   with the real moat and the weakest archive: 14,234 rows, one snapshot, **zero diffs**, and
+   history that starts 2026-09-07 because SAT publishes the current list only. Say that out loud -
+   it is the argument, not the weakness. The attestation product is "on date D, RFC X stood at
+   stage Y in the list as published", which the archive can already answer for every day it has
+   been running. It cannot answer it for any day before 2026-09-07, and the page must not imply
+   otherwise.
+4. **Stripe links do not exist yet** and are the owner's hand, expected around 09-19. Every page
+   needs one clearly marked placeholder - a disabled button reading something like *Checkout opens
+   2026-09-22* with an HTML comment naming the exact attribute to paste the link into - so the
+   owner's job on the day is a find-and-replace and nothing else. Do not create a Stripe account, a
+   payment link, or anything resembling one.
+5. **Wire the nav.** `docs/index.html`'s *Paid feeds* link points at the README today; it becomes
+   the offer index once the pages exist.
+6. **README polish.** The Feeds table should carry the version and diff counts, and the "honest
+   note on the moat" already says the right thing - keep it, and make sure the offer pages agree
+   with it word for word rather than overselling.

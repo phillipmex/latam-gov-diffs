@@ -103,9 +103,20 @@ python -m http.server 8765          # from the repository root
 # then open http://127.0.0.1:8765/docs/
 ```
 
-Every view is a link: `#feed=cclasstrib&from=<version>&to=<version>`. Add `&base=<url>` to point
-the page at a fork or a mirror. A diff of any size streams as it downloads; the table shows the
-first 5,000 records and says how many more it counted but did not load.
+Every view is a link, so any of them can be bookmarked, pasted into a ticket, or arrived at from
+the change feed:
+
+| address | what you get |
+|---|---|
+| no hash | the three feeds as cards, with the latest change on each, and how to read the archive |
+| `#feed=cclasstrib` | the feed's source details and every change it has recorded, newest first |
+| `#feed=cclasstrib&from=<version>&to=<version>` | one change, record by record |
+
+Add `&base=<url>` to any of them to point the page at a fork or a mirror. The diff view has a
+**Copy link** button and a **Download JSONL** link to the raw file, a *Changed fields* bar list
+sortable by count or by name, and a filter across every value. A diff of any size streams as it
+downloads; the table shows the first 5,000 records and says how many more it counted but did not
+load. Mouse-only throughout, and one column below 720 px.
 
 ## Running it from source
 
@@ -117,7 +128,24 @@ govdiff run                      # every enabled feed
 govdiff bootstrap cclasstrib     # load the publisher's whole back catalogue
 govdiff bootstrap catcfdi        # same, for any feed whose parser lists versions
 govdiff rediff cclasstrib        # rebuild every diff from the stored snapshots, no network
+govdiff index                    # rebuild docs/index.json, the Atom feeds and CHANGES.md
 ```
+
+**Every command needs to know which checkout it is working on**, and looks in three places, in
+order: the `--repo PATH` option, the `GOVDIFF_REPO` environment variable, then the current
+directory if it holds `feeds.yaml`. If none of those answers, it says so and names all three
+rather than guessing. `--root` is the old spelling of `--repo` and still works, as does
+`GOVDIFF_ROOT`.
+
+```
+govdiff --repo /srv/latam-gov-diffs status     # say where the archive is
+export GOVDIFF_REPO=/srv/latam-gov-diffs       # or say it once
+cd /srv/latam-gov-diffs && govdiff status      # or just stand in it
+```
+
+This matters for `pip install govdiff`: the wheel has no archive inside it, so a bare `govdiff
+status` outside a clone is an error with instructions, not a crash or a stray directory written
+into site-packages.
 
 `data/<feed>/<version>/` holds `data.parquet` plus a `meta.json` sidecar (schema, source URL, fetch time,
 `Last-Modified`, sha256, row count). `diffs/<feed>/<from>__<to>.jsonl` holds one JSON object per changed
@@ -200,6 +228,42 @@ keys, two-space indent, trailing newline - and it is left byte-for-byte alone wh
 `generated_at` would have moved, so a nightly commit touching it means the archive really changed.
 That is also why nothing timing-related from `.state/` is in it: `last_fetched_at` moves every
 night whether or not anything happened.
+
+## Change feed
+
+`govdiff index` writes the same history in two more shapes, from the same walk of the archive and
+in the same nightly step. Nothing here needs a build, an account, or a key.
+
+| file | what it is |
+|---|---|
+| [`docs/feed.xml`](https://phillipmex.github.io/latam-gov-diffs/feed.xml) | Atom 1.0, every change across all feeds, newest first |
+| `docs/<feed>/feed.xml` | the same for one feed - e.g. `docs/cclasstrib/feed.xml` |
+| [`CHANGES.md`](CHANGES.md) | the same history as a table, one section per feed, for reading |
+
+**In a feed reader**, subscribe to
+`https://phillipmex.github.io/latam-gov-diffs/feed.xml` for everything, or
+`https://phillipmex.github.io/latam-gov-diffs/cclasstrib/feed.xml` for one source. The viewer
+page also advertises the feed with `<link rel="alternate">`, so a reader extension offers it when
+you are looking at the page.
+
+Each entry is one published revision. The title carries the counts
+(`cclasstrib 2026-04-15 → 2026-06-23: +8 / ~156 / −0`), the content is a plain-text summary
+naming the columns that moved and any column the publisher added or dropped, and there are two
+links: `rel="alternate"` opens that change in the viewer, `rel="enclosure"` is the raw `.jsonl`
+on `raw.githubusercontent.com`. Entry ids are stable
+[tag URIs](https://www.rfc-editor.org/rfc/rfc4151) built from feed, from-version and to-version,
+so a reader never shows the same change twice.
+
+**From a script**, poll the feed and stop at the first id you have already seen:
+
+```
+curl -s https://phillipmex.github.io/latam-gov-diffs/feed.xml
+```
+
+The feed's own `updated` is the newest diff's generation time, **not** the time the file was
+written. So a night that harvested nothing produces a byte-identical file, no commit, and no
+false "something changed" in anyone's reader. Polling once a day is plenty; the sources publish
+every few weeks at best.
 
 ## Releasing
 

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>latam-gov-diffs: every change</title>
+  <subtitle>Record-level diffs of Latin American government reference data, one entry per published revision.</subtitle>
+  <id>tag:phillipmex.github.io,2026:latam-gov-diffs</id>
+  <updated>2026-09-07T06:32:07+00:00</updated>
+  <link rel="self" type="application/atom+xml" href="https://phillipmex.github.io/latam-gov-diffs/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/"/>
+  <author><name>latam-gov-diffs maintainers</name></author>
+  <rights>Code MIT. Archived data is public government data.</rights>
+  <generator uri="https://github.com/phillipmex/latam-gov-diffs">govdiff index</generator>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60</id>
+    <title>catcfdi 2024-12-04 → 2026-09-03: +7917 / ~108 / −1</title>
+    <updated>2026-09-07T06:32:07+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=catcfdi&amp;from=2024-12-04-a4b88178&amp;to=2026-09-03-a5ce7a60"/>
+    <link rel="enclosure" type="application/x-ndjson" length="2671236" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl"/>
+    <category term="catcfdi"/>
+    <content type="text">7917 added, 108 changed, 1 removed, 354320 unchanged.
+The table went from 354429 rows to 362345.
+Columns that moved: c_municipio (93), descripcion (15).
+Diff file: diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60.jsonl (2.5 MB).
+Source: Servicio de Administracion Tributaria (SAT), MX.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63</id>
+    <title>cclasstrib 2026-04-15 → 2026-06-23: +8 / ~156 / −0</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2026-04-15-cc0242ed&amp;to=2026-06-23-1448cb63"/>
+    <link rel="enclosure" type="application/x-ndjson" length="205842" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">8 added, 156 changed, 0 removed, 0 unchanged.
+The table went from 156 rows to 164.
+Columns that moved: dataatualizacao (156), ind_gpbiodiferenca (156), inddir (156), indduimp (156), tprbsn (156), and 12 more column(s).
+Columns the publisher added: regulamento_cbs, regulamento_ibs, ind_gpbiodiferenca, tprbsn, inddir, indduimp.
+Diff file: diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.jsonl (201 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2026-01-28-0825eadf__2026-04-15-cc0242ed</id>
+    <title>cclasstrib 2026-01-28 → 2026-04-15: +2 / ~25 / −0</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2026-01-28-0825eadf&amp;to=2026-04-15-cc0242ed"/>
+    <link rel="enclosure" type="application/x-ndjson" length="11845" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2026-01-28-0825eadf__2026-04-15-cc0242ed.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">2 added, 25 changed, 0 removed, 129 unchanged.
+The table went from 154 rows to 156.
+Columns that moved: dataatualizacao (25), anexo (20), indnfce (5), descricao_cclasstrib (4), lc_214_25 (3), and 9 more column(s).
+Diff file: diffs/cclasstrib/2026-01-28-0825eadf__2026-04-15-cc0242ed.jsonl (12 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2025-12-15-15ce63cb__2026-01-28-0825eadf</id>
+    <title>cclasstrib 2025-12-15 → 2026-01-28: +9 / ~37 / −0</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2025-12-15-15ce63cb&amp;to=2026-01-28-0825eadf"/>
+    <link rel="enclosure" type="application/x-ndjson" length="43723" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2025-12-15-15ce63cb__2026-01-28-0825eadf.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">9 added, 37 changed, 0 removed, 108 unchanged.
+The table went from 145 rows to 154.
+Columns that moved: dataatualizacao (28), lc_redacao (12), descricao_cclasstrib (11), nome_cclasstrib (9), descricao_cst_ibs_cbs (8), and 9 more column(s).
+Diff file: diffs/cclasstrib/2025-12-15-15ce63cb__2026-01-28-0825eadf.jsonl (43 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2025-11-24-431d4217__2025-12-15-15ce63cb</id>
+    <title>cclasstrib 2025-11-24 → 2025-12-15: +0 / ~132 / −0</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2025-11-24-431d4217&amp;to=2025-12-15-15ce63cb"/>
+    <link rel="enclosure" type="application/x-ndjson" length="15934" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2025-11-24-431d4217__2025-12-15-15ce63cb.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">0 added, 132 changed, 0 removed, 13 unchanged.
+The table went from 145 rows to 145.
+Columns that moved: ind_redutorbc (132), dataatualizacao (2), descricao_cclasstrib (1), indcteos (1), indnfe (1), and 2 more column(s).
+Columns the publisher dropped: ind_redutorbc. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2025-11-24-431d4217__2025-12-15-15ce63cb.jsonl (16 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217</id>
+    <title>cclasstrib 2025-10-03 → 2025-11-24: +7 / ~25 / −4</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2025-10-03-b5ed31f4&amp;to=2025-11-24-431d4217"/>
+    <link rel="enclosure" type="application/x-ndjson" length="24412" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">7 added, 25 changed, 4 removed, 113 unchanged.
+The table went from 142 rows to 145.
+Columns that moved: link (11), credito_para (9), dataatualizacao (7), indnfgas (4), indcteos (1), and 3 more column(s).
+Columns the publisher dropped: credito_para. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2025-10-03-b5ed31f4__2025-11-24-431d4217.jsonl (24 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2025-06-18-f18c6aec__2025-10-03-b5ed31f4</id>
+    <title>cclasstrib 2025-06-18 → 2025-10-03: +12 / ~130 / −2</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2025-06-18-f18c6aec&amp;to=2025-10-03-b5ed31f4"/>
+    <link rel="enclosure" type="application/x-ndjson" length="193806" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2025-06-18-f18c6aec__2025-10-03-b5ed31f4.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">12 added, 130 changed, 2 removed, 0 unchanged.
+The table went from 132 rows to 142.
+Columns that moved: dataatualizacao (130), ind_gcredpresoper (130), ind_gestornocred (130), ind_gmonodif (130), ind_gmonopadrao (130), and 33 more column(s).
+Columns the publisher added: ind_gcredpresoper, ind_gmonopadrao, ind_gmonoreten, ind_gmonoret, ind_gmonodif, ind_gestornocred, indnfeabi, indnfe, indnfce, indcte, indcteos, indbpe, indbpeta, indbpetm, indnf3e, indnfse, indnfse_via, indnfcom, indnfag, indnfgas, inddere, anexo, link.
+Columns the publisher dropped: ind_credpres, indmono, indmonoreten, indmonoret, indmonodif. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2025-06-18-f18c6aec__2025-10-03-b5ed31f4.jsonl (189 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2025-05-19-12c38b66__2025-06-18-f18c6aec</id>
+    <title>cclasstrib 2025-05-19 → 2025-06-18: +7 / ~125 / −0</title>
+    <updated>2026-09-07T06:31:26+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2025-05-19-12c38b66&amp;to=2025-06-18-f18c6aec"/>
+    <link rel="enclosure" type="application/x-ndjson" length="76846" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2025-05-19-12c38b66__2025-06-18-f18c6aec.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">7 added, 125 changed, 0 removed, 0 unchanged.
+The table went from 125 rows to 132.
+Columns that moved: dataatualizacao (125), ind_gtribregular (125), nome_cclasstrib (125), tipo_de_aliquota (125), ind_redutorbc (115), and 12 more column(s).
+Columns the publisher added: nome_cclasstrib, tipo_de_aliquota, predibs, predcbs, ind_redutorbc, ind_gtribregular, ind_credpres, indmono, indmonoreten, indmonoret, indmonodif, credito_para, dataatualizacao.
+Columns the publisher dropped: ec. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2025-05-19-12c38b66__2025-06-18-f18c6aec.jsonl (75 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2025-05-06-eb953b54__2025-05-19-12c38b66</id>
+    <title>cclasstrib 2025-05-06 → 2025-05-19: +0 / ~125 / −0</title>
+    <updated>2026-09-07T06:31:25+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2025-05-06-eb953b54&amp;to=2025-05-19-12c38b66"/>
+    <link rel="enclosure" type="application/x-ndjson" length="143334" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2025-05-06-eb953b54__2025-05-19-12c38b66.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">0 added, 125 changed, 0 removed, 0 unchanged.
+The table went from 125 rows to 125.
+Columns that moved: lc_214_25 (124), lc_214_25_2 (124), lc_redacao (124), predaliq (47), credito_para_frente_apenas_ligados_ao_cclass (44), and 14 more column(s).
+Columns the publisher added: lc_redacao.
+Columns the publisher dropped: aliquota, lc_214_25_2, credito_anterior_apenas_ligados_ao_cclass, credito_para_frente_apenas_ligados_ao_cclass, tomador_especifico, tributacao_nfs_e, outro_campo_nfs_e, obs, predaliq, dinivig_2, dfimvig_2, credito_anterior_apenas_ligados_ao_cclass_2, credito_para_frente_apenas_ligados_ao_cclass_2, exige_nbs_ou_ncm, sem_nbs_mas_com_codigos_de_servico_especificos, tomador_especifico_2, icms_cbs_ou_outro, titulo_capitulo_secao_subsecao. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2025-05-06-eb953b54__2025-05-19-12c38b66.jsonl (140 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2024-12-07-67a71e9a__2025-05-06-eb953b54</id>
+    <title>cclasstrib 2024-12-07 → 2025-05-06: +43 / ~82 / −12</title>
+    <updated>2026-09-07T06:31:25+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2024-12-07-67a71e9a&amp;to=2025-05-06-eb953b54"/>
+    <link rel="enclosure" type="application/x-ndjson" length="188280" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2024-12-07-67a71e9a__2025-05-06-eb953b54.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">43 added, 82 changed, 12 removed, 0 unchanged.
+The table went from 94 rows to 125.
+Columns that moved: descricao_cclasstrib (82), lc_214_25 (82), lc_214_25_2 (82), lc (81), lc_redacao (80), and 15 more column(s).
+Columns the publisher added: aliquota, ec, lc_214_25, lc_214_25_2, credito_anterior_apenas_ligados_ao_cclass, credito_para_frente_apenas_ligados_ao_cclass, tomador_especifico, tributacao_nfs_e, outro_campo_nfs_e, obs, predaliq, dinivig_2, dfimvig_2, credito_anterior_apenas_ligados_ao_cclass_2, credito_para_frente_apenas_ligados_ao_cclass_2, exige_nbs_ou_ncm, sem_nbs_mas_com_codigos_de_servico_especificos, tomador_especifico_2, icms_cbs_ou_outro, titulo_capitulo_secao_subsecao.
+Columns the publisher dropped: lc, lc_redacao. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2024-12-07-67a71e9a__2025-05-06-eb953b54.jsonl (184 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
+</feed>
