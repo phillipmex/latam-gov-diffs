@@ -1917,3 +1917,274 @@ gh run view <run-id> --json conclusion -q .conclusion
 Leave the archive consistent afterwards: a `simulate_failure` run still uploads an artifact and still
 publishes the other two feeds, so re-run a clean `harvest` and `publish` pair for the same day before
 finishing, and confirm `catcfdi` catches up.
+
+## 2026-09-07 - day 9 - ten real runs, and the bug that would have emailed every subscriber every night
+
+Day 8 wrote 424 lines of workflow and shipped without ever dispatching it. Today it ran: ten
+dispatched runs, six harvests and four publishes, 28 requests to the three publishers, and two
+defects that no test on this repository would ever have found, because both of them only exist once
+the workflow has actually talked to GitHub twice in a row.
+
+The day-8 hand-off predicted the breakages would be the heredocs inside `run:` blocks, `unzip` and
+`tar` on the runner, and the REST-API artifact lookup. None of the three broke. The two things that
+did break were in the parts day 8 was most confident about.
+
+### Part A: the baseline
+
+`gh run list --workflow nightly.yml` returned nothing, as expected - the workflow had been
+registered since day 8 and never dispatched. Actions is enabled on the repository already
+(`gh api repos/phillipmex/latam-gov-diffs/actions/permissions` returns `enabled: true`,
+`allowed_actions: all`), so nothing had to be changed to start.
+
+One thing did look like it would stop the evening job dead. The repository's
+`default_workflow_permissions` is `read`, and the publish job pushes to `main`. It turns out the
+workflow's own `permissions: contents: write` block wins over the repository default, and run
+34105079987 pushed a commit to `main` without any settings change. Recorded here as a finding rather
+than a change, because the temptation on seeing `read` is to widen the repository default, and that
+would loosen every workflow on the repository to fix a job that was never broken.
+
+### Part B: the morning window, six times
+
+Six harvest dispatches, 37 to 47 seconds each, wall clock:
+
+| run | inputs | conclusion | seconds |
+| --- | --- | --- | --- |
+| 34104830547 | - | success | 42 |
+| 34105251600 | `simulate_failure=cclasstrib` | **failure** (by design) | 39 |
+| 34105550083 | - | success | 47 |
+| 34105783326 | - | success | 47 |
+| 34106670636 | - | success | 47 |
+| 34106793451 | - | success | 46 |
+
+The first one was over in 36 seconds of job time and that looked wrong - too fast to have fetched
+anything. Reading the log said otherwise: `catcfdi` and `sat69b` both came back `304 Not Modified`,
+and `cclasstrib`, which gets no ETag and no `Last-Modified` from the NF-e portal and so has to be
+re-downloaded to be compared, pulled its 156 KB and matched a content hash already on disk. Three
+feeds, no new bytes, correct behaviour. The speed is the conditional requests working.
+
+The artifact round-trip is sound. `gh run download <id> -n archive-2026-09-07` produced a
+`manifest.json` matching day 8's spec exactly and three tarballs:
+
+| slice | bytes | entries |
+| --- | --- | --- |
+| `cclasstrib.tar.gz` | 1,150,969 | 72 |
+| `catcfdi.tar.gz` | 7,927,242 | 11 |
+| `sat69b.tar.gz` | 608,963 | 5 |
+
+About 9.7 MB a night, held for seven days, which is 68 MB of the free artifact storage at steady
+state. Each slice holds `data/`, `diffs/`, `raw/` and `.state/` for its own feed and nothing else,
+as `paid.md` says, and the derived files are deliberately absent - the publish job regenerates them.
+
+With no secret set, all three paid-push steps printed *"no paid targets configured - skipping"* and
+went green, and no `git push` to public `main` happened in any morning run. Both promises kept.
+
+A note for whoever reads this expecting a diff: no publisher moved a byte on 2026-09-07. Ten runs
+and not one new version. There is no first real nightly diff to write up, and that is the honest
+outcome rather than a gap - the three sources are a Brazilian tax table last revised 2026-06-23, the
+CFDI 4.0 catalogues last revised 2026-09-03, and the 69-B list last revised 2026-01-22.
+
+### Part C: the evening window, four times
+
+| run | conclusion | seconds | result |
+| --- | --- | --- | --- |
+| 34105079987 | success | 33 | commit `bf76fa3` |
+| 34105371314 | **failure** (held back) | 46 | commit `323406c`, two feeds |
+| 34105696302 | success | 37 | commit `0a41541` |
+| 34106925078 | success | 29 | commit `afd13a7` |
+
+Every publish commit was three one-line changes to `.state/*.json` and nothing else. That is not a
+bug, and it is worth being explicit about why, because it is the opposite of the decision taken for
+the paid slices in part E. `.state/<feed>.json` is the conditional request's memory: the next
+morning's run sends its ETag and `Last-Modified`, and `govdiff attest` reads its `last_fetched_at`
+to decide where date coverage ends. It has to be committed, timestamp and all, or the archive
+forgets what it asked for. A subscriber's copy has no such job.
+
+The promise that mattered held on every run: `docs/index.json`, both Atom feeds and both
+`changes.json` files reported *"unchanged, left alone"* and never appeared in a commit. A quiet
+night leaves them byte-identical, which is what `paid.md` sells to anyone polling `changes.json`.
+
+Day 8's caveat 3 is resolved. The `gh api ".../actions/artifacts?name=archive-$DAY"` lookup works -
+the `name=` query parameter filters as documented and the API returns artifacts newest-first, so
+`live[0]` picks this morning's most recent harvest even after six harvests have uploaded an artifact
+under the same date. That was a guess on day 8 and it is now a measurement.
+
+### Part D: the failure path, end to end
+
+`gh workflow run nightly.yml -f job=harvest -f simulate_failure=cclasstrib` produced run
+34105251600. `catcfdi` and `sat69b` harvested normally (both 304), `cclasstrib` failed, the manifest
+marked it `"publishable": false`, the artifact still uploaded with all three slices, and the gate
+step re-failed the job so the run concluded `failure`. That conclusion is the whole point - a
+`continue-on-error` step alone leaves the run green and GitHub sends the owner nothing.
+
+Publishing that date (34105371314) did what `paid.md` promises:
+
+```
+##[warning]cclasstrib: HELD BACK - the morning harvest failed. paid=no-targets, harvest=failure.
+catcfdi: applied slices/catcfdi.tar.gz
+sat69b: applied slices/sat69b.tar.gz
+```
+
+Two feeds landed, one was held, the run concluded `failure`. Then a clean `harvest` (34105550083)
+and `publish` (34105696302) pair brought `cclasstrib` back and both went green, and the final pair
+of the day (34106793451 / 34106925078) is green as well, so the archive is left consistent.
+
+**Defect: the held-back error named a cause it could not know.** The publish job's final
+`::error::` said *"the paid push failed this morning"* - flatly, whichever of the two possible
+causes had actually held the feed back. Run 34105371314 printed it after a harvest failure, so the
+run log accused the paid push of a failure it had not had. On a night when the owner is reading a
+failed-run email at 18:20 UTC, that sentence sends them to the wrong place. The message now points
+at the per-feed HELD BACK warning above it, which carries the real reason, and says what both causes
+have in common: the head start was not delivered, so publishing tonight would hand the free tier a
+diff the paid copies never got.
+
+### Part E: `paid-push` over SSH, and the bug that was hiding behind `file://`
+
+Every paid-push test until today used a `file://` bare repository. That proves the git plumbing and
+proves nothing about deploy keys, `known_hosts`, or GitHub's SSH endpoint. So: a throwaway private
+repository `phillipmex/govdiff-paid-smoke`, an ed25519 key generated in the scratchpad, added as a
+write deploy key, and a `PAID_TARGETS` secret pointing `cclasstrib` at it.
+
+The SSH path worked first time. Run 34105783326 pushed commit `08d736a` to the smoke repository -
+42 files: `README.md`, `data/cclasstrib/`, `diffs/cclasstrib/`, `.state/cclasstrib.json`,
+`docs/cclasstrib/feed.xml` and `changes.json`, exactly the slice `paid.md` describes - and the log
+named the target only as `target-c34cf846`, never as a repository name.
+
+Then the second harvest, two minutes later, with nothing changed at any publisher, pushed a second
+commit. Its entire diff:
+
+```
+-  "last_fetched_at": "2026-09-07T09:22:03+00:00"
++  "last_fetched_at": "2026-09-07T09:24:33+00:00"
+```
+
+**That is the day's real defect, and it is a commercial one.** `docs/paid.md` sells GitHub's own
+notification as the alert - *"A night that produced nothing produces no commit and no
+notification"* - and every price on the offer pages rests on that being true. The slice copied
+`.state/<feed>.json` verbatim, and that file records three fields about the run rather than the
+source: `last_fetched_at`, `last_result` and `last_error`. `last_fetched_at` moves every single
+night. Every subscriber would have been emailed at 06:15 UTC every morning forever, and the email
+would have meant nothing, and by the third week nobody would open one - including on the morning it
+finally mattered. An alert that fires every night is not an alert; it is a filter rule waiting to be
+written.
+
+The fix is not new thinking. `govdiff.index` already leaves the same fields out of
+`docs/index.json`, for the same reason, and has since day 5. `paidpush.stage_slice` now writes a
+filtered `.state` copy through a new `render_source_state()`, dropping `VOLATILE_STATE_FIELDS` and
+keeping everything that describes the source - `version_id`, `sha256`, `last_modified`, `row_count`,
+`etag`, `source_url`, `version_count`. Two nights that fetched identical bytes stage byte-identical
+files and `git diff --cached --quiet` finds nothing to commit. The target `README.md` already told
+subscribers the file holds "version id, sha256, Last-Modified", so the documentation was describing
+the fixed behaviour before the code did.
+
+Verified on real runs rather than only in pytest. Run 34106670636 pushed one migration commit
+`fc8668c` whose whole diff is the three fields being removed from the existing file. Run 34106793451
+- same bytes, same feed, a minute later - printed:
+
+```
+  target-c34cf846: unchanged - nothing to commit
+```
+
+and the smoke repository still has three commits. That is the promise, kept, over SSH, against a
+real GitHub repository.
+
+`docs/paid.md` gained a paragraph saying this out loud, in section 2 where the promise is made: the
+quiet-night guarantee is now a property of what is copied, not a hope.
+
+Cleanup, in full: the `PAID_TARGETS` secret is deleted from `latam-gov-diffs` (`gh secret list`
+returns nothing). Deploy key `162523034` is deleted from the smoke repository. The private key, its
+public half and the local targets JSON are deleted from the scratchpad. The repository
+`phillipmex/govdiff-paid-smoke` still exists, is still private, and is now archived so it cannot be
+mistaken for a customer repository - deleting it needs the owner's hand and is on the day-10 list.
+It contains one feed's public archive data and nothing confidential.
+
+### Requests made
+
+28 requests to publishers across ten runs, all from the six harvest jobs; the four publish jobs make
+zero by design.
+
+| feed | requests | statuses |
+| --- | --- | --- |
+| `cclasstrib` | 10 | 5 x 200 (listing page) + 5 x 200 (document) |
+| `catcfdi` | 12 | 6 x 200 (`anexo_20.htm`) + 6 x **304** (document) |
+| `sat69b` | 6 | 6 x **304** (document) |
+
+`cclasstrib` made no requests in the simulated-failure run, which is why it is 10 and not 12. Only
+SAT document URLs were fetched; no omawww landing page was touched. **No 403, no 429, no 503, and no
+challenge marker in any response body on any feed. Nothing to report as SourceChallenged.**
+
+Actions minutes: ten runs, one job each, every job under a minute, so about ten billed minutes of
+the free 2,000/month private-repository allowance.
+
+### Tests
+
+244 to 247, 3 added, all passing, plus the 20 Node tests unchanged. All three are in
+`tests/test_paid_push.py` and all three guard the part-E defect:
+
+- a second push whose only `.state` delta is `last_fetched_at` produces no commit and reports
+  `unchanged` - the exact scenario that made the real second commit in the smoke repository;
+- a push whose `.state` carries a genuinely new `version_id` and `sha256` still commits, so the
+  filter cannot silence a real change;
+- `render_source_state()` drops all three run fields and keeps all eight source fields.
+
+The first of those fails against yesterday's `stage_slice` and passes against today's, which is the
+only reason to add it.
+
+### Defects and caveats
+
+1. **The smoke repository is still there.** `phillipmex/govdiff-paid-smoke`, private, archived,
+   three commits of `cclasstrib` archive data. Deleting a repository needs the owner's account.
+   Two minutes.
+2. **A held-back feed still stays held back until a clean harvest.** Day 8's caveat 4 is unchanged
+   and remains correct behaviour: the evening job publishes what the morning earned, so a feed that
+   failed in the morning waits for the next morning. The failure path was exercised today and the
+   recovery is a clean `harvest` + `publish` pair, which is what the crons do anyway.
+3. **The 06:15 and 18:15 crons have still never fired unattended.** Everything above was dispatched
+   by hand inside a 25-minute window. The first real scheduled cycle is 2026-09-08, and it needs a
+   human to look at it - see the day-10 note.
+4. **No publisher changed anything today**, so the whole day tested the quiet path. The new-version
+   path through the workflow - a diff written, `changes.json` regenerated, a real archive commit
+   with data in it - has been tested locally many times but never on the runner.
+5. **Artifact retention is 7 days.** A publish more than a week after its harvest cannot find its
+   artifact and says so; it does not silently publish something else.
+
+### Day 10
+
+Four things, and the last one is the one that is easy to skip.
+
+1. **A second full dispatch cycle, clean.** `harvest` then `publish` for the same date, both green,
+   after today's two fixes. Read the paid-push line in the harvest log even though no secret is set
+   - it should still say *"no paid targets configured - skipping"* - and confirm the publish commit
+   is either three `.state` lines or, if a publisher finally moved, a real archive commit with a
+   diff in it. That second case has never run on the runner and is worth watching closely.
+
+2. **Actions minutes against the budget.** Today's ten runs cost about ten billed minutes. A real
+   night is two jobs, so two billed minutes, so about 60 a month against the free 2,000 for a
+   private repository - 3%. Worth confirming against
+   `gh api /users/phillipmex/settings/billing/actions` before launch. After 2026-09-22 the
+   repository is public and Actions minutes on public repositories are free and unmetered, so this
+   line disappears entirely at launch. It matters only for the fifteen days before it.
+
+3. **A last pass over `launch/checklist.md` and `README.md` against reality.** The checklist is
+   generated from the offer pages by `launch/make_checklist.py` and a test keeps it honest, but its
+   owner-hand steps were written on day 8 from what was planned. The deploy-key flow has now been
+   performed once end to end, so the five fulfilment steps in `paid.md` can be checked against what
+   was really done rather than what was imagined. The README's first screen has not been re-read
+   since day 8; read it as a stranger would.
+
+4. **Write the instruction for the first unattended cycle, and leave it where the owner will find
+   it.** The owner asked for days 4 to 10 back to back, so the real 06:15 and 18:15 UTC crons of
+   2026-09-08 cannot be waited for inside a build day. That does not make the check optional - it
+   makes it homework. The instruction, in full, so it can be copied:
+
+   > On 2026-09-08 after 18:30 UTC, run `gh run list --workflow nightly.yml --limit 4`. Expect
+   > exactly two runs for that day, both `schedule`, both `success`, at roughly 06:15 and 18:15 UTC.
+   > Then `gh run view <the evening one> --log | grep -E "applied|HELD BACK|left alone"` and
+   > `git fetch && git log origin/main -1 --stat`. Three outcomes are correct: a commit touching
+   > only `.state/*.json` (a quiet night), a commit with real data in `data/` and `diffs/` (a
+   > publisher moved - read the diff, it is the first unattended one), or no commit at all. Anything
+   > else - a missing run, a `failure`, a commit containing a feed the manifest held back, or a
+   > commit touching `docs/index.json` on a night with no data change - is a defect, and the run log
+   > names it. Fifteen minutes, once.
+
+   If that check is skipped, the first evidence that the crons work will be a customer noticing they
+   do not.
