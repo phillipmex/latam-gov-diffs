@@ -1,0 +1,400 @@
+/* Offer pages - the sales side of the same site.
+ *
+ * This file is loaded AFTER ../viewer.css and depends on it: every colour here
+ * is one of the custom properties viewer.css defines on :root, so light and
+ * dark come for free and there is exactly one palette on the site. Nothing
+ * here restates a token, and the only hard-coded colours are the two accents
+ * below, which have no equivalent in the viewer.
+ *
+ * Rules this file keeps, because the offer pages are published as-is:
+ *   - zero external requests: no @import, no web font, no image host;
+ *   - one column below 720px, matching viewer.css's own breakpoint;
+ *   - nothing depends on JavaScript. The proof numbers are baked into the
+ *     HTML; a script only overwrites them with fresher ones when it can.
+ */
+
+:root {
+  /* The one thing an offer page has that the viewer does not: a price. It gets
+     its own accent so it is findable without shouting, and it is legible on
+     --panel in both themes. */
+  --price: #14509a;
+  --price-bg: #eef3fa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --price: #9fc6f5;
+    --price-bg: #1b2735;
+  }
+}
+
+/* ------------------------------------------------------------------ layout */
+
+/* Prose measure. Offer copy is read, not scanned like a diff table, so the
+   body column is narrower than the viewer's 1100px. */
+.offer {
+  max-width: 46rem;
+}
+
+.offer h2 {
+  margin: 2rem 0 0.6rem;
+  font-size: 1.05rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.offer h3 {
+  margin: 1.2rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.offer p {
+  margin: 0.6rem 0;
+  max-width: 68ch;
+}
+
+/* The one-sentence promise under the title. Bigger than body copy, and the
+   only place on the page where type is allowed to grow. */
+.promise {
+  margin: 0.6rem 0 1rem;
+  font-size: 1.12rem;
+  line-height: 1.45;
+  max-width: 40ch;
+}
+
+/* -------------------------------------------------- the publisher's language */
+
+/* A short summary in the language of the country the data comes from, directly
+   under the English. Set apart by a rule rather than by colour, so it stays
+   legible when it is the only part of the page a reader can use. */
+.translated {
+  margin: 1rem 0 1.4rem;
+  padding: 0.7rem 0 0.7rem 0.9rem;
+  border-left: 3px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.92rem;
+  max-width: 62ch;
+}
+
+.translated .lang {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+/* ------------------------------------------------------------ what you get */
+
+.gets {
+  list-style: none;
+  margin: 0.8rem 0;
+  padding: 0;
+}
+
+.gets li {
+  position: relative;
+  padding: 0 0 0 1.4rem;
+  margin: 0.55rem 0;
+  max-width: 66ch;
+}
+
+/* A tick drawn in CSS rather than fetched as an icon. */
+.gets li::before {
+  content: "";
+  position: absolute;
+  left: 0.15rem;
+  top: 0.35rem;
+  width: 0.34rem;
+  height: 0.62rem;
+  border: solid var(--added);
+  border-width: 0 2px 2px 0;
+  transform: rotate(40deg);
+}
+
+.gets li b {
+  font-weight: 600;
+}
+
+/* The honest counterpart: what is not included. Same list, opposite mark. */
+.gets.nots li::before {
+  top: 0.6rem;
+  width: 0.62rem;
+  height: 0;
+  border: solid var(--removed);
+  border-width: 0 0 2px 0;
+  transform: none;
+}
+
+/* ------------------------------------------------------------------- price */
+
+.price-box {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 1rem 1.1rem 1.1rem;
+  margin: 1rem 0 1.2rem;
+}
+
+.price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.6rem;
+  margin: 0 0 0.5rem;
+}
+
+.price .amount {
+  font-size: 1.9rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--price);
+  background: var(--price-bg);
+  border-radius: 5px;
+  padding: 0 0.35rem;
+}
+
+.price .per {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* The Stripe placeholder. It is a real link to a fragment on this page, so it
+   is never a 404 and never a dead external host; the styling says "not yet"
+   rather than pretending to be a live checkout. */
+.buy {
+  display: inline-block;
+  margin: 0.4rem 0 0.2rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px dashed var(--rule);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+  cursor: default;
+}
+
+.buy:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.buy-note {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 60ch;
+}
+
+/* -------------------------------------------------- proof from the archive */
+
+.proof {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  margin: 0.9rem 0 0.8rem;
+}
+
+.proof .stat {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 0.7rem 0.8rem 0.8rem;
+}
+
+.proof .n {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.proof .l {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* Rewritten by the inline script once it has read ../index.json, so a reader
+   can tell which numbers came off the live index and which are the baked-in
+   fallback the page ships with. */
+.proof-source {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* Examples of real recorded changes, quoted from the diff summaries. */
+.changes {
+  list-style: none;
+  margin: 0.8rem 0;
+  padding: 0;
+}
+
+.changes li {
+  border-left: 3px solid var(--changed);
+  background: var(--changed-bg);
+  border-radius: 0 5px 5px 0;
+  padding: 0.5rem 0.7rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.changes li .when {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin-bottom: 0.15rem;
+}
+
+/* ---------------------------------------------------------------- delivery */
+
+.steps {
+  margin: 0.8rem 0;
+  padding-left: 1.2rem;
+}
+
+.steps li {
+  margin: 0.5rem 0;
+  max-width: 64ch;
+}
+
+/* --------------------------------------------------------------------- FAQ */
+
+/* <details> so every question is present in the page source, open or not -
+   collapsed, not hidden, and readable with JavaScript off. */
+.faq {
+  margin: 0.9rem 0 0;
+}
+
+.faq details {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.55rem 0.8rem;
+  margin: 0.5rem 0;
+  background: var(--panel);
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.93rem;
+}
+
+.faq summary:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.faq details p {
+  margin: 0.55rem 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 64ch;
+}
+
+/* ------------------------------------------------------------------ footer */
+
+.offer-footer {
+  margin-top: 2.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.offer-footer .links {
+  margin-bottom: 0.5rem;
+}
+
+/* -------------------------------------------------- the offers index page */
+
+.offer-list {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  margin: 1.2rem 0;
+}
+
+.offer-list .item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 0.9rem 1rem 1rem;
+}
+
+.offer-list h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.offer-list .who {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.offer-list .what {
+  font-size: 0.88rem;
+  margin: 0.15rem 0 0.3rem;
+}
+
+.offer-list .tick {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--price);
+}
+
+/* "Page coming day 7" - plain text, deliberately not a link, because a link
+   that goes nowhere is worse than a sentence saying it is not ready. */
+.offer-list .pending {
+  color: var(--muted);
+  font-size: 0.85rem;
+  border: 1px dashed var(--rule);
+  border-radius: 5px;
+  padding: 0.3rem 0.5rem;
+  margin-top: 0.4rem;
+}
+
+/* ------------------------------------------------------------ copy the link */
+
+.copy {
+  border: 1px solid var(--rule);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 5px;
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Hidden until the script decides it can work - a button that does nothing
+   without JavaScript should not be on the page at all. */
+.copy[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------- one column on a phone */
+
+@media (max-width: 720px) {
+  .proof,
+  .offer-list {
+    grid-template-columns: 1fr;
+  }
+
+  .price .amount {
+    font-size: 1.6rem;
+  }
+
+  .promise {
+    font-size: 1.05rem;
+  }
+}

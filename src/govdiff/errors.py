@@ -29,3 +29,13 @@ class RepoNotFound(GovDiffError):
     the working directory is not an archive checkout. The message tells the
     reader how to fix it; see `config.resolve_repo_root`.
     """
+
+
+class AttestationNotPossible(GovDiffError):
+    """A point-in-time attestation cannot be made for what was asked.
+
+    Raised when the date falls outside the archive's coverage, when the
+    arguments do not name exactly one question, or when the feed holds no
+    snapshot at all. The message always names the coverage window: the honest
+    limit of this product is that it cannot reach a day nobody archived.
+    """

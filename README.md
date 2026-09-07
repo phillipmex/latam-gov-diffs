@@ -74,6 +74,30 @@ changed, and when. That change history - and the change feed built on it - is wh
 makes. The SAT 69-B list is the one genuinely unbackfillable feed: the publisher keeps the current
 snapshot only, so every day not archived is lost.
 
+## Paid feeds
+
+The archive, the viewer, the change feed and both clients are free and stay free. Four things are
+sold on top of them, and nothing is on sale before **2026-09-22**:
+
+| product | feed | price (USD) |
+|---|---|---|
+| `cclasstrib` feed | `cclasstrib` | $28 / month |
+| `catalogos-sat` feed | `catcfdi` | $39 / month |
+| `listas-mx` feed | `sat69b` | $99 / month |
+| `listas-mx` point-in-time attestation | `sat69b` | $250 one-off |
+
+A paid feed is an invite to a **private GitHub repository** carrying the same nightly diff stream
+for one output, committed there twelve hours before the public archive, with GitHub's own
+notifications as the alert, a `changes.json` written for machines, and support by GitHub issue
+answered within two business days. No hosted API, no webhooks, no SLA. The attestation is a
+written, printable statement of whether one RFC appeared on the SAT 69-B list on a given date,
+with the snapshot ids, their sha256 and the SAT document URL and `Last-Modified` at the time -
+produced by `govdiff attest`, and not legal advice.
+
+**[docs/paid.md](docs/paid.md) is the full and binding description**: delivery, what is explicitly
+not included, the attestation's coverage limit, fulfilment and refunds. The offer pages are in
+[docs/offers/](docs/offers/).
+
 ## Install
 
 Both clients are **available from launch, 2026-09-22**. Nothing is on PyPI or npm before then.
@@ -129,7 +153,16 @@ govdiff bootstrap cclasstrib     # load the publisher's whole back catalogue
 govdiff bootstrap catcfdi        # same, for any feed whose parser lists versions
 govdiff rediff cclasstrib        # rebuild every diff from the stored snapshots, no network
 govdiff index                    # rebuild docs/index.json, the Atom feeds and CHANGES.md
+govdiff attest sat69b --rfc <RFC> --on 2026-09-22        # point-in-time statement, no network
+govdiff attest sat69b --rfc <RFC> --between A B          # ... across a span of dates
 ```
+
+`attest` writes the Markdown document described in [docs/paid.md](docs/paid.md): whether the RFC
+appeared on the 69-B list on that date, the `situacion`, the oficio numbers, and the snapshot
+version ids with their sha256, the SAT document URL and the `Last-Modified` SAT reported at the
+time. It reads the stored snapshots only and makes no request. It refuses any date outside what
+the archive observed rather than inferring one, and it is offered for `sat69b` alone - the other
+publishers keep dated back-versions, so a statement about them is reproducible from the source.
 
 **Every command needs to know which checkout it is working on**, and looks in three places, in
 order: the `--repo PATH` option, the `GOVDIFF_REPO` environment variable, then the current

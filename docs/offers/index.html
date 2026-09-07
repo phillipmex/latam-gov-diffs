@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Paid feeds - latam-gov-diffs</title>
+    <meta
+      name="description"
+      content="Three nightly diff feeds of Latin American government reference data, delivered as private GitHub repositories, plus a point-in-time attestation for Mexico's SAT 69-B list."
+    />
+    <!-- No external scripts, no external stylesheets, no fonts, no analytics. -->
+    <link rel="stylesheet" href="../viewer.css" />
+    <link rel="stylesheet" href="./offer.css" />
+    <link rel="alternate" type="application/atom+xml" title="latam-gov-diffs: every change" href="../feed.xml" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%2314509a'/%3E%3Cpath d='M4 5h8M4 8h8M4 11h5' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="bar">
+        <h1><a href="../index.html">latam-gov-diffs</a></h1>
+        <nav aria-label="Sections">
+          <a href="../index.html">Viewer</a>
+          <a href="../feed.xml">Change feed</a>
+          <a href="../paid.md">How delivery works</a>
+          <a href="https://github.com/phillipmex/latam-gov-diffs">Repository</a>
+        </nav>
+      </div>
+      <p class="tagline">
+        Nightly archive and diff of Latin American government reference data. Everything here is
+        free to read; a paid feed adds a head start, an alert and somebody to ask.
+      </p>
+    </header>
+
+    <main class="offer">
+      <h2>Paid feeds</h2>
+
+      <p class="promise">
+        The same nightly diffs, twelve hours earlier, in a private repository of your own.
+      </p>
+
+      <p>
+        Each of the three outputs can be bought on its own. A paid feed is an invite to a private
+        GitHub repository carrying that output's diff stream: the diffs are committed there at
+        06:15 UTC and to the public archive at 18:15 UTC, GitHub's own notifications are the alert,
+        a <code>changes.json</code> is written for machines, and support is a GitHub issue answered
+        within two business days. There is no hosted API, no webhook and no SLA -
+        <a href="../paid.md">paid.md</a> is the full and binding description.
+      </p>
+
+      <p>
+        Nothing is on sale before <strong>2026-09-22</strong>. Every buy button on this site links
+        to a placeholder and says so.
+      </p>
+
+      <div class="offer-list">
+        <div class="item">
+          <h3><code>cclasstrib</code> feed</h3>
+          <span class="who">Brazil &middot; Portal Nacional da NF-e (SEFAZ / ENCAT)</span>
+          <p class="what">
+            The IBS/CBS tax classification table (cClassTrib). 10 dated releases archived since
+            2024-12-07, 9 diffs, 94 to 164 codes.
+          </p>
+          <span class="tick">$28 / month</span>
+          <p class="links"><a class="button" href="./cclasstrib.html">Read the offer</a></p>
+        </div>
+
+        <div class="item">
+          <h3><code>catalogos-sat</code> feed</h3>
+          <span class="who">Mexico &middot; Servicio de Administracion Tributaria (SAT)</span>
+          <p class="what">
+            The 25 CFDI 4.0 catalogues of Anexo 20, as one comparable table. 2 releases archived,
+            2024-12-04 and 2026-09-03; 362,345 rows in the current one.
+          </p>
+          <span class="tick">$39 / month</span>
+          <!-- Plain text on purpose. A link to a page that does not exist yet is
+               worse than a sentence saying it is not ready. -->
+          <p class="pending">Offer page coming day 7. The price and the mechanics above are final.</p>
+        </div>
+
+        <div class="item">
+          <h3><code>listas-mx</code> feed</h3>
+          <span class="who">Mexico &middot; Servicio de Administracion Tributaria (SAT)</span>
+          <p class="what">
+            The Article 69-B list of taxpayers presumed to have issued invoices without operations.
+            14,234 records in the first archived copy. SAT overwrites this file in place and keeps
+            no history, so the archive is the only dated record of it.
+          </p>
+          <span class="tick">$99 / month</span>
+          <p class="pending">Offer page coming day 7. The price and the mechanics above are final.</p>
+        </div>
+
+        <div class="item">
+          <h3><code>listas-mx</code> attestation</h3>
+          <span class="who">Mexico &middot; point-in-time statement, one RFC</span>
+          <p class="what">
+            A written, printable statement of whether one RFC appeared on the 69-B list on a given
+            date, with the situacion, the oficio numbers, the snapshot ids, their sha256 and the
+            SAT document URL and Last-Modified at the time. Coverage begins 2026-09-07 and cannot
+            reach earlier. Not legal advice.
+          </p>
+          <span class="tick">$250 one-off</span>
+          <p class="pending">Offer page coming day 7. The price and the mechanics above are final.</p>
+        </div>
+      </div>
+
+      <h2>What stays free</h2>
+
+      <p>
+        All of it. The whole archive, every diff ever recorded, the
+        <a href="../index.html">viewer</a>, the <a href="../feed.xml">Atom change feed</a>,
+        <a href="../index.json">index.json</a> and both open-source clients - no account, no key,
+        no metering, and no reduced version. The free tier is twelve hours behind, and that is the
+        only difference.
+      </p>
+    </main>
+
+    <footer class="offer-footer">
+      <p class="links">
+        <a href="../index.html">Viewer</a>
+        <a href="../feed.xml">Change feed (Atom)</a>
+        <a href="../paid.md">Delivery, refunds and what is not included</a>
+        <a href="https://github.com/phillipmex/latam-gov-diffs">GitHub</a>
+        <button class="copy" type="button" hidden>Copy link</button>
+      </p>
+      <p>
+        Published by the latam-gov-diffs maintainers. Source data belongs to its publishers; this
+        site archives and compares it and claims nothing else. Support is by GitHub issue.
+      </p>
+    </footer>
+
+    <!-- The page is complete without this. It only reveals the copy button,
+         which ships hidden because a control that cannot work should not be
+         offered. -->
+    <script>
+      (function () {
+        "use strict";
+        var copy = document.querySelector(".copy");
+        if (!copy || !navigator.clipboard) return;
+        copy.hidden = false;
+        copy.addEventListener("click", function () {
+          navigator.clipboard.writeText(location.href).then(
+            function () {
+              copy.textContent = "Copied";
+              setTimeout(function () {
+                copy.textContent = "Copy link";
+              }, 1500);
+            },
+            function () {
+              copy.textContent = "Press Ctrl+C";
+            }
+          );
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1058,3 +1058,342 @@ archive does not support, so here is exactly what it supports as of tonight:
 6. **README polish.** The Feeds table should carry the version and diff counts, and the "honest
    note on the moat" already says the right thing - keep it, and make sure the offer pages agree
    with it word for word rather than overselling.
+
+---
+
+## 2026-09-07 - day 6 - what is sold, and the first page that sells it
+
+Day 5 finished the free product. Today is the first day the repository says what money buys, and
+the order it was built in matters: **the mechanics were written down before any page was written**,
+so the pages restate a document rather than invent claims that a document then has to catch up
+with. `docs/paid.md` is normative; the offer pages summarise it; the README points at it. Where
+they disagree, `paid.md` wins, and today they do not disagree.
+
+### Part A: `docs/paid.md`, the whole commercial description
+
+Four products, fixed by the owner, and no fifth: the `cclasstrib` feed at **$28/mo**, the
+`catalogos-sat` feed at **$39/mo**, the `listas-mx` feed at **$99/mo**, and a `listas-mx`
+point-in-time attestation at **$250** one-off. The commercial names map to the feed ids
+`cclasstrib`, `catcfdi` and `sat69b`, and the file says so in a table rather than leaving a buyer
+to guess which thing they bought.
+
+**A paid feed is an invite to a private GitHub repository.** Not an endpoint. Four things are in
+it and the file says only those four:
+
+1. **A 12-hour head start.** The harvest runs at 06:15 UTC and commits to the private repository in
+   the same run; the public archive is pushed at 18:15 UTC. Twelve, and not some other number,
+   because it is exactly one working morning in both publishing countries: 06:15 UTC is 03:15 in
+   Brasilia and 00:15 in Mexico City, so the alert is waiting before the subscriber's day starts,
+   and 18:15 UTC is 15:15 and 12:15, so the free copy still lands inside the same working day.
+   Longer would be an embargo on an archive whose whole job is to be public, and would blunt the
+   free tier that is supposed to earn the stars; shorter would land while everyone is asleep and be
+   worth nothing. The file also says, in bold, what the head start is **not**: it is a head start on
+   *this repository's* publication, not on the government's. SAT and the NF-e portal publish to
+   everyone at once. **The two-window schedule is a launch commitment, not today's behaviour** -
+   `nightly.yml` still has one window, and splitting it is day 8 or later work.
+2. **GitHub's own notifications as the alert.** Watch the repository; a night with no change
+   produces no commit and no noise. The private repository's `commits/main.atom` is named as the
+   feed-reader alternative.
+3. **A per-feed `changes.json`.** One file to poll: format, feed, `generated_at`,
+   `head_start_hours`, a `latest` block (version pair, published date, added/changed/removed, rows
+   before and after, columns added and removed, and the paths to the `.jsonl` and the
+   `.summary.json`) and a `changes` array of the same shape, newest first. Paths are repo-root
+   relative, exactly as in `docs/index.json`, so one reader works against either. The shape is
+   documented as a worked example using the real 2026-04-15 to 2026-06-23 cclasstrib revision.
+4. **Support by GitHub issue, first response within 2 business days.** Stated as a response, not a
+   fix, because a publisher restructuring a file is not a two-day job and pretending otherwise is
+   how support promises get broken.
+
+Then the part that took the longest to write, which is **what is not included**: no hosted API, no
+webhooks, no SLA beyond best effort nightly, no exclusivity, no custom feeds or columns, no legal
+opinion, and no contact surface at all except GitHub issues. Written as a list, near the top, in the
+same type as everything else. It is the shortest way to stop a buyer expecting an API, and it is the
+reason the rest of the page can be believed.
+
+Fulfilment is five numbered steps for the operator - create the private repository seeded with that
+feed's history, add it to the nightly job's private targets, send the collaborator invite at **Read**
+permission, record the order, and on cancellation revoke the invite at the end of the paid period -
+plus one line of refund policy (**full refund on request within 14 days of a first payment; after
+that, cancel any time and access runs to the end of the period paid for**) and the checkout
+convention in Part D below.
+
+### Part B: `govdiff attest`, the thing the $250 actually is
+
+A $250 product that is a promise to write a document by hand is not a product. So the attestation
+was built as a command first and priced second.
+
+`src/govdiff/attest.py` is new, **zero network**, and reads nothing but the stored snapshots:
+
+```
+govdiff attest sat69b --rfc <RFC> --on 2026-09-22
+govdiff attest sat69b --rfc <RFC> --between 2026-09-22 2026-10-31 --output out.md
+```
+
+It emits a Markdown document - a header table, a one-line answer in bold, one evidence block per
+snapshot the answer rests on, the stage table for every matching record, the coverage discussion,
+the exact command that reproduces it, and the disclaimer. What is in an evidence block is the whole
+point: the **version id**, its **sha256** (the hash of the bytes SAT served), the **SAT document
+URL**, the **`Last-Modified` SAT reported at the time**, the observation timestamp, the row count,
+the stored parquet path, the window the statement covers, and **the next observation** - so the
+edge of the evidence is named rather than implied.
+
+Three semantics were decided today and are worth writing down because they are what makes the
+document defensible:
+
+- **Coverage starts at the first snapshot's fetch date**, not at the version id's date. The single
+  stored 69-B version is `2026-01-22-54b95d41` because that is SAT's `Last-Modified`; the archive
+  first saw it on **2026-09-07**. The attestation can speak for 09-07 onward and not one day
+  earlier, and it says which of the two dates is which.
+- **Coverage ends at `.state/sat69b.json`'s `last_fetched_at`**, not at the newest snapshot. A night
+  where the file was unchanged writes no snapshot but is still an observation, and it is the
+  strongest kind: it proves the list did not move. Ending coverage at the newest snapshot would
+  throw that away.
+- **Nothing is inferred between observations.** A snapshot's window runs to the next observation and
+  no further, and a date outside coverage raises `AttestationNotPossible` with the reason - including
+  the honest one for a pre-coverage date: SAT keeps no dated back-series, so no statement about an
+  earlier date can be made from this archive or from anywhere else.
+
+`--between` walks every snapshot across the span and answers *Yes, throughout* / *Yes, in part* /
+*No* rather than collapsing to one row. An RFC that appears in two unrelated proceedings gets both
+records; the document never silently picks one. The command refuses any feed but `sat69b`, and the
+refusal explains itself: the other publishers keep dated back-versions, so a point-in-time statement
+about them is reproducible from the publisher and this archive adds nothing.
+
+Two bugs found and fixed while testing. The first pass iterated the whole 14,234-row frame per
+attestation with `iterrows()` - replaced by a vectorised mask that narrows the frame before
+anything is read out of it. And the `--between` answer line read *"between A to B"*; it now reads
+*"between A and B"*.
+
+The attestation is priced at $250 and is **also free**, which `paid.md` says out loud: the archive
+is public and the tool is open source, so anyone can run the same command and get the same bytes.
+What is sold is that somebody else runs it, stands behind it, and keeps the archive it reads from
+running. Selling it as secret access would have been a lie the repository itself disproves.
+
+### Part C: the offer-page template
+
+`docs/offers/offer.css` extends `docs/viewer.css` rather than replacing it: every colour is one of
+the tokens already defined on `:root`, so light and dark come for free and there is exactly one
+palette on the site. The only two new values are `--price` / `--price-bg`, which have no viewer
+equivalent. Both files are linked by every offer page, viewer first. One column below 720 px, the
+same breakpoint as the viewer, and zero external requests - no font, no CDN, no analytics.
+
+`docs/offers/TEMPLATE.md` documents the structure day 7 copies: header and nav, `h2` product name,
+a one-sentence `.promise`, an `aside.translated` in the publisher's own language, *what you get* as
+`ul.gets` followed by *what is not included* as `ul.gets.nots` (same list, the tick swapped for a
+minus, and not optional), `.price-box` with the placeholder button, *proof from the archive* as four
+`.stat` boxes plus real quoted changes, *how delivery works* as `ol.steps` linking `../paid.md`,
+five to seven `<details>` of FAQ, and the footer.
+
+**On "no scripts required".** Each page carries exactly one inline `<script>`, at the end of
+`<body>`, doing two jobs and adding no content: it replaces the four proof numbers with fresher ones
+read from `../index.json`, and it reveals the copy-link button, which ships with `hidden` because a
+control that cannot work should not be offered. Every number is written into the HTML by hand and is
+correct as committed, so a blocked fetch, a `file://` open or JavaScript switched off leaves a page
+that still reads truthfully. That is the reading of the rule this build settled on: the script is an
+improvement to a complete page, never the thing that completes it.
+
+### Part D: the Stripe placeholder, and nothing more
+
+No Stripe account was touched, no payment link was created, and nothing resembling one exists in the
+tree. Every buy button is:
+
+```html
+<a class="buy" href="#stripe-pending" data-product="cclasstrib-monthly">
+  Checkout opens on launch (2026-09-22)
+</a>
+```
+
+`href` is a fragment on the page itself, so it can never be a dead external link or a 404. The
+visible text is fixed. `data-product` names which of the four products the button is for, and an
+HTML comment directly above every button names the attribute to paste the real link into. The
+owner's job on the day is four `href` values and four labels, in one directory.
+
+### Part E: `docs/offers/cclasstrib.html`, $28/mo
+
+Every number on the page was checked against `docs/index.json` and the nine `.summary.json` files
+before a word of copy was written. What it claims, and only this: **10 dated releases** archived
+from 2024-12-07 to 2026-06-23, **9 diffs**, the table grown from **94 codes and 8 columns to 164
+and 43**, and **837 rows changed** across those diffs.
+
+Three real revisions are quoted, because a concrete break is more persuasive than an adjective:
+
+- **2026-04-15 to 2026-06-23** - six columns appeared at once (`regulamento_ibs`,
+  `regulamento_cbs`, `tprbsn`, `ind_gpbiodiferenca`, `inddir`, `indduimp`) with eight new codes, and
+  all 156 existing rows read as changed.
+- **2024-12-07 to 2025-05-06** - `lc` and `lc_redacao` dropped, `lc_214_25` and `lc_214_25_2` put in
+  their place, 43 codes added and 12 removed. Anything keyed on the old column names stopped
+  resolving.
+- **2025-11-24 to 2025-12-15** - no code added, no code removed, row count unmoved, and yet all 132
+  rows carrying `ind_redutorbc` read as changed because the column was dropped. A release that looks
+  like a no-op in the row count is not one.
+
+Plus the quiet one: `descricao_cclasstrib` moved on 82 records in the first diff with no code
+change at all.
+
+The audience is named rather than implied - developers maintaining an NF-e / IBS-CBS classification
+mapping who need to know what changed before their next release - and the FAQ answers *what breaks
+in your mapping* in four escalating failures, ending with the text-matched description rewrite that
+has nothing in the row count to announce it.
+
+**The honest one is the first `<details>` and it is open by default:** the NF-e portal keeps its
+dated back-versions online, so the individual releases are downloadable without us. What is not
+available anywhere is the comparison. The archive is the insurance; the diff is the product. The
+last FAQ says outright that for most readers the free tier is the right answer and is not a trial.
+
+A one-paragraph pt-BR summary sits under the promise, marked `lang="pt-BR"` so a screen reader does
+not read Portuguese in an English voice. Short and plain: what the table is, what it costs, where
+the free version is.
+
+No testimonial, no logo, no countdown, no scarcity, no name, no email. The seller is *the
+latam-gov-diffs maintainers* and the only contact surface is a GitHub issue.
+
+### Part F: the nav, and the two pages that do not exist yet
+
+`docs/offers/index.html` lists all four products with their prices. `cclasstrib` links to its page;
+the other three carry **plain text** - *"Offer page coming day 7. The price and the mechanics above
+are final."* - inside a dashed box, deliberately not a link, because a link that goes nowhere is
+worse than a sentence saying it is not ready.
+
+The viewer's *Paid feeds* nav link now points at `./offers/index.html` instead of the README, and
+the tagline links the same place rather than saying "described in the README". The README gains a
+**Paid feeds** section with the four prices, the feed each maps to, one paragraph of mechanics, and
+a link to `docs/paid.md`; the `attest` command is documented beside the other commands in *Running
+it from source*.
+
+### Verification in the browser
+
+Same method as day 5, and for the same reason: a second Chrome with a throwaway profile,
+`--headless=new --disable-extensions`, on port **9223**, against `python -m http.server 8765` at the
+repository root. The daily CDP browser on 9222 has extensions that inject console errors and a Dark
+Reader that repaints the page, so theme cannot be verified there at all.
+
+| check | viewer | offers index | cclasstrib offer |
+|---|---|---|---|
+| console + browser log | **0** | **0** | **0** |
+| light: body / panel | `rgb(255,255,255)` / `rgb(246,247,248)` | same | same |
+| dark: body / ink | `rgb(20,23,26)` / `rgb(230,233,236)` | same | same |
+| dark: panel | `rgb(28,33,38)` | same | same |
+| horizontal overflow at 390 px | **0 px** | **0 px** | **0 px** |
+| copy-link button | n/a | revealed, *Copy link* | revealed, *Copy link* |
+| proof numbers after the fetch | n/a | n/a | 10 / 9 / 164 / 837, and the source line rewritten with `generated_at` |
+
+The proof numbers coming back identical to the baked-in fallback is the point, not a coincidence:
+the page is committed with the values the index currently holds, so both the JS and the no-JS
+readings are correct. Every internal link on all three pages resolves - checked twice, once in the
+browser and once by `tests/test_docs_links.py`, which walks `docs/**/*.html`, resolves every
+relative `href`/`src`/`action`/`poster` against the page's own directory, asserts the target exists
+and stays inside the repository, and fails if any page pulls a script, stylesheet, font, image or
+frame off its own origin. Both tabs were closed and both servers stopped; Pages is still not
+enabled and the repository is still private.
+
+### Requests made
+
+**None.** No government publisher was contacted, and `attest` is offline by construction. External
+HTTP requests: **zero**. Local only: `127.0.0.1:8765` (static server) and `127.0.0.1:9223` (the
+clean Chrome's DevTools endpoint).
+
+### Tests
+
+`python -m pytest -q`: **168 passed**, up from 135. Thirty-three new:
+
+- `tests/test_attest.py` (23) - RFC normalisation; observation provenance read from the sidecars;
+  coverage ending at `.state` rather than at the newest snapshot; stage-column extraction across all
+  eight SAT/DOF oficio pairs; one RFC carrying two proceedings, derived from the fixture rather than
+  hardcoded; a missing RFC answered *No* rather than erroring; snapshot-in-force selection and the
+  next-observation edge; `--between` walking two snapshots and the *Yes, throughout* wording;
+  pre-coverage and post-coverage refusals; exactly-one-question enforcement; a reversed `--between`;
+  a malformed date; an empty archive; the full evidence rendering; **determinism** with a fixed
+  `generated_at`; four CLI paths including the non-`sat69b` refusal and its exit code; and one test
+  against the real committed archive so the fixture and reality cannot drift apart silently.
+- `tests/test_docs_links.py` (10, parametrised over every page) - dead relative links, links escaping
+  the repository, external subresources, and external stylesheets or fonts by string marker.
+
+`npm test` in `js/`: **20 passed**, unchanged. Nothing today touched the Node client.
+
+### Defects and caveats
+
+1. **The 12-hour head start is a commitment, not an implementation.** `nightly.yml` has one window
+   and no private targets. Splitting it into 06:15 and 18:15 UTC, and teaching the job to push to a
+   subscriber's repository, is unbuilt. Nothing is on sale until 09-22, so it is not yet a lie - but
+   it becomes one the moment a Stripe link goes live, and it is the single largest piece of unbuilt
+   work behind the price.
+2. **`changes.json` is specified in `paid.md` and not written by any code.** Same deadline as
+   caveat 1.
+3. **The attestation's evidence is one snapshot deep.** `sat69b` has one version and zero diffs, so
+   every attestation issued today rests on the same file. That is honest and the document says so,
+   but the product gets materially better with every night that runs, and it is thin until then.
+4. **Coverage cannot reach before 2026-09-07** and never will. Stated on the page, in `paid.md`, in
+   the CLI's refusal and in the generated document. It is the honest limit and the reason the
+   archive matters; it must never be softened.
+5. **The README Feeds table still has no version or diff counts** - day 5's hand-off item 6, not
+   done, because day 6's scope was the offer pages. Small, and it belongs with day 7's README pass.
+6. Day 5's caveats 1-7 all stand unchanged: Atom entry ordering, `CHANGES.md` growing without
+   bound, the 25-bar cap, both packages installing a `govdiff` binary, `0.0.0+source` from a clone,
+   the untested raw.githubusercontent.com base URL, and the 69-B `Last-Modified` still reading 22
+   January 2026.
+
+### Day 7
+
+Three pages, all copying `docs/offers/TEMPLATE.md`, plus the placeholders on
+`docs/offers/index.html` becoming real links. Read `docs/paid.md` first; it is normative and the
+pages only restate it.
+
+1. **`docs/offers/catalogos-sat.html`, $39/mo** - the `catcfdi` feed. The truthful numbers, all
+   verified tonight:
+
+   | fact | value |
+   |---|---|
+   | catalogues in one keyed frame | **25** |
+   | versions archived | **2** - `2024-12-04-a4b88178` and `2026-09-03-a5ce7a60` |
+   | diffs | **1** |
+   | rows | **354,429 to 362,345** |
+   | columns | **86**, unchanged across both |
+   | the one diff | **+7,917 added, ~108 changed, -1 removed**, 354,320 unchanged |
+   | columns added / removed | **none** |
+   | what changed | `c_municipio` on 93 records, `descripcion` on 15 |
+   | key | `catalogo` + `clave` + `clave_2` + `clave_3` |
+   | current document | `catCFDI_V_4_20260903.xls`, `Last-Modified` Thu, 03 Sep 2026 15:02:36 GMT |
+
+   One diff is a thin claim and the page must not dress it up. Lead with the coverage and the shape
+   - 25 catalogues normalised into one comparable table with a four-part key, which SAT does not
+   publish and which is most of the work - and say plainly that the change history starts here. The
+   honest hook is real: the Anexo 20 page links only the current workbook, the older dated files
+   stay reachable at their own URLs but are linked nowhere, so anyone who did not write the URL down
+   has no back-series. Do **not** claim the files are unobtainable; claim, correctly, that the
+   change history is.
+
+2. **`docs/offers/listas-mx.html`, $99/mo** - the `sat69b` feed:
+
+   | fact | value |
+   |---|---|
+   | records in the archived list | **14,234** |
+   | columns | **27** |
+   | versions / diffs | **1 / 0** |
+   | version id | `2026-01-22-54b95d41`, sha256 `54b95d41c9ca...` |
+   | SAT `Last-Modified` | Thu, 22 Jan 2026 22:59:33 GMT |
+   | first observed here | **2026-09-07** |
+   | situacion breakdown | Definitivo **11,270**, Sentencia Favorable **1,638**, Presunto **986**, Desvirtuado **340** |
+   | key | `rfc` + `numero_y_fecha_de_oficio_global_de_presuncion_sat` |
+   | document | `Listado_Completo_69-B.csv` |
+
+   Zero diffs is the weakness and the argument at once: SAT overwrites this file in place, keeps no
+   dated history, and publishes the current list only - so nobody has a back-series, including SAT.
+   Lead with the situacion breakdown, which is real and vivid, and with what a change to it means
+   for a counterparty check. Do not imply any history before 2026-09-07 exists.
+
+3. **`docs/offers/attestation.html`, $250 one-off** - the point-in-time statement. It has a working
+   command behind it, so show the document: a real rendered example against the committed archive
+   is the strongest thing on any of these pages. Use an RFC from the archive, state the coverage
+   floor of 2026-09-07 above the fold, carry the *not legal advice / not a substitute for SAT's own
+   constancia* disclaimer verbatim from `attest.py`, and state the **3 business day** turnaround.
+   Say that the same document can be produced free from the public archive with one command - it is
+   true, it is checkable, and pretending otherwise would be caught in a minute.
+
+4. **Turn the three placeholders on `docs/offers/index.html` into links** once the pages exist, and
+   delete the `.pending` paragraphs. Keep the prices where they are.
+
+5. **README Feeds table**: add version and diff counts, carried over from day 5's hand-off.
+
+6. **Do not touch** the head-start schedule or `changes.json` (caveats 1 and 2) unless day 7 finishes
+   early - they are a workflow job, not a page job, and doing them badly in a hurry is worse than
+   doing them on day 8.

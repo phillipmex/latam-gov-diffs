@@ -1,4 +1,4 @@
-"""Command line entry point: `govdiff run|bootstrap|rediff|index|status`."""
+"""Command line entry point: `govdiff run|bootstrap|rediff|index|attest|status`."""
 
 from __future__ import annotations
 
@@ -8,9 +8,11 @@ import sys
 from pathlib import Path
 
 from govdiff import __version__
+from govdiff.attest import FEED_ID as ATTEST_FEED
+from govdiff.attest import attest
 from govdiff.changefeed import write_change_feed
 from govdiff.config import load_feeds, resolve_repo_root
-from govdiff.errors import GovDiffError, SourceChallenged
+from govdiff.errors import AttestationNotPossible, GovDiffError, SourceChallenged
 from govdiff.fetch import load_state
 from govdiff.index import write_index
 from govdiff.runner import bootstrap_feed, rediff_feed, run_all, run_feed
@@ -152,6 +154,31 @@ def cmd_index(args) -> int:
     return 0
 
 
+def cmd_attest(args) -> int:
+    root = resolve_repo_root(args.root)
+    if args.feed != ATTEST_FEED:
+        raise AttestationNotPossible(
+            "attestations are offered for '%s' only. The other feeds' publishers keep dated "
+            "back-versions online, so a point-in-time statement about them is reproducible "
+            "from the publisher and this archive adds nothing to it." % ATTEST_FEED
+        )
+    document = attest(
+        args.rfc,
+        root=root,
+        on=args.on,
+        between=tuple(args.between) if args.between else None,
+    )
+    if args.output:
+        target = Path(args.output)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with open(target, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(document)
+        print("wrote %s (%d bytes)" % (target, len(document.encode("utf-8"))))
+    else:
+        print(document)
+    return 0
+
+
 def cmd_status(args) -> int:
     root = resolve_repo_root(args.root)
     feeds = load_feeds(root / "feeds.yaml")
@@ -224,6 +251,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="write only docs/index.json, not the Atom feeds or CHANGES.md",
     )
     idx.set_defaults(func=cmd_index)
+
+    att = sub.add_parser(
+        "attest",
+        help="write a point-in-time attestation about one RFC from the archived snapshots",
+        description=(
+            "Produce a Markdown statement of whether an RFC appeared on the SAT 69-B list "
+            "on a given date, or across a span of dates, with the snapshot version ids, "
+            "their sha256, the SAT document URL and the Last-Modified value at the time. "
+            "Reads the local archive only; makes no network request."
+        ),
+    )
+    att.add_argument("feed", help="the feed to attest; only '%s' is offered" % ATTEST_FEED)
+    att.add_argument("--rfc", required=True, help="the taxpayer id to look for")
+    when = att.add_mutually_exclusive_group(required=True)
+    when.add_argument("--on", metavar="YYYY-MM-DD", help="the single date to attest")
+    when.add_argument(
+        "--between",
+        nargs=2,
+        metavar=("FROM", "TO"),
+        help="two dates; the statement covers every list observed across the span",
+    )
+    att.add_argument("--output", metavar="PATH", help="write to a file instead of stdout")
+    att.set_defaults(func=cmd_attest)
 
     status = sub.add_parser("status", help="one line per feed")
     status.add_argument("--json", action="store_true", help="also print the table as JSON")

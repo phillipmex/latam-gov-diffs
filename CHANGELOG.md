@@ -38,8 +38,20 @@ Nothing here has been uploaded to PyPI or npm.
   IBS/CBS tax classification table), `catcfdi` (Mexico, SAT, the 25 CFDI 4.0
   catalogues of Anexo 20 in one keyed frame) and `sat69b` (Mexico, SAT, the
   Article 69-B list).
-- **CLI** - `govdiff run`, `bootstrap`, `rediff`, `index`, `status`, and
-  `govdiff --version`.
+- **CLI** - `govdiff run`, `bootstrap`, `rediff`, `index`, `attest`, `status`,
+  and `govdiff --version`.
+- **`govdiff attest sat69b --rfc RFC --on DATE`** (and `--between FROM TO`) -
+  a point-in-time attestation built from the archived snapshots and nothing
+  else: whether the RFC appeared on the SAT 69-B list on that date, the
+  `situacion`, every oficio number and publication date on both the SAT and the
+  DOF side, and the evidence behind the answer - snapshot version ids, their
+  sha256, the SAT document URL, the `Last-Modified` SAT reported at the time,
+  and the next observation, so the edge of the evidence is visible rather than
+  implied. Zero network. Coverage runs from the first archived snapshot to the
+  last night the list was observed, and a date outside it raises
+  `AttestationNotPossible` with the reason rather than an inference. Offered for
+  `sat69b` alone; the other publishers keep dated back-versions, so a statement
+  about them is reproducible from the source.
 - **`govdiff index`** - writes `docs/index.json`, the machine-readable
   description of every feed, version and diff in the archive. Deterministic:
   sorted keys, two-space indent, and the file is left untouched when only its
@@ -70,6 +82,24 @@ Nothing here has been uploaded to PyPI or npm.
   time of writing, so a night with no change rewrites nothing.
 - **`--repo PATH`** on every command, with `GOVDIFF_REPO` in the environment and
   the current directory as the two fallbacks.
+- **Paid-tier mechanics, written down** - `docs/paid.md`: the four fixed prices,
+  what a paid feed is (a private GitHub repository, the diffs committed there
+  twelve hours before the public archive, GitHub's own notifications as the
+  alert, a per-feed `changes.json` for machines, support by issue answered
+  within two business days), a plain list of what is *not* included, the $250
+  attestation with its 2026-09-07 coverage floor and its not-legal-advice
+  disclaimer, the operator's fulfilment steps, the refund line, and the
+  `#stripe-pending` checkout placeholder convention. Linked from the README.
+- **Offer pages** - `docs/offers/`: `offer.css` extending the viewer's tokens
+  (light and dark, one column below 720 px, zero external requests),
+  `TEMPLATE.md` documenting the structure every page copies, an index of the
+  three outputs with their prices, and the `cclasstrib` page. Proof numbers are
+  baked into the HTML and refreshed from `docs/index.json` at render time, so
+  the page reads correctly with JavaScript off. The viewer's *Paid feeds* link
+  now points at them.
+- **`tests/test_docs_links.py`** - walks `docs/**/*.html`, asserts every
+  relative link resolves to a file inside the repository, and fails if any page
+  fetches a script, stylesheet, font, image or frame off its own origin.
 
 ### Fixed
 
