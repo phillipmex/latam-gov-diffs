@@ -101,12 +101,12 @@ id to search the page for; there is exactly one button per id.
 
 | # | `data-product` | price | page | button text |
 |--:|---|---|---|---|
-| 1 | `catalogos-sat-monthly` | $39 | `docs/offers/catalogos-sat.html` | Checkout opens on launch (2026-09-22) |
-| 2 | `cclasstrib-monthly` | $28 | `docs/offers/cclasstrib.html` | Checkout opens on launch (2026-09-22) |
-| 3 | `listas-mx-attestation` | $250 | `docs/offers/listas-mx.html` | Checkout opens on launch (2026-09-22) |
-| 4 | `listas-mx-monthly` | $99 | `docs/offers/listas-mx.html` | Checkout opens on launch (2026-09-22) |
+| 1 | `catalogos-sat-monthly` | $39 | `docs/offers/catalogos-sat.html` | Subscribe - $39/month |
+| 2 | `cclasstrib-monthly` | $28 | `docs/offers/cclasstrib.html` | Subscribe - $28/month |
+| 3 | `listas-mx-attestation` | $250 | `docs/offers/listas-mx.html` | Buy now - $250 |
+| 4 | `listas-mx-monthly` | $99 | `docs/offers/listas-mx.html` | Subscribe - $99/month |
 
-All 4 still point at `#stripe-pending`, the deliberate placeholder. A button whose `href` is still that fragment on launch morning is a button that takes money from nobody.
+Every button already carries a real link. Nothing to do here.
 
 **Do not search-and-replace across the repository.** `#stripe-pending` appears in
 two further places - `docs/offers/TEMPLATE.md` and `docs/paid.md` - where it is
