@@ -19,10 +19,12 @@ import pytest
 
 from govdiff.cli import main
 from govdiff.paidpush import (
+    VOLATILE_STATE_FIELDS,
     PaidPushError,
     _is_local_remote,
     load_targets,
     paid_push,
+    render_source_state,
     stage_slice,
     target_label,
     targets_for,
@@ -215,6 +217,106 @@ def test_a_second_push_with_nothing_new_makes_no_commit(tmp_path):
     again = paid_push("alpha", root, targets=targets, message="two")
     assert [t["outcome"] for t in again["targets"]] == ["unchanged"]
     assert len(_log(bare)) == 1
+
+
+def test_a_night_that_only_re_fetched_makes_no_commit(tmp_path):
+    """The production case the file:// test above could not see.
+
+    Day 9 found this on a real run: two harvests two minutes apart, nothing
+    moved at the publisher, and the subscriber still got a second commit and a
+    second GitHub notification - because `.state/<feed>.json` records
+    `last_fetched_at`, which every run rewrites. docs/paid.md sells the
+    notification as the alert and promises a night with no change makes no
+    commit, so the staged copy drops the fields that describe the run.
+    """
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+    state = root / ".state" / "alpha.json"
+    state.parent.mkdir(exist_ok=True)
+    state.write_text(
+        json.dumps(
+            {
+                "feed": "alpha",
+                "last_fetched_at": "2026-09-07T06:15:00+00:00",
+                "last_result": "unchanged",
+                "last_error": None,
+                "sha256": "abc123",
+                "version_id": "2026-09-01-abc123",
+                "row_count": 3,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    bare = _bare(tmp_path, "sub.git")
+    targets = [{"feed": "alpha", "repo": _url(bare), "deploy_key_b64": ""}]
+
+    paid_push("alpha", root, targets=targets, message="one")
+
+    # The next night: same bytes at the publisher, a new fetch timestamp.
+    moved = json.loads(state.read_text(encoding="utf-8"))
+    moved["last_fetched_at"] = "2026-09-08T06:15:04+00:00"
+    state.write_text(json.dumps(moved, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    again = paid_push("alpha", root, targets=targets, message="two")
+    assert [t["outcome"] for t in again["targets"]] == ["unchanged"]
+    assert len(_log(bare)) == 1
+
+
+def test_a_new_version_still_reaches_the_subscriber_through_state(tmp_path):
+    """Dropping the run fields must not also drop the ones that matter."""
+    root = archive(tmp_path)
+    assert main(["--repo", str(root), "index"]) == 0
+    state = root / ".state" / "alpha.json"
+    state.parent.mkdir(exist_ok=True)
+    base = {
+        "feed": "alpha",
+        "last_fetched_at": "2026-09-07T06:15:00+00:00",
+        "last_result": "unchanged",
+        "sha256": "abc123",
+        "version_id": "2026-09-01-abc123",
+        "row_count": 3,
+    }
+    state.write_text(json.dumps(base, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    bare = _bare(tmp_path, "sub.git")
+    targets = [{"feed": "alpha", "repo": _url(bare), "deploy_key_b64": ""}]
+    paid_push("alpha", root, targets=targets, message="one")
+
+    moved = dict(base, last_fetched_at="2026-09-08T06:15:04+00:00",
+                 last_result="new_version", sha256="def456",
+                 version_id="2026-09-08-def456", row_count=4)
+    state.write_text(json.dumps(moved, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    again = paid_push("alpha", root, targets=targets, message="two")
+    assert [t["outcome"] for t in again["targets"]] == ["success"]
+    assert len(_log(bare)) == 2
+
+
+def test_the_staged_state_file_describes_the_source_not_the_run(tmp_path):
+    kept = render_source_state(
+        {
+            "feed": "alpha",
+            "source_url": "https://example.invalid/a.csv",
+            "etag": "\"x\"",
+            "last_modified": "Thu, 03 Sep 2026 15:02:36 GMT",
+            "sha256": "abc123",
+            "version_id": "2026-09-01-abc123",
+            "row_count": 3,
+            "version_count": 2,
+            "last_fetched_at": "2026-09-07T06:15:00+00:00",
+            "last_result": "unchanged",
+            "last_error": None,
+        }
+    )
+    doc = json.loads(kept)
+    for gone in VOLATILE_STATE_FIELDS:
+        assert gone not in doc
+    # Everything a subscriber's README promises is still there.
+    for held in ("version_id", "sha256", "last_modified", "row_count",
+                 "source_url", "etag", "version_count", "feed"):
+        assert held in doc
+    assert kept.endswith("}\n")
 
 
 def test_a_new_diff_reaches_the_subscriber(tmp_path):

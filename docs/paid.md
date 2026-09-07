@@ -94,6 +94,15 @@ app, on every night that produced a change. A night that produced nothing
 produces no commit and no notification. There is no separate mailing list to
 subscribe to and no address to give anyone.
 
+That promise is a property of what is copied into your repository, not a
+hope. Your copy of `.state/<feed>.json` carries the fields that describe the
+*source* - version id, sha256, `Last-Modified`, row count - and omits the
+three that describe our nightly *run*, including the timestamp of the last
+fetch. Those move every night whether or not the publisher moved a byte, and
+carrying them would have committed to your repository, and emailed you, on
+every quiet night. Two nights that fetched identical bytes now stage
+byte-identical files, and git finds nothing to commit.
+
 If you would rather not use notifications, the repository's Atom feed
 (`https://github.com/<org>/<your-repo>/commits/main.atom`, which GitHub serves
 for private repositories to people who can read them) works in any feed reader.

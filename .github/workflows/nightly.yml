@@ -418,7 +418,7 @@ jobs:
           SKIPPED: ${{ steps.apply.outputs.skipped }}
         run: |
           if [ -n "$SKIPPED" ]; then
-            echo "::error::held back from public main tonight:$SKIPPED - the paid push failed this morning, so the head start was never delivered for those feeds. Fix the paid target and re-run the harvest before publishing them."
+            echo "::error::held back from public main tonight:$SKIPPED - the reason for each one is in the HELD BACK warning above, and is either that the morning harvest failed or that the paid push did. Either way the twelve-hour head start was not delivered for those feeds, so publishing them tonight would hand the free tier a diff the paid copies never got. Fix the cause and re-run the harvest before publishing them."
             exit 1
           fi
           echo "every feed that harvested this morning is published"

@@ -30,6 +30,17 @@ dated record of what moved. Force-pushing one orphan branch every night would
 leave a repository with exactly one commit, no history to read, and a "forced
 update" in every notification.
 
+**A quiet night produces no commit.** `docs/paid.md` sells GitHub's own
+notifications as the alert, and an alert that fires every night is not an
+alert. The only file in the slice that moves on its own is
+`.state/<feed>.json`, whose `last_fetched_at` is rewritten by every run
+whether or not the publisher moved a byte, so the staged copy drops the three
+fields that record the *run* and keeps only the ones that describe the
+*source*. `govdiff.index` leaves the same fields out of `docs/index.json` for
+the same reason. The public archive still commits the whole file - it is the
+conditional request's memory and `govdiff attest` reads `last_fetched_at` from
+it to decide where coverage ends.
+
 **Nothing in the log names a buyer.** This repository goes public on
 2026-09-22, and a public repository's Actions logs are public with it. So a
 target is written to the log as `target-<sha256[:8]>` of its URL - stable
@@ -66,6 +77,11 @@ DEFAULT_BRANCH = "main"
 
 # A target's clone only ever needs its newest commit.
 CLONE_DEPTH = 1
+
+# `.state/<feed>.json` fields that record the run rather than the source. They
+# move on every nightly run, so a slice carrying them would commit - and notify
+# a subscriber - on a night when nothing was published.
+VOLATILE_STATE_FIELDS = ("last_fetched_at", "last_result", "last_error")
 
 
 class PaidPushError(GovDiffError):
@@ -193,6 +209,18 @@ def render_target_readme(feed_id: str, index: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_source_state(state: dict) -> str:
+    """The `.state` file a subscriber gets: the source, not last night's run.
+
+    Same shape and same writer settings as the file on disk, minus
+    `VOLATILE_STATE_FIELDS`. Everything left moves only when the publisher
+    moved, so two nights that fetched the same bytes stage byte-identical
+    files and `git diff --cached --quiet` finds nothing to commit.
+    """
+    kept = {k: v for k, v in state.items() if k not in VOLATILE_STATE_FIELDS}
+    return json.dumps(kept, indent=2, sort_keys=True) + "\n"
+
+
 def _copy_tree(source: Path, destination: Path) -> list[str]:
     copied: list[str] = []
     if not source.exists():
@@ -234,7 +262,11 @@ def stage_slice(feed_id: str, root: Path, staging: Path, index: dict | None = No
     state = root / ".state" / ("%s.json" % feed_id)
     if state.exists():
         (staging / ".state").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(state, staging / ".state" / state.name)
+        (staging / ".state" / state.name).write_text(
+            render_source_state(json.loads(state.read_text(encoding="utf-8"))),
+            encoding="utf-8",
+            newline="\n",
+        )
 
     atom = root / "docs" / feed_id / "feed.xml"
     if atom.exists():

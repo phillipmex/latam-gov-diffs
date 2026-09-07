@@ -160,6 +160,24 @@ Nothing here has been uploaded to PyPI or npm.
   `--repo` or `GOVDIFF_REPO` that points at the wrong place is an error rather
   than a silent fall-through. `repo_root()` itself is unchanged.
 
+- **A quiet night no longer notifies a paid subscriber.** The slice copied the
+  feed's `.state/<feed>.json` verbatim, and that file records `last_fetched_at`,
+  `last_result` and `last_error` - the *run*, not the source - so every nightly
+  push produced a commit in every paid repository even when no publisher had
+  moved a byte. Proven on a real run: two harvests two minutes apart, nothing
+  changed upstream, two commits and two notifications. `docs/paid.md` sells
+  GitHub's own notification as the alert, so an alert every night would have
+  been worth nothing. The staged copy now drops those three fields and keeps
+  the ones that describe the source, exactly as `govdiff index` already does
+  for `docs/index.json`. The public archive still commits the whole file - it
+  is the conditional request's memory and `govdiff attest` reads the fetch time
+  from it.
+- **The held-back error names the right cause.** The publish job's final error
+  said the paid push had failed, whichever of the two causes had actually held
+  a feed back; a simulated harvest failure produced a run log that accused the
+  paid push of a failure it had not had. It now points at the per-feed warning
+  above it, which carries the real reason.
+
 ### Notes
 
 - `__version__` is read from the installed package metadata, so `pyproject.toml`
