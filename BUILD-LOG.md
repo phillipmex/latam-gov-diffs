@@ -2494,3 +2494,12 @@ The fourth thing, which is not a launch-day risk but is the real one: **no publi
 byte in the two days this has been running for real.** The first live nightly diff is still ahead,
 and the day it lands is the day the archive stops being a promise. Everything is in place to catch
 it.
+
+### Owner decision - §3, the commit-author question (2026-09-08)
+
+Decided: **Option A, accept it as is.** The history is not rewritten. The owner's own git identity
+and its outlook.com mailbox stay on every commit that carries it; `govdiff-bot`'s commits are
+untouched too. Reasoning given: the account handle is already public by design (repo URL, Pages
+domain, PyPI/npm owner, trusted-publisher config) - the mailbox in the history is the only thing
+beyond that, and not worth losing the dated per-snapshot commit record or the squash/force-push risk
+to a still-private repo to remove. Nothing left to do for §3 before the 09-22 flip.
