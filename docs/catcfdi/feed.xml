@@ -3,12 +3,24 @@
   <title>latam-gov-diffs: catcfdi</title>
   <subtitle>Catalogos del CFDI version 4.0 (Anexo 20) - Servicio de Administracion Tributaria (SAT), MX</subtitle>
   <id>tag:phillipmex.github.io,2026:latam-gov-diffs/catcfdi</id>
-  <updated>2026-09-07T06:32:07+00:00</updated>
+  <updated>2026-09-21T19:58:02+00:00</updated>
   <link rel="self" type="application/atom+xml" href="https://phillipmex.github.io/latam-gov-diffs/catcfdi/feed.xml"/>
   <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=catcfdi"/>
   <author><name>latam-gov-diffs maintainers</name></author>
   <rights>Code MIT. Archived data is public government data.</rights>
   <generator uri="https://github.com/phillipmex/latam-gov-diffs">govdiff index</generator>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/catcfdi/2026-09-03-a5ce7a60__2026-09-18-691d8697</id>
+    <title>catcfdi 2026-09-03 → 2026-09-18: +7 / ~0 / −0</title>
+    <updated>2026-09-21T19:58:02+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=catcfdi&amp;from=2026-09-03-a5ce7a60&amp;to=2026-09-18-691d8697"/>
+    <link rel="enclosure" type="application/x-ndjson" length="2164" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/catcfdi/2026-09-03-a5ce7a60__2026-09-18-691d8697.jsonl"/>
+    <category term="catcfdi"/>
+    <content type="text">7 added, 0 changed, 0 removed, 362345 unchanged.
+The table went from 362345 rows to 362352.
+Diff file: diffs/catcfdi/2026-09-03-a5ce7a60__2026-09-18-691d8697.jsonl (2 kB).
+Source: Servicio de Administracion Tributaria (SAT), MX.</content>
+  </entry>
   <entry>
     <id>tag:phillipmex.github.io,2026:latam-gov-diffs/catcfdi/2024-12-04-a4b88178__2026-09-03-a5ce7a60</id>
     <title>catcfdi 2024-12-04 → 2026-09-03: +7917 / ~108 / −1</title>
