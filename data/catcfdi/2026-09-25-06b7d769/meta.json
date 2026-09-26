@@ -1,0 +1,363 @@
+{
+  "feed": "catcfdi",
+  "fetched_at": "2026-09-26T11:28:44+00:00",
+  "key_fields": [
+    "catalogo",
+    "clave",
+    "clave_2",
+    "clave_3"
+  ],
+  "last_modified": "Fri, 25 Sep 2026 15:02:21 GMT",
+  "listing_title": "catCFDI_V_4_20260925.xls",
+  "published": "25/09/2026",
+  "row_count": 362357,
+  "schema": [
+    {
+      "dtype": "string",
+      "name": "catalogo"
+    },
+    {
+      "dtype": "string",
+      "name": "clave"
+    },
+    {
+      "dtype": "string",
+      "name": "clave_2"
+    },
+    {
+      "dtype": "string",
+      "name": "clave_3"
+    },
+    {
+      "dtype": "string",
+      "name": "c_formapago"
+    },
+    {
+      "dtype": "string",
+      "name": "descripcion"
+    },
+    {
+      "dtype": "string",
+      "name": "bancarizado"
+    },
+    {
+      "dtype": "string",
+      "name": "numero_de_operacion"
+    },
+    {
+      "dtype": "string",
+      "name": "rfc_del_emisor_de_la_cuenta_ordenante"
+    },
+    {
+      "dtype": "string",
+      "name": "cuenta_ordenante"
+    },
+    {
+      "dtype": "string",
+      "name": "patron_para_cuenta_ordenante"
+    },
+    {
+      "dtype": "string",
+      "name": "rfc_del_emisor_cuenta_de_beneficiario"
+    },
+    {
+      "dtype": "string",
+      "name": "cuenta_de_benenficiario"
+    },
+    {
+      "dtype": "string",
+      "name": "patron_para_cuenta_beneficiaria"
+    },
+    {
+      "dtype": "string",
+      "name": "tipo_cadena_pago"
+    },
+    {
+      "dtype": "string",
+      "name": "nombre_del_banco_emisor_de_la_cuenta_ordenante_en_caso_de_extranjero"
+    },
+    {
+      "dtype": "string",
+      "name": "fecha_inicio_de_vigencia"
+    },
+    {
+      "dtype": "string",
+      "name": "fecha_fin_de_vigencia"
+    },
+    {
+      "dtype": "string",
+      "name": "c_moneda"
+    },
+    {
+      "dtype": "string",
+      "name": "decimales"
+    },
+    {
+      "dtype": "string",
+      "name": "porcentaje_variacion"
+    },
+    {
+      "dtype": "string",
+      "name": "c_tipodecomprobante"
+    },
+    {
+      "dtype": "string",
+      "name": "valor_maximo"
+    },
+    {
+      "dtype": "string",
+      "name": "c_exportacion"
+    },
+    {
+      "dtype": "string",
+      "name": "c_metodopago"
+    },
+    {
+      "dtype": "string",
+      "name": "c_codigopostal"
+    },
+    {
+      "dtype": "string",
+      "name": "c_estado"
+    },
+    {
+      "dtype": "string",
+      "name": "c_municipio"
+    },
+    {
+      "dtype": "string",
+      "name": "c_localidad"
+    },
+    {
+      "dtype": "string",
+      "name": "estimulo_franja_fronteriza"
+    },
+    {
+      "dtype": "string",
+      "name": "referencias_del_huso_horario_descripcion_del_huso_horario"
+    },
+    {
+      "dtype": "string",
+      "name": "mes_inicio_horario_verano"
+    },
+    {
+      "dtype": "string",
+      "name": "dia_inicio_horario_verano"
+    },
+    {
+      "dtype": "string",
+      "name": "dia_inicio_horario_verano_2"
+    },
+    {
+      "dtype": "string",
+      "name": "diferencia_horaria_verano"
+    },
+    {
+      "dtype": "string",
+      "name": "mes_inicio_horario_invierno"
+    },
+    {
+      "dtype": "string",
+      "name": "dia_inicio_horario_invierno"
+    },
+    {
+      "dtype": "string",
+      "name": "dia_inicio_horario_invierno_2"
+    },
+    {
+      "dtype": "string",
+      "name": "diferencia_horaria_invierno"
+    },
+    {
+      "dtype": "string",
+      "name": "c_periodicidad"
+    },
+    {
+      "dtype": "string",
+      "name": "c_meses"
+    },
+    {
+      "dtype": "string",
+      "name": "c_tiporelacion"
+    },
+    {
+      "dtype": "string",
+      "name": "c_regimenfiscal"
+    },
+    {
+      "dtype": "string",
+      "name": "fisica"
+    },
+    {
+      "dtype": "string",
+      "name": "moral"
+    },
+    {
+      "dtype": "string",
+      "name": "fecha_de_inicio_de_vigencia"
+    },
+    {
+      "dtype": "string",
+      "name": "fecha_de_fin_de_vigencia"
+    },
+    {
+      "dtype": "string",
+      "name": "c_pais"
+    },
+    {
+      "dtype": "string",
+      "name": "formato_de_codigo_postal"
+    },
+    {
+      "dtype": "string",
+      "name": "formato_de_registro_de_identidad_tributaria"
+    },
+    {
+      "dtype": "string",
+      "name": "validacion_del_registro_de_identidad_tributaria"
+    },
+    {
+      "dtype": "string",
+      "name": "agrupaciones"
+    },
+    {
+      "dtype": "string",
+      "name": "c_usocfdi"
+    },
+    {
+      "dtype": "string",
+      "name": "aplica_para_tipo_persona_fisica"
+    },
+    {
+      "dtype": "string",
+      "name": "regimen_fiscal_receptor"
+    },
+    {
+      "dtype": "string",
+      "name": "c_claveprodserv"
+    },
+    {
+      "dtype": "string",
+      "name": "incluir_iva_trasladado"
+    },
+    {
+      "dtype": "string",
+      "name": "incluir_ieps_trasladado"
+    },
+    {
+      "dtype": "string",
+      "name": "complemento_que_debe_incluir"
+    },
+    {
+      "dtype": "string",
+      "name": "fechainiciovigencia"
+    },
+    {
+      "dtype": "string",
+      "name": "fechafinvigencia"
+    },
+    {
+      "dtype": "string",
+      "name": "palabras_similares"
+    },
+    {
+      "dtype": "string",
+      "name": "c_claveunidad"
+    },
+    {
+      "dtype": "string",
+      "name": "nombre"
+    },
+    {
+      "dtype": "string",
+      "name": "nota"
+    },
+    {
+      "dtype": "string",
+      "name": "simbolo"
+    },
+    {
+      "dtype": "string",
+      "name": "c_objetoimp"
+    },
+    {
+      "dtype": "string",
+      "name": "c_impuesto"
+    },
+    {
+      "dtype": "string",
+      "name": "retencion"
+    },
+    {
+      "dtype": "string",
+      "name": "traslado"
+    },
+    {
+      "dtype": "string",
+      "name": "local_o_federal"
+    },
+    {
+      "dtype": "string",
+      "name": "c_tipofactor"
+    },
+    {
+      "dtype": "string",
+      "name": "rango_o_fijo"
+    },
+    {
+      "dtype": "string",
+      "name": "c_tasaocuota_valor_minimo"
+    },
+    {
+      "dtype": "string",
+      "name": "impuesto"
+    },
+    {
+      "dtype": "string",
+      "name": "factor"
+    },
+    {
+      "dtype": "string",
+      "name": "c_aduana"
+    },
+    {
+      "dtype": "string",
+      "name": "patente"
+    },
+    {
+      "dtype": "string",
+      "name": "ejercicio"
+    },
+    {
+      "dtype": "string",
+      "name": "cantidad"
+    },
+    {
+      "dtype": "string",
+      "name": "c_patenteaduanal"
+    },
+    {
+      "dtype": "string",
+      "name": "inicio_de_vigencia_de_la_patente"
+    },
+    {
+      "dtype": "string",
+      "name": "fin_de_vigencia_de_la_patente"
+    },
+    {
+      "dtype": "string",
+      "name": "c_colonia"
+    },
+    {
+      "dtype": "string",
+      "name": "nombre_del_asentamiento"
+    },
+    {
+      "dtype": "string",
+      "name": "nombre_del_estado"
+    }
+  ],
+  "sha256": "06b7d76955a7ca4932fa0eb4a8c167ed9fc1d71d1c5f0185bc374c37da6f0952",
+  "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260925.xls",
+  "version_id": "2026-09-25-06b7d769"
+}
