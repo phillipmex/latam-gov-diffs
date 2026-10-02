@@ -1,0 +1,45 @@
+{
+  "added": 9,
+  "changed": 164,
+  "changed_fields": {
+    "anexo": 9,
+    "dataatualizacao": 164,
+    "descricao_cclasstrib": 5,
+    "ind_gcredpresoper": 1,
+    "ind_gmonodif": 164,
+    "indcteos": 1,
+    "inddere": 1,
+    "inddir": 3,
+    "indduimp": 1,
+    "indnfe": 4,
+    "indnfeabi": 1,
+    "indnfse": 1,
+    "lc_214_25": 2,
+    "lc_redacao": 2,
+    "nome_cclasstrib": 4,
+    "regulamento_cbs": 5,
+    "regulamento_ibs": 6,
+    "tpdoacao": 164
+  },
+  "diff_file": "2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl",
+  "duplicate_keys_from": 0,
+  "duplicate_keys_to": 0,
+  "feed": "cclasstrib",
+  "fields_added": [
+    "tpdoacao"
+  ],
+  "fields_removed": [
+    "ind_gmonodif"
+  ],
+  "format": 2,
+  "from_version": "2026-06-23-1448cb63",
+  "generated_at": "2026-10-02T12:39:20+00:00",
+  "key_fields": [
+    "cclasstrib"
+  ],
+  "removed": 0,
+  "rows_from": 164,
+  "rows_to": 173,
+  "to_version": "2026-10-01-bee3e106",
+  "unchanged": 0
+}

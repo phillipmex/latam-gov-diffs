@@ -1,13 +1,13 @@
 {
-  "etag": "\"{49021149-1CC1-4017-8BA4-AD57DDD6C79C},1\"",
+  "etag": "\"{0AE6938E-FDF5-47C5-B06A-51948AC8939E},1\"",
   "feed": "catcfdi",
   "last_error": null,
-  "last_fetched_at": "2026-10-01T13:20:14+00:00",
-  "last_modified": "Fri, 25 Sep 2026 15:02:21 GMT",
-  "last_result": "unchanged",
-  "row_count": 362357,
-  "sha256": "06b7d76955a7ca4932fa0eb4a8c167ed9fc1d71d1c5f0185bc374c37da6f0952",
-  "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260925.xls",
-  "version_count": 4,
-  "version_id": "2026-09-25-06b7d769"
+  "last_fetched_at": "2026-10-02T12:40:09+00:00",
+  "last_modified": "Thu, 01 Oct 2026 15:17:22 GMT",
+  "last_result": "new_version",
+  "row_count": 362371,
+  "sha256": "974e9c401636ee48adfaaa0acd4a97d382c204146c201c631f9069fec0bad85b",
+  "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20261001.xls",
+  "version_count": 5,
+  "version_id": "2026-10-01-974e9c40"
 }

@@ -1,6 +1,24 @@
 {
-  "change_count": 9,
+  "change_count": 10,
   "changes": [
+    {
+      "added": 9,
+      "changed": 164,
+      "fields_added": [
+        "tpdoacao"
+      ],
+      "fields_removed": [
+        "ind_gmonodif"
+      ],
+      "from": "2026-06-23-1448cb63",
+      "jsonl": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl",
+      "published": "2026-10-01",
+      "removed": 0,
+      "rows_from": 164,
+      "rows_to": 173,
+      "summary": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.summary.json",
+      "to": "2026-10-01-bee3e106"
+    },
     {
       "added": 8,
       "changed": 156,
@@ -232,28 +250,25 @@
   ],
   "feed": "cclasstrib",
   "format": 1,
-  "generated_at": "2026-09-07T08:45:20+00:00",
+  "generated_at": "2026-10-02T22:16:20+00:00",
   "head_start_hours": 12,
   "latest": {
-    "added": 8,
-    "changed": 156,
+    "added": 9,
+    "changed": 164,
     "fields_added": [
-      "regulamento_cbs",
-      "regulamento_ibs",
-      "ind_gpbiodiferenca",
-      "tprbsn",
-      "inddir",
-      "indduimp"
+      "tpdoacao"
     ],
-    "fields_removed": [],
-    "from": "2026-04-15-cc0242ed",
-    "jsonl": "diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.jsonl",
-    "published": "2026-06-23",
+    "fields_removed": [
+      "ind_gmonodif"
+    ],
+    "from": "2026-06-23-1448cb63",
+    "jsonl": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl",
+    "published": "2026-10-01",
     "removed": 0,
-    "rows_from": 156,
-    "rows_to": 164,
-    "summary": "diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.summary.json",
-    "to": "2026-06-23-1448cb63"
+    "rows_from": 164,
+    "rows_to": 173,
+    "summary": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.summary.json",
+    "to": "2026-10-01-bee3e106"
   },
   "path_base": "repository-root"
 }

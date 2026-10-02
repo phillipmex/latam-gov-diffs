@@ -1,6 +1,20 @@
 {
-  "change_count": 3,
+  "change_count": 4,
   "changes": [
+    {
+      "added": 14,
+      "changed": 0,
+      "fields_added": [],
+      "fields_removed": [],
+      "from": "2026-09-25-06b7d769",
+      "jsonl": "diffs/catcfdi/2026-09-25-06b7d769__2026-10-01-974e9c40.jsonl",
+      "published": "2026-10-01",
+      "removed": 0,
+      "rows_from": 362357,
+      "rows_to": 362371,
+      "summary": "diffs/catcfdi/2026-09-25-06b7d769__2026-10-01-974e9c40.summary.json",
+      "to": "2026-10-01-974e9c40"
+    },
     {
       "added": 5,
       "changed": 0,
@@ -46,21 +60,21 @@
   ],
   "feed": "catcfdi",
   "format": 1,
-  "generated_at": "2026-09-26T21:12:50+00:00",
+  "generated_at": "2026-10-02T22:16:20+00:00",
   "head_start_hours": 12,
   "latest": {
-    "added": 5,
+    "added": 14,
     "changed": 0,
     "fields_added": [],
     "fields_removed": [],
-    "from": "2026-09-18-691d8697",
-    "jsonl": "diffs/catcfdi/2026-09-18-691d8697__2026-09-25-06b7d769.jsonl",
-    "published": "2026-09-25",
+    "from": "2026-09-25-06b7d769",
+    "jsonl": "diffs/catcfdi/2026-09-25-06b7d769__2026-10-01-974e9c40.jsonl",
+    "published": "2026-10-01",
     "removed": 0,
-    "rows_from": 362352,
-    "rows_to": 362357,
-    "summary": "diffs/catcfdi/2026-09-18-691d8697__2026-09-25-06b7d769.summary.json",
-    "to": "2026-09-25-06b7d769"
+    "rows_from": 362357,
+    "rows_to": 362371,
+    "summary": "diffs/catcfdi/2026-09-25-06b7d769__2026-10-01-974e9c40.summary.json",
+    "to": "2026-10-01-974e9c40"
   },
   "path_base": "repository-root"
 }

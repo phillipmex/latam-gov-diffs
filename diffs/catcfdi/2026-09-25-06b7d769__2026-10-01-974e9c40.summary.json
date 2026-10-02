@@ -1,0 +1,25 @@
+{
+  "added": 14,
+  "changed": 0,
+  "changed_fields": {},
+  "diff_file": "2026-09-25-06b7d769__2026-10-01-974e9c40.jsonl",
+  "duplicate_keys_from": 0,
+  "duplicate_keys_to": 0,
+  "feed": "catcfdi",
+  "fields_added": [],
+  "fields_removed": [],
+  "format": 2,
+  "from_version": "2026-09-25-06b7d769",
+  "generated_at": "2026-10-02T12:41:17+00:00",
+  "key_fields": [
+    "catalogo",
+    "clave",
+    "clave_2",
+    "clave_3"
+  ],
+  "removed": 0,
+  "rows_from": 362357,
+  "rows_to": 362371,
+  "to_version": "2026-10-01-974e9c40",
+  "unchanged": 362357
+}

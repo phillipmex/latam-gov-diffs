@@ -3,12 +3,27 @@
   <title>latam-gov-diffs: cclasstrib</title>
   <subtitle>Tabela de Codigo de Classificacao Tributaria do IBS/CBS (cClassTrib) - Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR</subtitle>
   <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib</id>
-  <updated>2026-09-07T06:31:26+00:00</updated>
+  <updated>2026-10-02T12:39:20+00:00</updated>
   <link rel="self" type="application/atom+xml" href="https://phillipmex.github.io/latam-gov-diffs/cclasstrib/feed.xml"/>
   <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib"/>
   <author><name>latam-gov-diffs maintainers</name></author>
   <rights>Code MIT. Archived data is public government data.</rights>
   <generator uri="https://github.com/phillipmex/latam-gov-diffs">govdiff index</generator>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106</id>
+    <title>cclasstrib 2026-06-23 → 2026-10-01: +9 / ~164 / −0</title>
+    <updated>2026-10-02T12:39:20+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2026-06-23-1448cb63&amp;to=2026-10-01-bee3e106"/>
+    <link rel="enclosure" type="application/x-ndjson" length="75367" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">9 added, 164 changed, 0 removed, 0 unchanged.
+The table went from 164 rows to 173.
+Columns that moved: dataatualizacao (164), ind_gmonodif (164), tpdoacao (164), anexo (9), regulamento_ibs (6), and 13 more column(s).
+Columns the publisher added: tpdoacao.
+Columns the publisher dropped: ind_gmonodif. A dropped column makes every row that filled it read as changed.
+Diff file: diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl (74 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
   <entry>
     <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63</id>
     <title>cclasstrib 2026-04-15 → 2026-06-23: +8 / ~156 / −0</title>

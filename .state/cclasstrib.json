@@ -2,12 +2,12 @@
   "etag": null,
   "feed": "cclasstrib",
   "last_error": null,
-  "last_fetched_at": "2026-10-01T13:20:14+00:00",
+  "last_fetched_at": "2026-10-02T12:39:20+00:00",
   "last_modified": null,
-  "last_result": "unchanged",
-  "row_count": 164,
-  "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
-  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=D5b4Ov84WDg=",
-  "version_count": 10,
-  "version_id": "2026-06-23-1448cb63"
+  "last_result": "new_version",
+  "row_count": 173,
+  "sha256": "bee3e106d24c06257d31105658679e97e2544dcc3ac61467fbe0ca4f78c6e850",
+  "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=Cd5xq2ZVuEg=",
+  "version_count": 11,
+  "version_id": "2026-10-01-bee3e106"
 }

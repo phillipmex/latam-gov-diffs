@@ -3,7 +3,7 @@
   "feeds": [
     {
       "country": "MX",
-      "diff_count": 3,
+      "diff_count": 4,
       "diffs": [
         {
           "added": 7917,
@@ -46,6 +46,20 @@
           "summary": "diffs/catcfdi/2026-09-18-691d8697__2026-09-25-06b7d769.summary.json",
           "to": "2026-09-25-06b7d769",
           "unchanged": 362352
+        },
+        {
+          "added": 14,
+          "changed": 0,
+          "format": 2,
+          "from": "2026-09-25-06b7d769",
+          "jsonl": "diffs/catcfdi/2026-09-25-06b7d769__2026-10-01-974e9c40.jsonl",
+          "jsonl_bytes": 4516,
+          "removed": 0,
+          "rows_from": 362357,
+          "rows_to": 362371,
+          "summary": "diffs/catcfdi/2026-09-25-06b7d769__2026-10-01-974e9c40.summary.json",
+          "to": "2026-10-01-974e9c40",
+          "unchanged": 362357
         }
       ],
       "document_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260903.xls",
@@ -58,17 +72,17 @@
         "clave_2",
         "clave_3"
       ],
-      "latest_version": "2026-09-25-06b7d769",
+      "latest_version": "2026-10-01-974e9c40",
       "listing_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20.htm",
       "publisher": "Servicio de Administracion Tributaria (SAT)",
       "state": {
-        "last_modified": "Fri, 25 Sep 2026 15:02:21 GMT",
-        "row_count": 362357,
-        "sha256": "06b7d76955a7ca4932fa0eb4a8c167ed9fc1d71d1c5f0185bc374c37da6f0952",
-        "version_id": "2026-09-25-06b7d769"
+        "last_modified": "Thu, 01 Oct 2026 15:17:22 GMT",
+        "row_count": 362371,
+        "sha256": "974e9c401636ee48adfaaa0acd4a97d382c204146c201c631f9069fec0bad85b",
+        "version_id": "2026-10-01-974e9c40"
       },
       "title": "Catalogos del CFDI version 4.0 (Anexo 20)",
-      "version_count": 4,
+      "version_count": 5,
       "versions": [
         {
           "column_count": 86,
@@ -117,12 +131,24 @@
           "sha256": "06b7d76955a7ca4932fa0eb4a8c167ed9fc1d71d1c5f0185bc374c37da6f0952",
           "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260925.xls",
           "version_id": "2026-09-25-06b7d769"
+        },
+        {
+          "column_count": 86,
+          "date": "2026-10-01",
+          "meta": "data/catcfdi/2026-10-01-974e9c40/meta.json",
+          "parquet": "data/catcfdi/2026-10-01-974e9c40/data.parquet",
+          "parquet_bytes": 5523015,
+          "published": "01/10/2026",
+          "row_count": 362371,
+          "sha256": "974e9c401636ee48adfaaa0acd4a97d382c204146c201c631f9069fec0bad85b",
+          "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20261001.xls",
+          "version_id": "2026-10-01-974e9c40"
         }
       ]
     },
     {
       "country": "BR",
-      "diff_count": 9,
+      "diff_count": 10,
       "diffs": [
         {
           "added": 43,
@@ -249,6 +275,20 @@
           "summary": "diffs/cclasstrib/2026-04-15-cc0242ed__2026-06-23-1448cb63.summary.json",
           "to": "2026-06-23-1448cb63",
           "unchanged": 0
+        },
+        {
+          "added": 9,
+          "changed": 164,
+          "format": 2,
+          "from": "2026-06-23-1448cb63",
+          "jsonl": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl",
+          "jsonl_bytes": 75367,
+          "removed": 0,
+          "rows_from": 164,
+          "rows_to": 173,
+          "summary": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.summary.json",
+          "to": "2026-10-01-bee3e106",
+          "unchanged": 0
         }
       ],
       "document_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=LeNQXfyYngg=",
@@ -258,17 +298,17 @@
       "key_fields": [
         "cclasstrib"
       ],
-      "latest_version": "2026-06-23-1448cb63",
+      "latest_version": "2026-10-01-bee3e106",
       "listing_url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D",
       "publisher": "Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT)",
       "state": {
         "last_modified": null,
-        "row_count": 164,
-        "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
-        "version_id": "2026-06-23-1448cb63"
+        "row_count": 173,
+        "sha256": "bee3e106d24c06257d31105658679e97e2544dcc3ac61467fbe0ca4f78c6e850",
+        "version_id": "2026-10-01-bee3e106"
       },
       "title": "Tabela de Codigo de Classificacao Tributaria do IBS/CBS (cClassTrib)",
-      "version_count": 10,
+      "version_count": 11,
       "versions": [
         {
           "column_count": 8,
@@ -389,6 +429,18 @@
           "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
           "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=D5b4Ov84WDg=",
           "version_id": "2026-06-23-1448cb63"
+        },
+        {
+          "column_count": 43,
+          "date": "2026-10-01",
+          "meta": "data/cclasstrib/2026-10-01-bee3e106/meta.json",
+          "parquet": "data/cclasstrib/2026-10-01-bee3e106/data.parquet",
+          "parquet_bytes": 125296,
+          "published": "01/10/2026",
+          "row_count": 173,
+          "sha256": "bee3e106d24c06257d31105658679e97e2544dcc3ac61467fbe0ca4f78c6e850",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=Cd5xq2ZVuEg=",
+          "version_id": "2026-10-01-bee3e106"
         }
       ]
     },
@@ -431,7 +483,7 @@
     }
   ],
   "format": 1,
-  "generated_at": "2026-09-26T21:12:50+00:00",
+  "generated_at": "2026-10-02T22:16:20+00:00",
   "path_base": "repository-root",
   "raw_base_url": "https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/",
   "repository": "https://github.com/phillipmex/latam-gov-diffs"
