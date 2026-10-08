@@ -30,8 +30,8 @@ harvester started, and that does not go away.
 The other two are less dramatic and more useful day to day. Brazil's NF-e
 cClassTrib table - the IBS/CBS classification codes for the 2026 tax reform - and
 SAT's CFDI 4.0 catalogues both keep their own back-versions online, so those
-diffs are reconstructed from files the publishers still host: nine changes and
-one, respectively, as things stand. Nothing here scrapes a portal or needs a
+diffs are reconstructed from files the publishers still host: ten changes and
+four, respectively, as things stand. Nothing here scrapes a portal or needs a
 login. It fetches the published document URLs, one conditional request per feed
 per night, and stops on anything that looks like a challenge.
 
