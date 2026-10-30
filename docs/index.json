@@ -3,7 +3,7 @@
   "feeds": [
     {
       "country": "MX",
-      "diff_count": 5,
+      "diff_count": 6,
       "diffs": [
         {
           "added": 7917,
@@ -74,6 +74,20 @@
           "summary": "diffs/catcfdi/2026-10-01-974e9c40__2026-10-15-fde78b45.summary.json",
           "to": "2026-10-15-fde78b45",
           "unchanged": 362371
+        },
+        {
+          "added": 2,
+          "changed": 0,
+          "format": 2,
+          "from": "2026-10-15-fde78b45",
+          "jsonl": "diffs/catcfdi/2026-10-15-fde78b45__2026-10-29-ca9536cc.jsonl",
+          "jsonl_bytes": 672,
+          "removed": 0,
+          "rows_from": 362379,
+          "rows_to": 362381,
+          "summary": "diffs/catcfdi/2026-10-15-fde78b45__2026-10-29-ca9536cc.summary.json",
+          "to": "2026-10-29-ca9536cc",
+          "unchanged": 362379
         }
       ],
       "document_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20260903.xls",
@@ -86,17 +100,17 @@
         "clave_2",
         "clave_3"
       ],
-      "latest_version": "2026-10-15-fde78b45",
+      "latest_version": "2026-10-29-ca9536cc",
       "listing_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20.htm",
       "publisher": "Servicio de Administracion Tributaria (SAT)",
       "state": {
-        "last_modified": "Thu, 15 Oct 2026 15:08:36 GMT",
-        "row_count": 362379,
-        "sha256": "fde78b456d1e0d90366bfc68f8312f9edce5703ad5dc8ccebf09c462db13a079",
-        "version_id": "2026-10-15-fde78b45"
+        "last_modified": "Thu, 29 Oct 2026 15:02:21 GMT",
+        "row_count": 362381,
+        "sha256": "ca9536cc4e4af64e2f2e0afc527f08bd0d1601e9d30a25d93dc4dcc4e256573b",
+        "version_id": "2026-10-29-ca9536cc"
       },
       "title": "Catalogos del CFDI version 4.0 (Anexo 20)",
-      "version_count": 6,
+      "version_count": 7,
       "versions": [
         {
           "column_count": 86,
@@ -169,6 +183,18 @@
           "sha256": "fde78b456d1e0d90366bfc68f8312f9edce5703ad5dc8ccebf09c462db13a079",
           "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20261015.xls",
           "version_id": "2026-10-15-fde78b45"
+        },
+        {
+          "column_count": 86,
+          "date": "2026-10-29",
+          "meta": "data/catcfdi/2026-10-29-ca9536cc/meta.json",
+          "parquet": "data/catcfdi/2026-10-29-ca9536cc/data.parquet",
+          "parquet_bytes": 5523155,
+          "published": "29/10/2026",
+          "row_count": 362381,
+          "sha256": "ca9536cc4e4af64e2f2e0afc527f08bd0d1601e9d30a25d93dc4dcc4e256573b",
+          "source_url": "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/catCFDI_V_4_20261029.xls",
+          "version_id": "2026-10-29-ca9536cc"
         }
       ]
     },
@@ -509,7 +535,7 @@
     }
   ],
   "format": 1,
-  "generated_at": "2026-10-16T21:11:50+00:00",
+  "generated_at": "2026-10-30T22:23:28+00:00",
   "path_base": "repository-root",
   "raw_base_url": "https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/",
   "repository": "https://github.com/phillipmex/latam-gov-diffs"
