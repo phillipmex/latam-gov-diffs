@@ -1,6 +1,20 @@
 {
-  "change_count": 10,
+  "change_count": 11,
   "changes": [
+    {
+      "added": 0,
+      "changed": 3,
+      "fields_added": [],
+      "fields_removed": [],
+      "from": "2026-10-01-bee3e106",
+      "jsonl": "diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.jsonl",
+      "published": "2026-10-30",
+      "removed": 0,
+      "rows_from": 173,
+      "rows_to": 173,
+      "summary": "diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.summary.json",
+      "to": "2026-10-30-d104ce4d"
+    },
     {
       "added": 9,
       "changed": 164,
@@ -250,25 +264,21 @@
   ],
   "feed": "cclasstrib",
   "format": 1,
-  "generated_at": "2026-10-02T22:16:20+00:00",
+  "generated_at": "2026-10-31T21:37:33+00:00",
   "head_start_hours": 12,
   "latest": {
-    "added": 9,
-    "changed": 164,
-    "fields_added": [
-      "tpdoacao"
-    ],
-    "fields_removed": [
-      "ind_gmonodif"
-    ],
-    "from": "2026-06-23-1448cb63",
-    "jsonl": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.jsonl",
-    "published": "2026-10-01",
+    "added": 0,
+    "changed": 3,
+    "fields_added": [],
+    "fields_removed": [],
+    "from": "2026-10-01-bee3e106",
+    "jsonl": "diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.jsonl",
+    "published": "2026-10-30",
     "removed": 0,
-    "rows_from": 164,
+    "rows_from": 173,
     "rows_to": 173,
-    "summary": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.summary.json",
-    "to": "2026-10-01-bee3e106"
+    "summary": "diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.summary.json",
+    "to": "2026-10-30-d104ce4d"
   },
   "path_base": "repository-root"
 }

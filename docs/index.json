@@ -200,7 +200,7 @@
     },
     {
       "country": "BR",
-      "diff_count": 10,
+      "diff_count": 11,
       "diffs": [
         {
           "added": 43,
@@ -341,6 +341,20 @@
           "summary": "diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106.summary.json",
           "to": "2026-10-01-bee3e106",
           "unchanged": 0
+        },
+        {
+          "added": 0,
+          "changed": 3,
+          "format": 2,
+          "from": "2026-10-01-bee3e106",
+          "jsonl": "diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.jsonl",
+          "jsonl_bytes": 3502,
+          "removed": 0,
+          "rows_from": 173,
+          "rows_to": 173,
+          "summary": "diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.summary.json",
+          "to": "2026-10-30-d104ce4d",
+          "unchanged": 170
         }
       ],
       "document_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=LeNQXfyYngg=",
@@ -350,17 +364,17 @@
       "key_fields": [
         "cclasstrib"
       ],
-      "latest_version": "2026-10-01-bee3e106",
+      "latest_version": "2026-10-30-d104ce4d",
       "listing_url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D",
       "publisher": "Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT)",
       "state": {
         "last_modified": null,
         "row_count": 173,
-        "sha256": "bee3e106d24c06257d31105658679e97e2544dcc3ac61467fbe0ca4f78c6e850",
-        "version_id": "2026-10-01-bee3e106"
+        "sha256": "d104ce4df4d2fd8ea6329ce794d8d8ce03855f3adc1692b99f5446d87c4c71f8",
+        "version_id": "2026-10-30-d104ce4d"
       },
       "title": "Tabela de Codigo de Classificacao Tributaria do IBS/CBS (cClassTrib)",
-      "version_count": 11,
+      "version_count": 12,
       "versions": [
         {
           "column_count": 8,
@@ -493,6 +507,18 @@
           "sha256": "bee3e106d24c06257d31105658679e97e2544dcc3ac61467fbe0ca4f78c6e850",
           "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=Cd5xq2ZVuEg=",
           "version_id": "2026-10-01-bee3e106"
+        },
+        {
+          "column_count": 43,
+          "date": "2026-10-30",
+          "meta": "data/cclasstrib/2026-10-30-d104ce4d/meta.json",
+          "parquet": "data/cclasstrib/2026-10-30-d104ce4d/data.parquet",
+          "parquet_bytes": 125351,
+          "published": "30/10/2026",
+          "row_count": 173,
+          "sha256": "d104ce4df4d2fd8ea6329ce794d8d8ce03855f3adc1692b99f5446d87c4c71f8",
+          "source_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=Lt6DZCZap0g=",
+          "version_id": "2026-10-30-d104ce4d"
         }
       ]
     },
@@ -535,7 +561,7 @@
     }
   ],
   "format": 1,
-  "generated_at": "2026-10-30T22:23:28+00:00",
+  "generated_at": "2026-10-31T21:37:33+00:00",
   "path_base": "repository-root",
   "raw_base_url": "https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/",
   "repository": "https://github.com/phillipmex/latam-gov-diffs"

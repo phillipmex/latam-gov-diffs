@@ -3,12 +3,25 @@
   <title>latam-gov-diffs: cclasstrib</title>
   <subtitle>Tabela de Codigo de Classificacao Tributaria do IBS/CBS (cClassTrib) - Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR</subtitle>
   <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib</id>
-  <updated>2026-10-02T12:39:20+00:00</updated>
+  <updated>2026-10-31T12:36:12+00:00</updated>
   <link rel="self" type="application/atom+xml" href="https://phillipmex.github.io/latam-gov-diffs/cclasstrib/feed.xml"/>
   <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib"/>
   <author><name>latam-gov-diffs maintainers</name></author>
   <rights>Code MIT. Archived data is public government data.</rights>
   <generator uri="https://github.com/phillipmex/latam-gov-diffs">govdiff index</generator>
+  <entry>
+    <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d</id>
+    <title>cclasstrib 2026-10-01 → 2026-10-30: +0 / ~3 / −0</title>
+    <updated>2026-10-31T12:36:12+00:00</updated>
+    <link rel="alternate" type="text/html" href="https://phillipmex.github.io/latam-gov-diffs/#feed=cclasstrib&amp;from=2026-10-01-bee3e106&amp;to=2026-10-30-d104ce4d"/>
+    <link rel="enclosure" type="application/x-ndjson" length="3502" href="https://raw.githubusercontent.com/phillipmex/latam-gov-diffs/main/diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.jsonl"/>
+    <category term="cclasstrib"/>
+    <content type="text">0 added, 3 changed, 0 removed, 170 unchanged.
+The table went from 173 rows to 173.
+Columns that moved: dataatualizacao (3), descricao_cclasstrib (2), inddir (2), nome_cclasstrib (2), regulamento_cbs (1).
+Diff file: diffs/cclasstrib/2026-10-01-bee3e106__2026-10-30-d104ce4d.jsonl (3 kB).
+Source: Portal Nacional da Nota Fiscal Eletronica (SEFAZ / ENCAT), BR.</content>
+  </entry>
   <entry>
     <id>tag:phillipmex.github.io,2026:latam-gov-diffs/cclasstrib/2026-06-23-1448cb63__2026-10-01-bee3e106</id>
     <title>cclasstrib 2026-06-23 → 2026-10-01: +9 / ~164 / −0</title>
